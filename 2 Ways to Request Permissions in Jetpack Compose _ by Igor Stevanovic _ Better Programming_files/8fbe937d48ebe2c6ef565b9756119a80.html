@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<!-- saved from url=(0068)https://betterprogramming.pub/media/8fbe937d48ebe2c6ef565b9756119a80 -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>accompanistMainComposableMultiplePermissions.kt – Medium</title><meta name="description" content="Instantly share code, notes, and snippets. You can&#39;t perform that action at this time. You signed in with another tab or window. You signed out in another tab or window. Reload to refresh your session. Reload to refresh your session."><meta name="twitter:widgets:csp" content="on"><meta name="robots" content="noindex"><!--<base target="_blank">--><base href="." target="_blank"><style>body {text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; font-family: "ff-tisa-web-pro", Georgia, Cambria, "Times New Roman", Times, serif; font-weight: 400; color: #333332; font-size: 18px; line-height: 1.4; margin: 0; background-color: white; overflow: hidden;}iframe {max-width: 100%;}</style></head><body><style>.gist .gist-file { margin-bottom: 0 !important; }.gist { text-rendering: auto; }</style><script src="./64a11810566035779d48a70c965a66a7.js.изтеглен файл" charset="utf-8"></script><link rel="stylesheet" href="./gist-embed-9eb50564113f.css"><div id="gist117266840" class="gist">
+    <div class="gist-file" translate="no" data-color-mode="light" data-light-theme="light">
+      <div class="gist-data">
+        <div class="js-gist-file-update-container js-task-list-container">
+  <div id="file-accompanistmaincomposablemultiplepermissions-kt" class="file my-2">
+    
+    <div itemprop="text" class="Box-body p-0 blob-wrapper data type-kotlin  ">
+
+        
+<div class="js-check-bidi js-blob-code-container blob-code-content">
+
+  <template class="js-file-alert-template"></template>
+<template class="js-line-alert-template"></template>
+
+  <table data-hpc="" class="highlight tab-size js-file-line-container" data-tab-size="8" data-paste-markdown-skip="" data-tagsearch-path="accompanistMainComposableMultiplePermissions.kt">
+        <tbody><tr>
+          <td id="file-accompanistmaincomposablemultiplepermissions-kt-L1" class="blob-num js-line-number js-blob-rnum" data-line-number="1"></td>
+          <td id="file-accompanistmaincomposablemultiplepermissions-kt-LC1" class="blob-code blob-code-inner js-file-line"><span class="pl-k">val</span> multiplePermissionState <span class="pl-k">=</span> rememberMultiplePermissionsState(</td>
+        </tr>
+        <tr>
+          <td id="file-accompanistmaincomposablemultiplepermissions-kt-L2" class="blob-num js-line-number js-blob-rnum" data-line-number="2"></td>
+          <td id="file-accompanistmaincomposablemultiplepermissions-kt-LC2" class="blob-code blob-code-inner js-file-line">    permissions <span class="pl-k">=</span> <span class="pl-c1">listOf</span>(</td>
+        </tr>
+        <tr>
+          <td id="file-accompanistmaincomposablemultiplepermissions-kt-L3" class="blob-num js-line-number js-blob-rnum" data-line-number="3"></td>
+          <td id="file-accompanistmaincomposablemultiplepermissions-kt-LC3" class="blob-code blob-code-inner js-file-line">        <span class="pl-en">Manifest</span>.permission.<span class="pl-en">ACCESS_COARSE_LOCATION</span>,</td>
+        </tr>
+        <tr>
+          <td id="file-accompanistmaincomposablemultiplepermissions-kt-L4" class="blob-num js-line-number js-blob-rnum" data-line-number="4"></td>
+          <td id="file-accompanistmaincomposablemultiplepermissions-kt-LC4" class="blob-code blob-code-inner js-file-line">        <span class="pl-en">Manifest</span>.permission.<span class="pl-en">ACCESS_FINE_LOCATION</span></td>
+        </tr>
+        <tr>
+          <td id="file-accompanistmaincomposablemultiplepermissions-kt-L5" class="blob-num js-line-number js-blob-rnum" data-line-number="5"></td>
+          <td id="file-accompanistmaincomposablemultiplepermissions-kt-LC5" class="blob-code blob-code-inner js-file-line">    )</td>
+        </tr>
+        <tr>
+          <td id="file-accompanistmaincomposablemultiplepermissions-kt-L6" class="blob-num js-line-number js-blob-rnum" data-line-number="6"></td>
+          <td id="file-accompanistmaincomposablemultiplepermissions-kt-LC6" class="blob-code blob-code-inner js-file-line">)</td>
+        </tr>
+        <tr>
+          <td id="file-accompanistmaincomposablemultiplepermissions-kt-L7" class="blob-num js-line-number js-blob-rnum" data-line-number="7"></td>
+          <td id="file-accompanistmaincomposablemultiplepermissions-kt-LC7" class="blob-code blob-code-inner js-file-line"><span class="pl-en">LocationPermissions</span>(multiplePermissionState <span class="pl-k">=</span> multiplePermissionState)</td>
+        </tr>
+        <tr>
+          <td id="file-accompanistmaincomposablemultiplepermissions-kt-L8" class="blob-num js-line-number js-blob-rnum" data-line-number="8"></td>
+          <td id="file-accompanistmaincomposablemultiplepermissions-kt-LC8" class="blob-code blob-code-inner js-file-line"><span class="pl-en">Button</span>(</td>
+        </tr>
+        <tr>
+          <td id="file-accompanistmaincomposablemultiplepermissions-kt-L9" class="blob-num js-line-number js-blob-rnum" data-line-number="9"></td>
+          <td id="file-accompanistmaincomposablemultiplepermissions-kt-LC9" class="blob-code blob-code-inner js-file-line">    onClick <span class="pl-k">=</span> {</td>
+        </tr>
+        <tr>
+          <td id="file-accompanistmaincomposablemultiplepermissions-kt-L10" class="blob-num js-line-number js-blob-rnum" data-line-number="10"></td>
+          <td id="file-accompanistmaincomposablemultiplepermissions-kt-LC10" class="blob-code blob-code-inner js-file-line">        multiplePermissionState.launchMultiplePermissionRequest()</td>
+        </tr>
+        <tr>
+          <td id="file-accompanistmaincomposablemultiplepermissions-kt-L11" class="blob-num js-line-number js-blob-rnum" data-line-number="11"></td>
+          <td id="file-accompanistmaincomposablemultiplepermissions-kt-LC11" class="blob-code blob-code-inner js-file-line">    }</td>
+        </tr>
+        <tr>
+          <td id="file-accompanistmaincomposablemultiplepermissions-kt-L12" class="blob-num js-line-number js-blob-rnum" data-line-number="12"></td>
+          <td id="file-accompanistmaincomposablemultiplepermissions-kt-LC12" class="blob-code blob-code-inner js-file-line">) {</td>
+        </tr>
+        <tr>
+          <td id="file-accompanistmaincomposablemultiplepermissions-kt-L13" class="blob-num js-line-number js-blob-rnum" data-line-number="13"></td>
+          <td id="file-accompanistmaincomposablemultiplepermissions-kt-LC13" class="blob-code blob-code-inner js-file-line">    <span class="pl-en">Text</span>(text <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>Open Camera<span class="pl-pds">"</span></span>)</td>
+        </tr>
+        <tr>
+          <td id="file-accompanistmaincomposablemultiplepermissions-kt-L14" class="blob-num js-line-number js-blob-rnum" data-line-number="14"></td>
+          <td id="file-accompanistmaincomposablemultiplepermissions-kt-LC14" class="blob-code blob-code-inner js-file-line">}</td>
+        </tr>
+  </tbody></table>
+</div>
+
+
+    </div>
+
+  </div>
+</div>
+
+      </div>
+      <div class="gist-meta">
+        <a href="https://gist.github.com/Giga99/64a11810566035779d48a70c965a66a7/raw/9973539d3a96e40c9cb91010bcbc1a86d1ae9578/accompanistMainComposableMultiplePermissions.kt" style="float:right" class="Link--inTextBlock">view raw</a>
+        <a href="https://gist.github.com/Giga99/64a11810566035779d48a70c965a66a7#file-accompanistmaincomposablemultiplepermissions-kt" class="Link--inTextBlock">
+          accompanistMainComposableMultiplePermissions.kt
+        </a>
+        hosted with ❤ by <a class="Link--inTextBlock" href="https://github.com/">GitHub</a>
+      </div>
+    </div>
+</div>
+<script>var height = -1; var delayMs = 200; if (document) {document.domain = document.domain;}function notifyResize(height) {height = height ? height : document.documentElement.offsetHeight; var resized = false; if (window.donkey && donkey.resize) {donkey.resize(height);var elements = document.getElementsByClassName("gist-data"); for (var i = 0; i < elements.length; i++) {elements[i].style.overflow = "visible"}resized = true;}if (parent && parent._resizeIframe) {var obj = {iframe: window.frameElement, height: height}; parent._resizeIframe(obj); resized = true;}if (window.location && window.location.hash === "#amp=1" && window.parent && window.parent.postMessage) {window.parent.postMessage({sentinel: "amp", type: "embed-size", height: height}, "*");}if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.resize) {window.webkit.messageHandlers.resize.postMessage(height); resized = true;}return resized;}function maybeResize() {try {if (document.documentElement.offsetHeight != height && notifyResize()) {height = document.documentElement.offsetHeight;}delayMs = Math.min(delayMs * 2, 1000000); setTimeout(maybeResize, delayMs);} catch(error) {console.log('maybeResize error: ', error)}}maybeResize();</script><script defer="" src="./vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon="{&quot;rayId&quot;:&quot;8f6a74510bbe3140&quot;,&quot;serverTiming&quot;:{&quot;name&quot;:{&quot;cfExtPri&quot;:true,&quot;cfL4&quot;:true,&quot;cfSpeedBrain&quot;:true,&quot;cfCacheStatus&quot;:true}},&quot;version&quot;:&quot;2024.10.5&quot;,&quot;token&quot;:&quot;0b5f665943484354a59c39c6833f7078&quot;}" crossorigin="anonymous"></script>
+</body></html>
