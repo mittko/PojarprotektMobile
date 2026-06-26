@@ -1,0 +1,471 @@
+package com.example.fireextinguishinginstallationsmobile
+
+import android.os.Bundle
+import android.util.Log
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.core.spring
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.constraintlayout.compose.ConstraintLayout
+
+import com.example.fireextinguishinginstallationsmobile.ui.theme.FireExtinguishingInstallationsMobileTheme
+
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.OutlinedTextField
+
+import androidx.compose.runtime.mutableIntStateOf
+
+
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.IntOffset
+import java.util.UUID
+import kotlin.math.max
+import kotlin.math.roundToInt
+import kotlin.random.Random
+
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        setContent {
+            FireExtinguishingInstallationsMobileTheme {
+                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                    MainScreen(Modifier.padding(innerPadding).imePadding())
+                }
+            }
+        }
+    }
+}
+val celzium = "°";
+@Composable
+fun MainScreen(modifier: Modifier) {
+
+    val titles = remember {
+        mutableStateListOf<String>(
+            "Преглед на контролен панел, ел.табло - индикация",
+            "Функционален тест индикация на ел. табло за управление и сработване на ПГИ",
+            "Преглед и тест на основно захранване",
+            "Преглед и тест на основна платка",
+            "Проверка за правилната свързаност и последователност на задействане",
+            "Проверка на задействието на допълнителни спомагателни съоръжения / АПУ, ръчен СК, Пускова бутилка /",
+            "Функционален тест на действието на звукови сигнализатори и звънци / сирени за предупреждение на пуск на гасителния агент",
+            "Проверка за положението на Ръчни Пускови Устройства",
+            "Преглед на резервно захранване",
+            "Техническа проверка на лупове и линии",
+            "Техническа проверка на всеки един автоматичен пожароизвестителен детектор",
+            "Проверка за наличие на свободно пространство от 0,5 м около всеки пожароизвестителен детектор - Има свободно пространство",
+            "Тест на механизма на всеки един Ръчен пожароизвестителен бутон чрез тест ключ или премахване на чупещия се елемент",
+            "Проверка на безпрепятствен достъп до всички ръчни пожароизвестителни бутони",
+            "Проверка за наличие на указателни знаци над ръчните пожароизвестителни бутони",
+            "Визуална проверка на съдовете за гасителен агент при темп. в помещенията - 24 C${celzium}",
+            "Проверка на сигнални и изнесени устройства",
+            "Визуална проверка за повреди по маркучи и армировка",
+            "Визуална проверка за увреждания (закрепване, корозия, механични наранявания и др.) по тръбопроводи",
+            "Визаулна проверка на дюзи за разпръскване на гасителен агент",
+            "Продухване на тръбна мрежа на ПГИ с Азот против запушване",
+            "Проверка за опасностите и непроницаемостта на затвореното пространство и промени, които биха могли да намалят ефективността на инсталацията",
+            "Проверка за затваряне на Входна плъзгаща врата при сработване",
+            "Проверка за сработване на сигнална лампа \"СТОП ГАЗ\"",
+            "Проверка за наличие на ключ или мастър карта за достъп на пожарникарите до всяко едно помещение  обекта",
+            "Проверка за функциониране на ключ или мастър карта за достъп на пожарникарите до всяко едно помещение в обекта",
+            "Проверка за правилната подгототвка и обучение на персонала упълномощен да управлява съоръженията за гасене",
+            "Визуална проверка за структурни или екслоатационни промени в обекта, които биха попречили на работата на ПГИ",
+            "Проверка за наличие на актуалност на документацията, придружаваща ПГИ",
+            "Проверка за наличие и полълване на дневник на системата")
+    }
+
+
+//    val mapOfModels = mapOf<String,ArrayList<DataModel>>(
+//        // Преглед на контролен панел, ел.табло - индикация
+//        titles[0] to arrayListOf(DataModel("Ръчни Пускови Устройства на (пилотни бутилки)",0),
+//        DataModel("Управление Автоматично Пусково Устройство /АПУ/",0)),
+//        //Функционален тест индикация на ел. табло за управление и сработване на ПГИ
+//        titles[1] to arrayListOf(DataModel("дисплей",1),
+//         DataModel("пожар",1),
+//         DataModel("светодиоди",1),
+//         DataModel("повреда",1),
+//         DataModel("зумер",1),
+//         DataModel("забрана",1),
+//         DataModel("задържане",1),
+//        DataModel("тест",1)),
+//        //Преглед и тест на основно захранване
+//        titles[2] to arrayListOf(DataModel("Основно захранване от електрическа мрежа",2),
+//        DataModel("Температура на корпуса на ел.трансформатора",2),
+//        DataModel("Преобразувано захранване",2)),
+//        //Преглед и тест на основна платка
+//        titles[3] to arrayListOf(DataModel("Индикация за светодиоди за повреда",3),
+//        DataModel("Наличие на запрашеност върху ел.трансформатора",3),
+//        DataModel("Откачени проводници,свръзки и букси",3)),
+//        //Проверка за правилната свързаност и последователност на задействане
+//        titles[4] to arrayListOf(DataModel("",4)),
+//        // Проверка на задействието на допълнителни спомагателни съоръжения / АПУ, ръчен СК, Пускова бутилка /
+//        titles[5] to arrayListOf(DataModel("",5)),
+//        //Функционален тест на действието на звукови сигнализатори и звънци / сирени за предупреждение на пуск на гасителния агент,
+//        titles[6] to arrayListOf(DataModel("",6)),
+//        // Проверка за положението на Ръчни Пускови Устройства
+//        titles[7] to arrayListOf(DataModel("",7)),
+//        // Преглед на резервно захранване
+//        titles[8] to arrayListOf(DataModel("Зареждане на акумулаторни батерии",8)),
+//        titles[8] to arrayListOf(DataModel("Акумулаторна батерия No1 Годна",8)),
+//        titles[8] to arrayListOf(DataModel("Акумулаторна батерия No 2 Повреда корпус",8)),
+//        titles[8] to arrayListOf(DataModel("Проверка на проводник за заземяване",8)),
+//        //Техническа проверка на лупове и линии
+//        titles[9] to arrayListOf(DataModel("Кръг 1",9)),
+//        //Техническа проверка на всеки един автоматичен пожароизвестителен детектор
+//        titles[10] to arrayListOf(DataModel("Тест на димо-оптични детектори",10)),
+//        titles[10] to arrayListOf(DataModel("Тест на термични детектори",10)),
+//        titles[10] to arrayListOf(DataModel("Тест на термодифиренциални детектори",10)),
+//        titles[10] to arrayListOf(DataModel("Тест на пламъчни детектори",10)),
+//        titles[10] to arrayListOf(DataModel("Тест на комбинирани детектори",10)),
+//        titles[10] to arrayListOf(DataModel("Тест на линейно-оптични детектори",10)),
+//        titles[10] to arrayListOf(DataModel("Тест на Взриво защитен димен детектор (Ex)",10)),
+//        titles[10] to arrayListOf(DataModel("Тест на радиосигнала на безжични",10)),
+//        //Проверка за наличие на свободно пространство от 0,5 м около всеки пожароизвестителен детектор - Има свободно пространство
+//        titles[11] to arrayListOf(DataModel("",11)),
+//        // Тест на механизма на всеки един Ръчен пожароизвестителен бутон чрез тест ключ или премахване на чупещия се елемент
+//        titles[12] to arrayListOf(DataModel("",12)),
+//        //Проверка на безпрепятствен достъп до всички ръчни пожароизвестителни бутони
+//        titles[13] to arrayListOf(DataModel("",13)),
+//        // Проверка за наличие на указателни знаци над ръчните пожароизвестителни бутони
+//        titles[14] to arrayListOf(DataModel("",14)),
+//        // Визуална проверка на съдовете за гасителен агент при темп. в помещенията - 24 C${celzium}
+//        titles[15] to arrayListOf(DataModel("Автоматичен пусков кран",15)),
+//        titles[15] to arrayListOf(DataModel("Укрепване на съдовете съдържащи гасителен агент",15)),
+//        titles[15] to arrayListOf(DataModel("Количество на гасителен агент",15)),
+//        // Проверка на сигнални и изнесени устройства
+//        titles[16] to arrayListOf(DataModel("Тест на всяка една вътрешна сирена/звънец",16)),
+//        titles[16] to arrayListOf(DataModel("Тест на всяка една външна сирена",16)),
+//        titles[16] to arrayListOf(DataModel("Тест на устройство за препредаване на сигнал за пожар към център за управление",16)),
+//        titles[16] to arrayListOf(DataModel("Тест на устройство за препредаване на сигнал за повреда към център за управление",16)),
+//        titles[16] to arrayListOf(DataModel("Тест на командно табло на пожарната служба",16)),
+//        // Визуална проверка за повреди по маркучи и армировка
+//        titles[17] to arrayListOf(DataModel("",17)),
+//        //Визуална проверка за увреждания (закрепване, корозия, механични наранявания и др.) по тръбопроводи
+//        titles[18] to arrayListOf(DataModel("",18)),
+//        // Визаулна проверка на дюзи за разпръскване на гасителен агент
+//        titles[19] to arrayListOf(DataModel("",19)),
+//        // Продухване на тръбна мрежа на ПГИ с Азот против запушване
+//        titles[20] to arrayListOf(DataModel("",20)),
+//        // Проверка за опасностите и непроницаемостта на затвореното пространство и промени, които биха могли да намалят ефективността на инсталацията
+//        titles[21] to arrayListOf(DataModel("",21)),
+//        // Проверка за затваряне на Входна плъзгаща врата при сработване
+//        titles[22] to arrayListOf(DataModel("",22)),
+//        // Проверка за сработване на сигнална лампа \"СТОП ГАЗ\"
+//        titles[23] to arrayListOf(DataModel("",23)),
+//        // Проверка за наличие на ключ или мастър карта за достъп на пожарникарите до всяко едно помещение  обекта
+//        titles[24] to arrayListOf(DataModel("",24)),
+//        // Проверка за функциониране на ключ или мастър карта за достъп на пожарникарите до всяко едно помещение в обекта
+//        titles[25] to arrayListOf(DataModel("",25)),
+//        // Проверка за правилната подгототвка и обучение на персонала упълномощен да управлява съоръженията за гасене
+//        titles[26] to arrayListOf(DataModel("",26)),
+//        // Визуална проверка за структурни или екслоатационни промени в обекта, които биха попречили на работата на ПГИ
+//        titles[27] to arrayListOf(DataModel("",27)),
+//        // Проверка за наличие на актуалност на документацията, придружаваща ПГИ
+//        titles[28] to arrayListOf(DataModel("",28)),
+//        // Проверка за наличие и полълване на дневник на системата
+//        titles[29] to arrayListOf(DataModel("",29))
+//    )
+
+    val listOfModels = remember {
+        mutableStateListOf<DataModel>(
+            // Преглед на контролен панел, ел.табло - индикация
+            DataModel("Ръчни Пускови Устройства на (пилотни бутилки)",0),
+            DataModel("Управление Автоматично Пусково Устройство /АПУ/",0),
+            //Функционален тест индикация на ел. табло за управление и сработване на ПГИ
+            DataModel("дисплей",1),
+            DataModel("пожар",1),
+            DataModel("светодиоди",1),
+            DataModel("повреда",1),
+            DataModel("зумер",1),
+            DataModel("забрана",1),
+            DataModel("задържане",1),
+            DataModel("тест",1),
+            //Преглед и тест на основно захранване
+            DataModel("Основно захранване от електрическа мрежа",2),
+            DataModel("Температура на корпуса на ел.трансформатора",2),
+            DataModel("Преобразувано захранване",2),
+            //Преглед и тест на основна платка
+            DataModel("Индикация за светодиоди за повреда",3),
+            DataModel("Наличие на запрашеност върху ел.трансформатора",3),
+            DataModel("Откачени проводници,свръзки и букси",3),
+            //Проверка за правилната свързаност и последователност на задействане
+            DataModel("",4),
+            // Проверка на задействието на допълнителни спомагателни съоръжения / АПУ, ръчен СК, Пускова бутилка /
+            DataModel("",5),
+            //Функционален тест на действието на звукови сигнализатори и звънци / сирени за предупреждение на пуск на гасителния агент,
+            DataModel("",6),
+            // Проверка за положението на Ръчни Пускови Устройства
+            DataModel("",7),
+            // Преглед на резервно захранване
+            DataModel("Зареждане на акумулаторни батерии",8),
+            DataModel("Акумулаторна батерия No1 Годна",8),
+            DataModel("Акумулаторна батерия No 2 Повреда корпус",8),
+            DataModel("Проверка на проводник за заземяване",8),
+            //Техническа проверка на лупове и линии
+            DataModel("Кръг 1",9),
+            //Техническа проверка на всеки един автоматичен пожароизвестителен детектор
+            DataModel("Тест на димо-оптични детектори",10),
+            DataModel("Тест на термични детектори",10),
+            DataModel("Тест на термодифиренциални детектори",10),
+            DataModel("Тест на пламъчни детектори",10),
+            DataModel("Тест на комбинирани детектори",10),
+            DataModel("Тест на линейно-оптични детектори",10),
+            DataModel("Тест на Взриво защитен димен детектор (Ex)",10),
+            DataModel("Тест на радиосигнала на безжични",10),
+            //Проверка за наличие на свободно пространство от 0,5 м около всеки пожароизвестителен детектор - Има свободно пространство
+            DataModel("",11),
+            // Тест на механизма на всеки един Ръчен пожароизвестителен бутон чрез тест ключ или премахване на чупещия се елемент
+            DataModel("",12),
+            //Проверка на безпрепятствен достъп до всички ръчни пожароизвестителни бутони
+            DataModel("",13),
+            // Проверка за наличие на указателни знаци над ръчните пожароизвестителни бутони
+            DataModel("",14),
+            // Визуална проверка на съдовете за гасителен агент при темп. в помещенията - 24 C${celzium}
+            DataModel("Автоматичен пусков кран",15),
+            DataModel("Укрепване на съдовете съдържащи гасителен агент",15),
+            DataModel("Количество на гасителен агент",15),
+            // Проверка на сигнални и изнесени устройства
+            DataModel("Тест на всяка една вътрешна сирена/звънец",16),
+            DataModel("Тест на всяка една външна сирена",16),
+            DataModel("Тест на устройство за препредаване на сигнал за пожар към център за управление",16),
+            DataModel("Тест на устройство за препредаване на сигнал за повреда към център за управление",16),
+            DataModel("Тест на командно табло на пожарната служба",16),
+            // Визуална проверка за повреди по маркучи и армировка
+            DataModel("",17),
+            //Визуална проверка за увреждания (закрепване, корозия, механични наранявания и др.) по тръбопроводи
+            DataModel("",18),
+            // Визаулна проверка на дюзи за разпръскване на гасителен агент
+            DataModel("",19),
+            // Продухване на тръбна мрежа на ПГИ с Азот против запушване
+            DataModel("",20),
+            // Проверка за опасностите и непроницаемостта на затвореното пространство и промени, които биха могли да намалят ефективността на инсталацията
+            DataModel("",21),
+            // Проверка за затваряне на Входна плъзгаща врата при сработване
+            DataModel("",22),
+            // Проверка за сработване на сигнална лампа \"СТОП ГАЗ\"
+            DataModel("",23),
+            // Проверка за наличие на ключ или мастър карта за достъп на пожарникарите до всяко едно помещение  обекта
+            DataModel("",24),
+            // Проверка за функциониране на ключ или мастър карта за достъп на пожарникарите до всяко едно помещение в обекта
+            DataModel("",25),
+            // Проверка за правилната подгототвка и обучение на персонала упълномощен да управлява съоръженията за гасене
+            DataModel("",26),
+            // Визуална проверка за структурни или екслоатационни промени в обекта, които биха попречили на работата на ПГИ
+            DataModel("",27),
+            // Проверка за наличие на актуалност на документацията, придружаваща ПГИ
+            DataModel("",28),
+            // Проверка за наличие и полълване на дневник на системата
+            DataModel("",29)
+        )
+    }
+
+
+    val columns = arrayOf("Да","Не","Данни")
+
+    val density = LocalDensity.current
+    var containerHeightPx by remember { mutableStateOf(0) }
+    val listState = rememberLazyListState()
+
+    // --- Scrollbar calculations ---
+
+    var thumbHeightPx by remember {
+        mutableFloatStateOf(0f)
+    }
+    var thumbTopPx by remember {
+        mutableFloatStateOf(0f)
+    }
+    var layoutInfo = listState.layoutInfo
+    var visibleInfos = layoutInfo.visibleItemsInfo
+    var totalItems = layoutInfo.totalItemsCount
+
+            Column(modifier = Modifier.fillMaxWidth()) {
+
+                Row {
+                    LazyColumn(state = listState, modifier = modifier
+                        .fillMaxWidth(0.95f)
+                        .padding(2.dp,0.dp,2.dp,0.dp)
+                            .onGloballyPositioned{
+                                    coords ->
+                                containerHeightPx = coords.size.height
+                            }) {
+
+                        items(listOfModels, key = { it.uniqueKey }
+                            ,contentType = { "myType" }) {
+                                model ->
+
+                            Column {
+
+                                Column() {
+                                    Text(text = "${model.position+1}. ${titles[model.position]}"
+                                    , color = Color.Green, fontSize = 18.sp,modifier = Modifier.padding(10.dp,0.dp,0.dp,0.dp))
+                                    Text(text = model.subTitle, Modifier.padding(10.dp, 5.dp, 2.dp, 5.dp))
+
+                                }
+                                Row() {
+                                    Column(modifier = Modifier.weight(1f),
+                                        horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Text( text =columns[0],
+                                            textAlign = TextAlign.Center
+                                        )
+                                        Checkbox(
+                                            checked = model.checked,
+                                            onCheckedChange = {
+                                                model.checked = true
+                                                model.unchecked = false
+                                            },
+                                        )
+                                        OutlinedTextField(value = model.data,
+                                            modifier = Modifier
+
+                                                .padding(5.dp)
+
+                                            ,
+                                            placeholder = {
+                                                Text(text = "данни", textAlign = TextAlign.Start)
+                                            }, onValueChange = {
+                                                model.data = it
+                                            })
+                                    }
+                                    Column(modifier = Modifier.weight(1f),
+                                        horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Text(
+                                            text = columns[1], textAlign = TextAlign.Center
+                                        )
+                                        Checkbox(
+                                            checked = model.unchecked,
+                                            onCheckedChange = {
+                                                model.checked = false
+                                                model.unchecked = true
+                                            })
+
+
+
+
+                                        OutlinedTextField(value="",modifier = Modifier.fillMaxWidth(1f)
+                                            .padding(5.dp),
+                                            placeholder = {
+                                                Text(text = "", textAlign = TextAlign.Start)
+                                            },onValueChange = {
+
+                                            }, enabled = false)
+                                    }
+                                }
+
+
+                            }
+
+                            layoutInfo = listState.layoutInfo
+                            visibleInfos = layoutInfo.visibleItemsInfo
+                            totalItems = layoutInfo.totalItemsCount
+
+
+
+
+                            val averageItemHeightPx =
+                                if (visibleInfos.isNotEmpty()) visibleInfos.sumOf { it.size }.toFloat() / visibleInfos.size
+                                else 0f
+
+                            val totalContentHeightPx =
+                                if (averageItemHeightPx > 0f) averageItemHeightPx * totalItems else 0f
+
+                            val scrollPx =
+                                if (averageItemHeightPx > 0f)
+                                    listState.firstVisibleItemIndex * averageItemHeightPx + listState.firstVisibleItemScrollOffset
+                                else 0f
+
+                            val minThumbPx = with(density) { 24.dp.toPx() }
+                            thumbHeightPx =
+                                if (containerHeightPx > 0 && totalContentHeightPx > 0f)
+                                    max(minThumbPx, containerHeightPx * (containerHeightPx.toFloat() / totalContentHeightPx))
+                                else minThumbPx
+
+                            val maxScrollPx = max(totalContentHeightPx - containerHeightPx.toFloat(), 1f)
+                            val scrollFraction = (scrollPx / maxScrollPx).coerceIn(0f, 1f)
+                            thumbTopPx =
+                                ((containerHeightPx - thumbHeightPx) * scrollFraction)
+                                    .coerceIn(0f, (containerHeightPx - thumbHeightPx).coerceAtLeast(0f))
+
+                            Log.e("THUMB",thumbTopPx.toString())
+                      //      count = model.position
+
+
+                        }
+                }
+                    Column(modifier = Modifier.fillMaxWidth(1f)
+                        .fillMaxHeight()) {
+
+                            Box(modifier = Modifier.height(with(density) {thumbHeightPx.toDp()})
+                                .fillMaxWidth()
+                                .offset{IntOffset(0,thumbTopPx.roundToInt())}
+                                .clip(RoundedCornerShape(12.dp))) {
+
+
+                                Image(
+                                    painter = painterResource(id = R.drawable.ic_launcher_foreground)
+                                    , contentDescription = "vertical scroll thumb",
+                                    modifier = Modifier.matchParentSize(),
+                                    contentScale = ContentScale.Crop
+                                )
+                        }
+                    }
+                }
+
+            }
+    }
+
+
+@Preview(showBackground = true)
+@Composable
+fun GreetingPreview() {
+    FireExtinguishingInstallationsMobileTheme {
+        MainScreen(modifier = Modifier)
+    }
+}

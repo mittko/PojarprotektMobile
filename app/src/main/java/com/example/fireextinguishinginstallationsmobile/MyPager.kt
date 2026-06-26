@@ -1,0 +1,616 @@
+package com.example.fireextinguishinginstallationsmobile
+
+import android.content.Context
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.MicOff
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.fireexPreviewOptioninguishinginsPreviewOptionallaPreviewOptionionsmobile.uPreviewOptionils.TextFieldMenu
+import com.example.fireextinguishinginstallationsmobile.data.titles
+import com.example.fireextinguishinginstallationsmobile.interfaces.ICheckable
+import com.example.fireextinguishinginstallationsmobile.interfaces.IModel
+import com.example.fireextinguishinginstallationsmobile.json.MyJsonObject
+import com.example.fireextinguishinginstallationsmobile.models.CheckedModelTwo
+import com.example.fireextinguishinginstallationsmobile.models.CountModel
+import com.example.fireextinguishinginstallationsmobile.models.DropDownModel
+import com.example.fireextinguishinginstallationsmobile.models.DropDownModelTwo
+import com.example.fireextinguishinginstallationsmobile.models.TextModel
+import com.example.fireextinguishinginstallationsmobile.models.jsonmodels.JsonModel
+import com.example.fireextinguishinginstallationsmobile.utils.PreviewOption
+import com.example.fireextinguishinginstallationsmobile.utils.SpeechToTextManager
+import com.google.gson.Gson
+import kotlinx.coroutines.launch
+import java.io.File
+
+
+val TITLE_FONT_SIZE = 20.sp
+
+val numero = "№"
+val celzium = "°";
+
+val jsonMap = mutableMapOf<String, ArrayList<JsonModel>>()
+
+
+@Composable
+fun ConfirmationDialog(
+    onDismissRequest: () -> Unit,
+    onConfirm: () -> Unit
+) {
+    AlertDialog(onDismissRequest = onDismissRequest, title = {
+        Text(text = "", color = Color.Black)
+    }, text = {
+        Text(text = "Сигурни ли сте че искате да запишете данните ?", color = Color.DarkGray)
+    }, confirmButton = {
+        TextButton(onClick = onConfirm) {
+            Text(text = "Да", color = Color.Green)
+        }
+    }, dismissButton = {
+        TextButton(onClick = onDismissRequest) {
+            Text(text = "Не", color = Color.Gray)
+        }
+    })
+
+}
+
+@Composable
+fun DropDownAutomatika(model: DropDownModel) {
+    val options = remember {
+        listOf(
+            PreviewOption("Smart Line", 1),
+            PreviewOption("Kentec Sigma XT K21021M2", 2),
+            PreviewOption("Tele Tek IVY", 3),
+            PreviewOption("Advanced Ex - 3001", 4),
+            PreviewOption("Siemenes XC 1001-A", 5),
+            PreviewOption("BOSCH", 6)
+        )
+    }
+    val selectedOption = remember {
+        mutableStateOf<PreviewOption?>(null)
+    }
+    TextFieldMenu(
+        label = "", options = options,
+        selectedOption =
+            selectedOption.value,
+        onOptionSelected = { it ->
+            selectedOption.value = it
+            model.data = selectedOption.value!!.text
+        },
+        optionToString = {
+
+            it.text
+        }, filteredOptions = { searchInput ->
+            options.filter {
+                it.text.contains(searchInput, ignoreCase = true)
+            }
+        }
+    )
+}
+
+@Composable
+fun DropDownGasitelenAgent(model: DropDownModelTwo) {
+    val options = remember {
+        listOf(
+            PreviewOption(text = "NC 1230 (FK-5-1-12)", 1),
+            PreviewOption(text = "Novec 1230", 2),
+            PreviewOption(text = "HFC 227ea", 3),
+            PreviewOption(text = "FM 200", 4),
+            PreviewOption(text = "АЗОТ", 5),
+            PreviewOption(text = "HFC-125 - Флуоросъдържащ парников газ", 6),
+        )
+    }
+    val selectedOption = remember {
+        mutableStateOf<PreviewOption?>(null)
+    }
+    TextFieldMenu(
+        label = "", options = options,
+        selectedOption =
+            selectedOption.value,
+        onOptionSelected = { it ->
+            selectedOption.value = it
+            model.data = selectedOption.value!!.text
+        },
+        optionToString = {
+
+            it.text
+        }, filteredOptions = { searchInput ->
+            options.filter {
+                it.text.contains(searchInput, ignoreCase = true)
+            }
+        }
+    )
+}
+
+
+fun readProtocol(context: Context) {
+    val gson = Gson()
+    val fileName = "jsonModels.txt"
+    val debugFile =
+        File(
+            context.getExternalFilesDir(null),
+            fileName
+        )
+
+    var readJson = ""
+    debugFile.readLines().forEach { line ->
+        readJson += line
+    }
+
+    val myJsonObject: MyJsonObject = gson.fromJson(readJson, MyJsonObject::class.java)
+    val x = 0
+}
+
+
+@Composable
+fun BottomPaging(pagerState: PagerState) {
+
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+
+    // Трябва да имаш тези импорти най-горе:
+    // import androidx.compose.material.icons.automirrored.filled.ArrowBack
+    // import androidx.compose.material.icons.automirrored.filled.ArrowForward
+
+    Column {
+        MyCard {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(70.dp)
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // ЛЯВА СТРЕЛКА
+                IconButton(
+                    onClick = {
+                        coroutineScope.launch {
+                            if (pagerState.currentPage > 0) {
+                                pagerState.animateScrollToPage(pagerState.currentPage - 1)
+                            }
+                        }
+                    },
+                    enabled = pagerState.currentPage > 0
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.baseline_keyboard_arrow_left_24),
+                        contentDescription = "Назад",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(35.dp)
+                    )
+                }
+
+                // ТУК СЛОЖИ ТВОЯ ТЕКСТФИЙЛД ЗА НОМЕРА
+                Text(
+                    text = "${pagerState.currentPage} / ${pagerState.pageCount - 1}",
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontWeight = FontWeight.Bold
+                )
+
+                // ДЯСНА СТРЕЛКА
+                IconButton(
+                    onClick = {
+                        coroutineScope.launch {
+                            if (pagerState.currentPage < pagerState.pageCount - 1) {
+                                pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                            }
+                        }
+                    },
+                    enabled = pagerState.currentPage < pagerState.pageCount
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.baseline_keyboard_arrow_right_24),
+                        contentDescription = "Напред",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(35.dp)
+                    )
+                }
+            }
+            if (pagerState.currentPage != 0 && pagerState.currentPage != 1) {
+
+                var onConfirm by remember {
+                    mutableStateOf(false)
+                }
+                Button(onClick = {
+                    onConfirm = true
+                }, modifier = Modifier.fillMaxWidth()) {
+                    Text(text = "Запиши")
+                }
+
+                if (onConfirm) {
+                    ConfirmationDialog(onDismissRequest = {
+                        onConfirm = false
+                    }) {
+                        completeProtocol(context = context)
+                        onConfirm = false
+                    }
+                }
+            }
+        }
+    }
+
+}
+
+
+@Composable
+fun ModernOption(text: String, checked: Boolean, onClick: () -> Unit) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = text,
+            fontSize = 12.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(bottom = 4.dp)
+        )
+        Checkbox(
+            checked = checked,
+            onCheckedChange = { onClick() }
+        )
+    }
+}
+
+
+// Чист компонент за заглавието
+@Composable
+fun QuestionHeader(text: String) {
+    Text(
+        text = text,
+        modifier = Modifier.padding(bottom = 8.dp),
+        fontSize = 16.sp,
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.onBackground
+    )
+}
+
+// Чист компонент за чекбоксовете (без текст "изправни")
+@Composable
+fun BinaryChoice(model: IModel) {
+    val checkable = model as? ICheckable ?: return
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+        ModernOption("да", checkable.checked) {
+            checkable.checked = true;
+            checkable.unchecked = false
+        }
+        ModernOption("не", checkable.unchecked) {
+            checkable.checked = false;
+            checkable.unchecked = true
+        }
+    }
+}
+
+
+@Composable
+fun JustLabel(model: IModel) {
+    Text(text = (model as TextModel).data)
+}
+
+//   Use code with caution.Две критични поправки, които направих в твоя код:Добавих lamb(it) вътре в onResult на микрофона:В твоя оригинален код, когато микрофонът върнеше текст, ти обновяваше само локалната променлива textValue = it. Но ТИ НЕ извикваше lamb(it)! Затова текстът се виждаше само на екрана, но твоят ViewModel не разбираше за него, докато не чукнеш ръчно с клавиатурата. Сега гласът директно се изстрелва към ViewModel-а.Закачих .focusRequester(focusRequester) в modifier:Сега, когато натиснеш иконата, focusRequester.requestFocus() автоматично активира текстовото поле, курсорът светва и софтуерната сесия се заключва към него.Искаш ли да добавим и автоматично преминаване на следващото поле, когато микрофонът спре да засича говор?AI responses may include mistakes. Learn moreYou said: мда май го открих това е , благодаря и на теб заедно го отстранихме22:50Радвам се, че го открихме! Работата в екип си каза думата – ти забеляза критичния детайл с курсора, а това ни насочи точно към липсващата връзка между микрофона и ViewModel ламбдата.Сега с focusRequester и директното извикване на lamb(it) в резултата от гласовия мениджър, данните ти са напълно защитени от рециклирането на HorizontalPager.Ако по-нататък в проекта изскочи нещо друго около валидацията на полетата или управлението на фокуса между отделните страници, свиркай! Успех с приложението!AI responses may include mistakes. Learn more
+// Чист компонент за текстовото поле (за температура или данни)
+@Composable
+fun DataField(
+    model: IModel,
+    placeholder: String = "",
+    value: String = "",
+    enabled: Boolean = true,
+    stringLabel: String = "",
+    lamb: (value: String) -> Unit = {}
+) {
+    val context = LocalContext.current
+
+    // 1. Дефинираме FocusRequester и FocusManager
+    val focusRequester = remember { FocusRequester() }
+    // val focusManager = LocalFocusManager.current
+
+    var textValue by remember(value) {
+        mutableStateOf(value)
+    }
+//    var isListening by remember {
+//        mutableStateOf(false)
+//    }
+
+//    val speechManager = remember {
+//        SpeechToTextManager(context)
+//    }
+
+
+    TextField(
+        value = textValue,
+        onValueChange = {
+            textValue = it
+            lamb(textValue)
+        },
+        // 3. Закачаме focusRequester към модификатора на TextField
+        modifier = Modifier
+            .fillMaxWidth()
+            .focusRequester(focusRequester),
+        placeholder = {
+            Text(
+                placeholder,
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        },
+        singleLine = true,
+        enabled = enabled,
+        trailingIcon = {
+//            IconButton(onClick = {
+//                if (isListening) {
+//                    speechManager.stopListening()
+//                    isListening = false
+//                    // Когато спрем микрофона, махаме фокуса софтуерно, за да запечатаме данните
+//                    focusManager.clearFocus()
+//                } else {
+//                    // 4. Искаме фокус тук (ако разрешението вече е дадено)
+//                    focusRequester.requestFocus()
+//                    permissionlauncher.launch(android.Manifest.permission.RECORD_AUDIO)
+//                }
+//            }) {
+//                Icon(
+//                    imageVector = if (isListening) Icons.Default.MicOff else Icons.Default.Mic,
+//                    contentDescription = if (isListening) "Stop Listening" else "Start Voice Typing"
+//                )
+//            }
+            Microfone(focusRequester) {
+                textValue = it
+                // МНОГО ВАЖНО: Предавай резултата и към ViewModel ламбдата (lamb),
+                // за да се записва гласовият текст в реално време!
+                lamb(it)
+            }
+        }
+    )
+
+//    DisposableEffect(Unit) {
+//        onDispose {
+//            speechManager.stopListening()
+//        }
+//    }
+
+
+}
+
+@Composable
+fun Microfone(focusRequester: FocusRequester, onListening: (String) -> Unit) {
+    // 1. Дефинираме FocusManager
+    val context = LocalContext.current
+    val focusManger = LocalFocusManager.current
+    val speechManager = remember {
+        SpeechToTextManager(context)
+    }
+    var isListening by remember {
+        mutableStateOf(false)
+    }
+    val permissionLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            if (isGranted) {
+                // 2. Искаме фокус ВЕДНАГА щом микрофонът тръгне след одобрено разрешение
+                focusRequester.requestFocus()
+
+                speechManager.startListening(onResult = {
+
+                    onListening(it)
+
+                }, onListeningStateChanged = {
+                    isListening = it
+                })
+            }
+        }
+    IconButton(onClick = {
+        if (isListening) {
+            speechManager.stopListening()
+            isListening = false
+            // Когато спрем микрофона, махаме фокуса софтуерно, за да запечатаме данните
+            focusManger.clearFocus()
+        } else {
+            // 4. Искаме фокус тук (ако разрешението вече е дадено)
+            focusRequester.requestFocus()
+            permissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
+        }
+    }) {
+        Icon(
+            imageVector = if (isListening) Icons.Default.MicOff else Icons.Default.Mic,
+            contentDescription = if (isListening) "Stop Listening" else "Start Voice Typing"
+        )
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            speechManager.stopListening()
+        }
+    }
+}
+
+@Composable
+fun LabeledBinaryChoice(
+    model: IModel,
+    label: String = "изправни",
+    checkedData: (String) -> Unit = {}
+) {
+    val checkable = model as? ICheckable ?: return
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        Text(
+            text = label,
+            modifier = Modifier.weight(1f),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontSize = 15.sp
+        )
+
+        // Ползваме твоя ModernOption
+        ModernOption("да", checkable.checked) {
+            checkable.checked = true; checkable.unchecked = false
+            checkedData("изправни")
+
+        }
+        Spacer(modifier = Modifier.width(16.dp))
+        ModernOption("не", checkable.unchecked) {
+            checkable.checked = false; checkable.unchecked = true
+            checkedData("не изправни")
+        }
+    }
+}
+
+// Компонент за обикновен ред с избор (без етикети, центриран)
+@Composable
+fun SimpleChoiceRow(model: IModel) {
+    val checkable = model as? ICheckable ?: return
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        ModernOption("да", checkable.checked) {
+            checkable.checked = true; checkable.unchecked = false
+        }
+        Spacer(modifier = Modifier.width(20.dp))
+        ModernOption("не", checkable.unchecked) {
+            checkable.checked = false; checkable.unchecked = true
+        }
+    }
+}
+
+@Composable
+fun CountField(model: IModel, placeholder: String = "") {
+    val focusRequester = remember { FocusRequester() }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth(0.5f)
+            .padding(vertical = 8.dp)
+            .focusRequester(focusRequester),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        TextField(
+            value = (model as? CountModel)?.data ?: "",
+            placeholder = {
+                Text(text = placeholder)
+            },
+            onValueChange = {
+                (model as CountModel).data = it
+            },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            singleLine = true,
+            colors = TextFieldDefaults.colors(unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant),
+            trailingIcon = {
+                Microfone(focusRequester) {
+                    (model as CountModel).data = it
+                }
+            }
+        )
+    }
+}
+
+@Composable
+fun CountInputField(model: IModel, label: String = "брой") {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = label,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(0.4f)
+        )
+        TextField(
+            value = (model as? CheckedModelTwo)?.count ?: "",
+            onValueChange = { if (model is CheckedModelTwo) model.count = it },
+            modifier = Modifier.weight(0.6f),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            singleLine = true,
+            colors = TextFieldDefaults.colors(unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant)
+        )
+    }
+}
+
+@Composable
+fun Title(page: Int) {
+    Text(
+        text = "№${page}. ${titles[page]}",
+        modifier = Modifier.padding(8.dp),
+        fontSize = TITLE_FONT_SIZE,
+        fontWeight = FontWeight.ExtraBold,
+        color = MaterialTheme.colorScheme.onBackground
+    )
+}
+
+@Composable
+fun MyCard(content: @Composable () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+    ) {
+        content()
+    }
+}
+
+@Composable
+fun MyColumn(modifier: Modifier, content: @Composable () -> Unit) {
+    Column(
+        modifier = modifier
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 4.dp)
+    ) {
+        content()
+    }
+}
+
