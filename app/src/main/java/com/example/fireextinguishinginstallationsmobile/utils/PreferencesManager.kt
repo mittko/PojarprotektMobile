@@ -5,20 +5,26 @@ import androidx.core.content.edit
 
 class PreferencesManager {
 
-    fun putToken(context: Context, newToken: String) {
+    fun putAuth(context: Context, user: String?, newToken: String?) {
         val sharedPreference =
-            context.getSharedPreferences("ACCESS_TOKEN_PREFERENCE", Context.MODE_PRIVATE)
+            context.getSharedPreferences("AUTH_PREFERENCE", Context.MODE_PRIVATE)
         sharedPreference.edit {
+            putString("user", user)
             putString("token", newToken)
             apply()
         }
+    }
 
-        val token = getToken(context)
+    fun getUser(context: Context): String {
+        val sharedPreferences =
+            context.getSharedPreferences("AUTH_PREFERENCE", Context.MODE_PRIVATE)
+        val user = sharedPreferences.getString("user", "")
+        return "$user"
     }
 
     fun getToken(context: Context): String {
         val sharedPreferences =
-            context.getSharedPreferences("ACCESS_TOKEN_PREFERENCE", Context.MODE_PRIVATE)
+            context.getSharedPreferences("AUTH_PREFERENCE", Context.MODE_PRIVATE)
         val token = sharedPreferences.getString("token", "")
         return "Bearer $token"
     }
@@ -50,7 +56,21 @@ class PreferencesManager {
     fun getObjectId(context: Context): String {
         val sharedPreferences =
             context.getSharedPreferences("ObjectId", Context.MODE_PRIVATE)
-        return sharedPreferences.getString("objectId", "")!!
+        return sharedPreferences.getString("objectId", "") ?: ""
+    }
+
+    fun setBarcodeNumber(context: Context, barcode: String) {
+        val sharedPreferences = context.getSharedPreferences("BarcodeNumber", Context.MODE_PRIVATE)
+        sharedPreferences.edit {
+            putString("barcode", barcode)
+            apply()
+        }
+    }
+
+    fun getBarcode(context: Context): String {
+        val sharedPreferences =
+            context.getSharedPreferences("BarcodeNumber", Context.MODE_PRIVATE)
+        return sharedPreferences.getString("barcode", "") ?: ""
     }
 
 }

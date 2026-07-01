@@ -11,17 +11,21 @@ import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Headers
 import retrofit2.http.POST
-import retrofit2.http.Query
+import retrofit2.http.Url
 
 interface ISunotechAPI {
     @Headers("Content-Type: application/json; charset=utf-8")
     @POST("/insert_sunotech_protokol")
-    fun writeProtokol(@Body body: MyJsonObject): Call<ResponseBody>
+    fun writeProtokol(
+        @Body body: MyJsonObject,
+        @Header("Authorization") accessToken: String
+    ): Call<ResponseBody>
 
 
-    @POST(value = "/get_sunotech_protokol_details")
+    @POST()
     fun getProtokolData(
-        @Body body: ObjectIdModel, @Query("defaultDocument") defaultDocument: String,
+        @Url url: String,
+        @Body body: ObjectIdModel,
         @Header("Authorization") accessToken: String
     ): Call<MyJsonObject>
 

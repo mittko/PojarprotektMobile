@@ -62,6 +62,7 @@ import com.example.fireextinguishinginstallationsmobile.models.DropDownModel
 import com.example.fireextinguishinginstallationsmobile.models.DropDownModelTwo
 import com.example.fireextinguishinginstallationsmobile.models.TextModel
 import com.example.fireextinguishinginstallationsmobile.models.jsonmodels.JsonModel
+import com.example.fireextinguishinginstallationsmobile.utils.PreferencesManager
 import com.example.fireextinguishinginstallationsmobile.utils.PreviewOption
 import com.example.fireextinguishinginstallationsmobile.utils.SpeechToTextManager
 import com.google.gson.Gson
@@ -210,7 +211,7 @@ fun BottomPaging(pagerState: PagerState) {
                 IconButton(
                     onClick = {
                         coroutineScope.launch {
-                            if (pagerState.currentPage > 0) {
+                            if (pagerState.currentPage > 1) {
                                 pagerState.animateScrollToPage(pagerState.currentPage - 1)
                             }
                         }
@@ -266,7 +267,9 @@ fun BottomPaging(pagerState: PagerState) {
                     ConfirmationDialog(onDismissRequest = {
                         onConfirm = false
                     }) {
-                        completeProtocol(context = context)
+                        val user = PreferencesManager().getUser(context)
+                        val token = PreferencesManager().getToken(context)
+                        completeProtocol(context = context, user, token)
                         onConfirm = false
                     }
                 }
@@ -344,22 +347,12 @@ fun DataField(
     stringLabel: String = "",
     lamb: (value: String) -> Unit = {}
 ) {
-    val context = LocalContext.current
-
     // 1. Дефинираме FocusRequester и FocusManager
     val focusRequester = remember { FocusRequester() }
-    // val focusManager = LocalFocusManager.current
 
     var textValue by remember(value) {
         mutableStateOf(value)
     }
-//    var isListening by remember {
-//        mutableStateOf(false)
-//    }
-
-//    val speechManager = remember {
-//        SpeechToTextManager(context)
-//    }
 
 
     TextField(
@@ -382,23 +375,7 @@ fun DataField(
         singleLine = true,
         enabled = enabled,
         trailingIcon = {
-//            IconButton(onClick = {
-//                if (isListening) {
-//                    speechManager.stopListening()
-//                    isListening = false
-//                    // Когато спрем микрофона, махаме фокуса софтуерно, за да запечатаме данните
-//                    focusManager.clearFocus()
-//                } else {
-//                    // 4. Искаме фокус тук (ако разрешението вече е дадено)
-//                    focusRequester.requestFocus()
-//                    permissionlauncher.launch(android.Manifest.permission.RECORD_AUDIO)
-//                }
-//            }) {
-//                Icon(
-//                    imageVector = if (isListening) Icons.Default.MicOff else Icons.Default.Mic,
-//                    contentDescription = if (isListening) "Stop Listening" else "Start Voice Typing"
-//                )
-//            }
+
             Microfone(focusRequester) {
                 textValue = it
                 // МНОГО ВАЖНО: Предавай резултата и към ViewModel ламбдата (lamb),
@@ -525,29 +502,35 @@ fun SimpleChoiceRow(model: IModel) {
 }
 
 @Composable
-fun CountField(model: IModel, placeholder: String = "") {
+fun CountField(model: IModel, placeholder: String = "", value: String = "") {
+
+    val countModel = model as CountModel
     val focusRequester = remember { FocusRequester() }
+    var textValue by remember(value) {
+        mutableStateOf(value)
+    }
     Row(
         modifier = Modifier
             .fillMaxWidth(0.5f)
-            .padding(vertical = 8.dp)
-            .focusRequester(focusRequester),
+            .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         TextField(
-            value = (model as? CountModel)?.data ?: "",
+            value = textValue,
             placeholder = {
                 Text(text = placeholder)
             },
             onValueChange = {
-                (model as CountModel).data = it
+                textValue = it
+                countModel.data = it
+
             },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             singleLine = true,
             colors = TextFieldDefaults.colors(unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant),
             trailingIcon = {
                 Microfone(focusRequester) {
-                    (model as CountModel).data = it
+                    model.data = it
                 }
             }
         )

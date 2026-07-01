@@ -97,6 +97,7 @@ import com.example.fireextinguishinginstallationsmobile.models.jsonmodels.JsonTe
 import com.example.fireextinguishinginstallationsmobile.retrofit.HttpResponse
 import com.example.fireextinguishinginstallationsmobile.retrofit.ISunotechAPI
 import com.example.fireextinguishinginstallationsmobile.retrofit.RetrofitInstance
+import com.example.fireextinguishinginstallationsmobile.retrofit.RetrofitInstance.getTestURL
 import com.example.fireextinguishinginstallationsmobile.ui.theme.FireExtinguishingInstallationsMobileTheme
 import com.example.fireextinguishinginstallationsmobile.utils.MyDialog
 import com.example.fireextinguishinginstallationsmobile.utils.PreferencesManager
@@ -154,13 +155,9 @@ class MainActivity : ComponentActivity() {
                         var showDialog by remember {
                             mutableStateOf(false)
                         }
-
-
                         var token by remember {
                             mutableStateOf(PreferencesManager().getToken(context))
                         }
-
-
                         val api = remember {
                             RetrofitInstance.getInstance().create(ISunotechAPI::class.java)
                         }
@@ -200,14 +197,16 @@ class MainActivity : ComponentActivity() {
                                     .padding(innerPadding)
                                     .imePadding()
                                     .verticalScroll(rememberScrollState()),
-                                context, {
-                                    token = it
-                                    PreferencesManager().putToken(context, it)
-                                })
-                            if (showDialog)
+                                context
+                            ) { user, token ->
+                                PreferencesManager().putAuth(context, user, token)
+                                isTokenValid = true
+                            }
+                            if (showDialog) {
                                 MyDialog().RetroDialog(httpResponse.code, httpResponse.message) {
                                     showDialog = false
                                 }
+                            }
                         } else {
                             MainScreen(
                                 Modifier
@@ -228,7 +227,7 @@ class MainActivity : ComponentActivity() {
 
 
 @Composable
-fun LoginPage(modifier: Modifier, context: Context, onRefreshToken: (String) -> Unit) {
+fun LoginPage(modifier: Modifier, context: Context, onRefreshToken: (String?, String?) -> Unit) {
 
     var user by remember {
         mutableStateOf("")
@@ -284,7 +283,7 @@ fun LoginPage(modifier: Modifier, context: Context, onRefreshToken: (String) -> 
                                 val loginResult = it.body()
 
                                 if (it.code() == 200) {
-                                    onRefreshToken(loginResult!!.token)
+                                    onRefreshToken(loginResult?.user?.usser, loginResult?.token)
 
                                 }
                                 Log.e("token: ", " ${loginResult?.token}")
@@ -315,9 +314,9 @@ fun LoginPage(modifier: Modifier, context: Context, onRefreshToken: (String) -> 
 fun MainScreen(modifier: Modifier) {
 
     val pagerState = rememberPagerState(
-        0,
+        1,
         pageCount = {
-            mapOfModels.size + 1
+            mapOfModels.size + 2
         })
 
     // 1. Create a custom fling behavior
@@ -391,16 +390,28 @@ fun InitialPage(modifier: Modifier, pagerState: PagerState) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                Button(onClick = {
-                    shouldLoadDefaultData = true
-                }, modifier = Modifier.height(60.dp)) {
-                    Text(text = "Зареждане на данни по подразбиране")
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    TextField(value = "", onValueChange = {
+
+                    }, placeholder = {
+                        Text(text = "ID номер")
+                    })
+                    Spacer(modifier = Modifier.height(30.dp))
+                    Button(onClick = {
+                        shouldLoadDefaultData = true
+                    }, modifier = Modifier.height(60.dp)) {
+                        Text(text = "Зареждане")
+                    }
                 }
+
                 Spacer(modifier = Modifier.height(50.dp))
                 Button(onClick = {
                     shouldLoadCurrentData = true
                 }, modifier = Modifier.height(60.dp)) {
-                    Text(text = "Зареждане на текущи данни")
+                    Text(text = "Сканирай баркод")
                 }
             }
         }
@@ -1517,9 +1528,6 @@ private fun OpenCamera(
         mutableStateOf("")
     }
 
-    var dataLoadingType by remember {
-        mutableStateOf(PreferencesManager().getDataLoadingType(context))
-    }
     var initializationRequest by remember {
         mutableStateOf(false)
     }
@@ -1552,6 +1560,7 @@ private fun OpenCamera(
     if (permissionGranted) {
         StartCamera(modifier, pagerState) { resultFromScanning ->
             barcodeText = resultFromScanning
+            PreferencesManager().setBarcodeNumber(context, barcodeText)
         }
     } else {
         // Optional: Show a placeholder UI telling the user why you need the camera
@@ -1563,7 +1572,11 @@ private fun OpenCamera(
 
         Text(text = barcodeText)
         //barcodeText = ""
-        LoadMapData(context, barcodeText, defaultDocument = dataLoadingType) {
+        LoadMapData(
+            context,
+            barcodeText,
+            getTestURL() + "/get_sunotech_protokol_details_by_barcode"
+        ) {
             initializationRequest = it
 
         }
@@ -1650,39 +1663,10 @@ private fun StartCamera(
                 }
             )
 
-            // What Was Broken at Each Step
-            //         VersionProblemOriginalITF + Intent format filter silently ignored → garbage scansMy fixcapture.decode() + decodeContinuous conflict + factory reset by initializeFromIntent → nothing scansThis versionNo CaptureManager, one callback, factory set once → should work
-            // If Still Nothing Scans
-            //    Check camera permission is granted at runtime before the composable renders — CompoundBarcodeView silently fails with no permission rather than crashing.Claude Fable 5 is currently unavailable.Learn more(opens in new tab)
-            //  if (startDataLoading)
-            //      SmoothCircularSpinner()
-
-
         }
         BottomPaging(pagerState = pagerState)
     }
 
-//    if (barcodeText.isNotEmpty()) {
-//
-//        startDataLoading = true
-//        Text(text = barcodeText)
-//        //barcodeText = ""
-//        LoadMapData(context) {
-//            initializationSuccess = it
-//
-//        }
-//        if (initializationSuccess) {
-//            startDataLoading = false
-//            val coroutineScope = rememberCoroutineScope()
-//            LaunchedEffect(Unit) {
-//                coroutineScope.launch {
-//
-//                    pagerState.animateScrollToPage(2)
-//
-//                }
-//            }
-//        }
-//    }
 }
 
 // region Page Header
@@ -1696,9 +1680,22 @@ fun PageHeader(
 
     val context = LocalContext.current
 
+//    var objectId by remember {
+//        mutableStateOf(PreferencesManager().getObjectId(context))
+//    }
     var barcodeField by remember {
-        mutableStateOf(PreferencesManager().getObjectId(context))
+        mutableStateOf(PreferencesManager().getBarcode(context))
     }
+    var loadData by remember {
+        mutableStateOf(false)
+    }
+    val models = mapOfModels[titles[page]] ?: emptyList()
+
+    val objectIdModel = models[0] as FieldModel
+    //objectIdModel.data = objectId
+
+    val barcodeNumberModel = models[1] as FieldModel
+    barcodeNumberModel.data = barcodeField
 
     Column(modifier = modifier.fillMaxSize()) {
         Text(
@@ -1707,25 +1704,51 @@ fun PageHeader(
             fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground
         )
 
-
-        val models = mapOfModels[titles[page]]!!
-
         MyColumn(
             modifier = Modifier
                 .weight(1f)
         ) {
+            MyCard {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
 
+                    DataField(
+                        objectIdModel,
+                        value = objectIdModel.data,
+                        placeholder = "Номер на обект"
+                    ) {
+                        objectIdModel.data = it
+                    }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    Button(onClick = {
+                        loadData = true
+                    }, modifier = Modifier.height(40.dp)) {
+                        Text(text = "Зареждане по номер на Обект")
+                    }
+                    Spacer(modifier = Modifier.height(5.dp))
+                }
+            }
             MyCard() {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    TextField(
-                        modifier = Modifier.fillMaxWidth(),
-                        value = barcodeField, onValueChange = {
-                            barcodeField = it
-                        })
+                    DataField(
+                        barcodeNumberModel,
+                        value = barcodeNumberModel.data,
+                        placeholder = "Номер на баркод"
+                    ) {
+                        barcodeNumberModel.data = it
+                    }
                 }
 
             }
-            models.forEach { model ->
+
+
+            for (i in 2 until models.size) {
+                val model = models[i]
+
                 MyCard {
                     Column(Modifier.padding(16.dp)) {
                         QuestionHeader(model.subTitle)
@@ -1736,7 +1759,7 @@ fun PageHeader(
                             }
 
                             is CountModel -> {
-                                CountField(model)
+                                CountField(model, value = model.data)
                             }
 
                             is FieldModel -> DataField(
@@ -1766,6 +1789,15 @@ fun PageHeader(
 
     }
 
+    if (loadData) {
+        LoadMapData(
+            context, objectIdModel.data,
+            getTestURL() + "/get_sunotech_protokol_details_by_id",
+        ) {
+            loadData = false
+        }
+    }
+
 
 }
 
@@ -1773,17 +1805,20 @@ fun PageHeader(
 @Composable
 fun LoadMapData(
     context: Context,
-    barcodeText: String,
-    defaultDocument: Boolean,
+    id: String,
+    url: String,
     result: (onSuccess: Boolean) -> Unit
 ) {
     val api: ISunotechAPI = RetrofitInstance.getInstance().create(ISunotechAPI::class.java)
 
+
     val token = PreferencesManager().getToken(context)
 // for INIT DEFAULT DATA HELP barcodeText = "106 / 02.12.2024 г."
+
+
     api.getProtokolData(
-        ObjectIdModel(barcodeText), defaultDocument =
-            if (defaultDocument) "true" else "false", token
+        url,
+        ObjectIdModel(id), token
     )
         .enqueue(object : retrofit2.Callback<MyJsonObject> {
             override fun onResponse(
@@ -1800,6 +1835,10 @@ fun LoadMapData(
 
                     val mutableMap = result.mutableMap
                     mutableMap.forEach { key, value ->
+                        // if we have barcode no need to overwrite it !!!
+                        if (key == "Баркод") {
+                            return@forEach
+                        }
                         val list = mutableMap[key]
                         val newList = ArrayList<IModel>()
                         list?.forEach { model ->
@@ -1979,7 +2018,7 @@ fun LoadMapData(
 }
 
 fun completeProtocol(
-    context: Context
+    context: Context, user: String, token: String
 ) {
 
 
@@ -1990,6 +2029,7 @@ fun completeProtocol(
      }*/
 
     // for debugging
+
 
     for (i in 2 until titles.size) {
         val title = titles[i]
@@ -2094,14 +2134,18 @@ fun completeProtocol(
         jsonMap.put(title, jsonList)
     }
     val headerModels: ArrayList<IModel> = mapOfModels[titles[2]]!!
-    val documentIdModel = headerModels[0] as FieldModel
-    val documentNameModel = headerModels[1] as FieldModel
-    val documentDate = "24.06.2026";
+    val objectIdModel = headerModels[0] as FieldModel
+    val barcodeModel = headerModels[1] as FieldModel
+    val documentDateModel = headerModels[5] as FieldModel
+    val objectId = objectIdModel.data
+    val barcodeNumber = barcodeModel.data
+    val contractDate = documentDateModel.data
     val gson = Gson()
     val jsonBody =
         MyJsonObject(
-            "WZ522503162309100085", operatorName = "miti",
-            documentDate, defaultDocument = "false", jsonMap
+            objectId,
+            barcodeNumber = barcodeNumber, operatorName = user,
+            contractDate, jsonMap
         )
     val jsonString: String = gson.toJson(jsonBody)
     Log.d("RETROFIT_DEBUG", "Sending JSON: $jsonString")
@@ -2115,7 +2159,7 @@ fun completeProtocol(
 
 
     val sunInterface = RetrofitInstance.getInstance().create(ISunotechAPI::class.java)
-    sunInterface.writeProtokol(jsonBody).enqueue(object : retrofit2.Callback<ResponseBody> {
+    sunInterface.writeProtokol(jsonBody, token).enqueue(object : retrofit2.Callback<ResponseBody> {
         @RequiresApi(Build.VERSION_CODES.Q)
         override fun onResponse(
             call: Call<ResponseBody>,
@@ -2128,14 +2172,15 @@ fun completeProtocol(
 
                 val result = response.body()
                 if (result != null) {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        // 1. Записваме файла на заден план (IO нишка)
-                        val savedFile = savePdfToMediaStore(context, result, fileName)
-                        // 2. Връщаме се на Главната нишка (Main), за да отворим PDF-а
+
+                    CoroutineScope(Dispatchers.Main).launch {
+
+                        val savedFile = withContext(Dispatchers.IO) {
+                            // 1. Записваме файла на заден план (IO нишка)
+                            savePdfToMediaStore(context, result, fileName)
+                        }
                         if (savedFile != null) {
-                            withContext(Dispatchers.IO) {
-                                openPdfFile(context, savedFile)
-                            }
+                            openPdfFile(context, savedFile)
                         }
                     }
                 }

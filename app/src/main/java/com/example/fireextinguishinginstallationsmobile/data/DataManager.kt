@@ -62,6 +62,8 @@ val mapOfModels =
         titles[1] to arrayListOf(),
         titles[2] to arrayListOf(
             // Входни данни
+            FieldModel("Номер на обект", 0),
+            FieldModel("Баркод", 0),
             FieldModel(String.format("Договор %s", numero), 0),
             FieldModel("Обект", 0),
             FieldModel("Модел и тип на инсталацията", 0),

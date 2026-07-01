@@ -4,8 +4,8 @@ import com.example.fireextinguishinginstallationsmobile.models.jsonmodels.JsonMo
 
 data class MyJsonObject(
     val objectId: String,
+    val barcodeNumber: String,
     val operatorName: String,
     val contractDate: String,
-    val defaultDocument: String,
     val mutableMap: MutableMap<String, ArrayList<JsonModel>>
 )
