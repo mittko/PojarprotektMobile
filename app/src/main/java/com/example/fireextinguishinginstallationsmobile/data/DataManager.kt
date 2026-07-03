@@ -15,10 +15,17 @@ import com.example.fireextinguishinginstallationsmobile.models.FieldModelTwo
 import com.example.fireextinguishinginstallationsmobile.models.TextModel
 import com.example.fireextinguishinginstallationsmobile.numero
 
+val tabsColors = arrayOf<Boolean>(
+    false,false,false,false,false,
+    false,false,false,false,false,
+    false,false,false,false,false,
+    false,false,false,false,false,
+    false,false,false,false,false,
+    false,false,false,false,false,
+    false,false,false,false)
 val titles =
     arrayOf(
-        "",
-        "",
+        "Камера",
         "Входни данни",  // 0 АБОНАМЕНТНО ТЕХНИЧЕСКО ОБСЛУЖВАНЕ за м. януари 2026г.
         "Преглед на контролен панел, ел.табло - индикация",    // 1
         "Функционален тест индикация на ел. табло за управление и сработване на ПГИ", // 2
@@ -58,9 +65,9 @@ val titles =
 
 val mapOfModels =
     mutableStateMapOf<String, ArrayList<IModel>>(
+      //  titles[0] to arrayListOf(),
         titles[0] to arrayListOf(),
-        titles[1] to arrayListOf(),
-        titles[2] to arrayListOf(
+        titles[1] to arrayListOf(
             // Входни данни
             FieldModel("Номер на обект", 0),
             FieldModel("Баркод", 0),
@@ -87,14 +94,14 @@ val mapOfModels =
             CountModel("Брой изн. звукови сигнализатори", 0)
         ),
 
-        titles[3] to arrayListOf(
+        titles[2] to arrayListOf(
             // Преглед на контролен панел, ел.табло - индикация
             CheckedModel("Отворен", 1),
             CheckedModel("Затворена ръчен СК", 1),
             CheckedModel("Управление Автоматично Пусково Устройство /АПУ/", 1)
         ),
 
-        titles[4] to arrayListOf(
+        titles[3] to arrayListOf(
             //  Функционален тест индикация на ел. табло за управление и сработване на ПГИ
             CheckedModel("дисплей", 2),
             CheckedModel("пожар", 2),
@@ -107,14 +114,14 @@ val mapOfModels =
 
             ),
 
-        titles[5] to arrayListOf(
+        titles[4] to arrayListOf(
             // Преглед и тест на основно захранване
             CheckedModelThree("Основно захранване от електрическа мрежа", 3),
             FieldModelThree("Температура на корпуса на ел.трансформатора", 3),
             CheckedModelThree("Преобразувано захранване", 3)
         ),
 
-        titles[6] to arrayListOf(
+        titles[5] to arrayListOf(
             // Преглед и тест на основна платка
             CheckedModel("Индикация за светодиоди за повреда", 4),
             CheckedModel("Наличие на запрашеност върху ел.трансформатора", 4),
@@ -124,29 +131,29 @@ val mapOfModels =
             FieldModelThree("Линия / Кръг 2", 4)
         ),
 
-        titles[7] to arrayListOf(
+        titles[6] to arrayListOf(
             //Проверка за правилната свързаност и последователност на задействане
             CheckedModel("", 5)
         ),
-        titles[8] to arrayListOf(
+        titles[7] to arrayListOf(
             //  Проверка на задействието на допълнителни спомагателни съоръжения / АПУ, ръчен СК, Пускова бутилка /
             CheckedModel("", 6)
         ),
-        titles[9] to arrayListOf(
+        titles[8] to arrayListOf(
             //Функционален тест на действието на звуков сигнализатор / сирена за предупреждение на пуск на гасителния агент
             CheckedModel("", 7)
         ),
 
-        titles[10] to arrayListOf(
+        titles[9] to arrayListOf(
             // Проверка за положението на ръчния спирателен кран / СК /
             CheckedModel("", 8)
         ),
-        titles[11] to arrayListOf(
+        titles[10] to arrayListOf(
             //Проверка за положението на "Ръчно Пъсково Устройство\
             CheckedModel(subTitle = "", position = 9)
         ),
 
-        titles[12] to arrayListOf(
+        titles[11] to arrayListOf(
             //Преглед на резервно захранване
             CheckedModelThree("Зареждане на акумулаторни батерии", 10),
             TextModel("Акумулаторна батерия No1", 10),
@@ -167,14 +174,14 @@ val mapOfModels =
             FieldModelTwo(subTitle = "Измерено", 10)
         ),
 
-        titles[13] to arrayListOf(
+        titles[12] to arrayListOf(
             // Техническа проверка на лупове и линии
             CheckedModel("Кръг 1", 11),
             CheckedModel("Кръг 2", 11),
             FieldModel(subTitle = "", 11)
         ),
 
-        titles[14] to arrayListOf(
+        titles[13] to arrayListOf(
             // Техническа проверка на всеки един автоматичен пожароизвестителен детектор
             CheckedModelTwo("Тест на димо-оптични детектори", 12),
             CheckedModelTwo("Тест на термични детектори", 12),
@@ -186,7 +193,7 @@ val mapOfModels =
             CheckedModelTwo("Тест на радиосигнала на безжични пожароизвестителни детектори", 12)
         ),
 
-        titles[15] to arrayListOf(
+        titles[14] to arrayListOf(
             // Проверка за наличие на свободно пространство от 0,5 м около всеки пожароизвестителен детектор
 
             FieldModel("", 13),
@@ -194,13 +201,13 @@ val mapOfModels =
         ),
 
 
-        titles[16] to arrayListOf(
+        titles[15] to arrayListOf(
             // Тест на механизма на всеки един Ръчен пожароизвестителен бутон чрез тест ключ или премахване на чупещия се елемент
 
             CheckedModelTwo("", 14),
             CountModel(subTitle = "", 14)
         ),
-        titles[17] to arrayListOf(
+        titles[16] to arrayListOf(
 
             CheckedModelTwo(
                 //  Проверка на безпрепятствен достъп до всички ръчни пожароизвестителни бутони
@@ -209,33 +216,33 @@ val mapOfModels =
             CountModel("", 15)
         ),
 
-        titles[18] to arrayListOf(
+        titles[17] to arrayListOf(
 
             //Проверка за наличие на указателни знаци над ръчните пожароизвестителни бутони
             CheckedModelTwo("", 16),
             CountModel("", 16)
         ),
 
-        titles[19] to arrayListOf(
+        titles[18] to arrayListOf(
             // Вид на съд за гасителен агент
             //CheckedModel("Отворен", 17),
             CheckedModel("Херметически затворен", 17)
         ),
 
-        titles[20] to arrayListOf(
+        titles[19] to arrayListOf(
             // Визуална проверка на съдовете за гасителен агент
             ExtendedCheckedModel("", 18),
             ExtendedCheckedModel("", 18)
         ),
 
-        titles[21] to arrayListOf(
+        titles[20] to arrayListOf(
             CheckedModel(
                 //Проверка на система за откриване на течове
                 "", 19
             )
         ),
 
-        titles[22] to arrayListOf(
+        titles[21] to arrayListOf(
             CheckedModelTwo(
                 // Проверка на сигнални и изнесени устройства
                 "Тест на всяка една вътрешна сирена/звънец", 18
@@ -249,63 +256,63 @@ val mapOfModels =
             ), CheckedModel("Тест на командно табло на пожарната служба", 20)
         ),
 
-        titles[23] to arrayListOf(
+        titles[22] to arrayListOf(
             // Визуална проверка за повреди по маркучи и армировка
             CheckedModel("", 21)
         ),
 
-        titles[24] to arrayListOf(
+        titles[23] to arrayListOf(
             // Визуална проверка за увреждания (закрепване, корозия, механични наранявания и др.) по тръбопроводи
             CheckedModel(
                 "", 22
             )
         ),
-        titles[25] to arrayListOf(
+        titles[24] to arrayListOf(
             //  Визаулна проверка на дюзи за разпръскване на гасителен агент
             CheckedModel("", 23)
         ),
-        titles[26] to arrayListOf(
+        titles[25] to arrayListOf(
             // Продухване на тръбна мрежа на ПГИ с Азот против запушване
             CheckedModel("", 24)
         ),
 
-        titles[27] to arrayListOf(
+        titles[26] to arrayListOf(
             // Проверка за опасностите и непроницаемостта на затвореното пространство и промени, които биха могли да намалят ефективността на инсталацията
             CheckedModel("", 25)
         ),
-        titles[28] to arrayListOf(
+        titles[27] to arrayListOf(
             // Проверка за затваряне на Входна плъзгаща врата при сработване
             CheckedModel("", 26)
         ),
-        titles[29] to arrayListOf(
+        titles[28] to arrayListOf(
             // Проверка за сработване на сигнална лампа "СТОП ГАЗ"
             CheckedModel("", 27)
         ),
-        titles[30] to arrayListOf(
+        titles[29] to arrayListOf(
             CheckedModel(
                 // Проверка за наличие на ключ или мастър карта за достъп на пожарникарите до всяко едно помещение  обекта
                 "", 28
             )
         ),
-        titles[31] to arrayListOf(
+        titles[30] to arrayListOf(
             // Проверка за функциониране на ключ или мастър карта за достъп на пожарникарите до всяко едно помещение в обекта
             CheckedModel("", 29)
         ),
-        titles[32] to arrayListOf(
+        titles[31] to arrayListOf(
             CheckedModel(
                 // Визуална проверка за структурни или екслоатационни промени в обекта, които биха попречили на работата на ръчните бутони
                 "", 30
             )
         ),
-        titles[33] to arrayListOf(
+        titles[32] to arrayListOf(
             // Проверка за наличие на актуалност на документацията, придружаваща ПИС
             CheckedModel("", 31)
         ),
-        titles[34] to arrayListOf(
+        titles[33] to arrayListOf(
             // Проверка за наличие и полълване на дневник на системата
             CheckedModel("", 32)
         ),
-        titles[35] to arrayListOf(
+        titles[34] to arrayListOf(
             // Забележка
             FieldModel(subTitle = "", 33)
         )

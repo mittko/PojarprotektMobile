@@ -1,9 +1,14 @@
 package com.example.fireextinguishinginstallationsmobile
 
 import android.content.Context
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -28,19 +34,24 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
@@ -52,6 +63,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.fireexPreviewOptioninguishinginsPreviewOptionallaPreviewOptionionsmobile.uPreviewOptionils.TextFieldMenu
+import com.example.fireextinguishinginstallationsmobile.data.mapOfModels
 import com.example.fireextinguishinginstallationsmobile.data.titles
 import com.example.fireextinguishinginstallationsmobile.interfaces.ICheckable
 import com.example.fireextinguishinginstallationsmobile.interfaces.IModel
@@ -65,7 +77,9 @@ import com.example.fireextinguishinginstallationsmobile.models.jsonmodels.JsonMo
 import com.example.fireextinguishinginstallationsmobile.utils.PreferencesManager
 import com.example.fireextinguishinginstallationsmobile.utils.PreviewOption
 import com.example.fireextinguishinginstallationsmobile.utils.SpeechToTextManager
+import com.google.common.collect.Multimaps.index
 import com.google.gson.Gson
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -186,96 +200,93 @@ fun readProtocol(context: Context) {
     val x = 0
 }
 
-
 @Composable
-fun BottomPaging(pagerState: PagerState) {
+fun Modifier.setRippleEffectOnClick(onClick: () -> Unit): Modifier = composed {
+    clickable(
+        interactionSource = remember { MutableInteractionSource() },
+        indication = ripple(color = Color.Black),
+        onClick = onClick
+    )
+}
+@Composable
+fun BottomPaging(pagerState: PagerState, mandatoryTab : Boolean = false) {
 
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
-    // Трябва да имаш тези импорти най-горе:
-    // import androidx.compose.material.icons.automirrored.filled.ArrowBack
-    // import androidx.compose.material.icons.automirrored.filled.ArrowForward
 
-    Column {
-        MyCard {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(70.dp)
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // ЛЯВА СТРЕЛКА
-                IconButton(
-                    onClick = {
-                        coroutineScope.launch {
-                            if (pagerState.currentPage > 1) {
-                                pagerState.animateScrollToPage(pagerState.currentPage - 1)
-                            }
+    MyCard {
+        ScrollableTabRow(
+            selectedTabIndex = pagerState.currentPage,
+            edgePadding = 16.dp,
+            containerColor = Color.White,
+            modifier = Modifier.fillMaxWidth().height(70.dp)
+        ) {
+
+            (0..(mapOfModels.size-1)).forEach { index ->
+                key(index) {
+                    val isSelected = pagerState.currentPage == index
+
+                    val tabColor =
+                        if(index == 4 || index == 11 || index == 19) {
+                            Color(0xFFFFAF00)
+                        } else {
+                            Color.White
                         }
-                    },
-                    enabled = pagerState.currentPage > 0
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.baseline_keyboard_arrow_left_24),
-                        contentDescription = "Назад",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(35.dp)
-                    )
-                }
-
-                // ТУК СЛОЖИ ТВОЯ ТЕКСТФИЙЛД ЗА НОМЕРА
-                Text(
-                    text = "${pagerState.currentPage} / ${pagerState.pageCount - 1}",
-                    color = MaterialTheme.colorScheme.onBackground,
-                    fontWeight = FontWeight.Bold
-                )
-
-                // ДЯСНА СТРЕЛКА
-                IconButton(
-                    onClick = {
-                        coroutineScope.launch {
-                            if (pagerState.currentPage < pagerState.pageCount - 1) {
-                                pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                    Tab(
+                        selected = isSelected,
+                        onClick = {
+                            Log.e("CLICK", "TAB ${index+1}")
+                            coroutineScope.launch {
+                                // Можеш да пробваш да махнеш delay(40), защото Tab се справя по-добре,
+                                // но ако в твоя случай помогна за scrollToPage, го остави.
+                                delay(40)
+                                pagerState.scrollToPage(index)
                             }
-                        }
-                    },
-                    enabled = pagerState.currentPage < pagerState.pageCount
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.baseline_keyboard_arrow_right_24),
-                        contentDescription = "Напред",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(35.dp)
-                    )
-                }
-            }
-            if (pagerState.currentPage != 0 && pagerState.currentPage != 1) {
+                        },
+                        // Задаваме само височината. Tab автоматично се центрира и разпъва на ширина.
+                        modifier = Modifier.height(70.dp)
+                            .background(color = tabColor))
+                     {
+                        // Текстът вътре се центрира автоматично от Tab компонента
+                        Text(
+                            text = "${index+1}",
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                            color = if (isSelected) Color.Blue else Color.Black
 
-                var onConfirm by remember {
-                    mutableStateOf(false)
-                }
-                Button(onClick = {
-                    onConfirm = true
-                }, modifier = Modifier.fillMaxWidth()) {
-                    Text(text = "Запиши")
-                }
-
-                if (onConfirm) {
-                    ConfirmationDialog(onDismissRequest = {
-                        onConfirm = false
-                    }) {
-                        val user = PreferencesManager().getUser(context)
-                        val token = PreferencesManager().getToken(context)
-                        completeProtocol(context = context, user, token)
-                        onConfirm = false
+                        )
                     }
                 }
             }
+
+
         }
-    }
+
+
+
+            var onConfirm by remember {
+                mutableStateOf(false)
+            }
+            Button(onClick = {
+                onConfirm = true
+            }, modifier = Modifier.fillMaxWidth()) {
+                Text(text = "Запиши")
+            }
+
+            if (onConfirm) {
+                ConfirmationDialog(onDismissRequest = {
+                    onConfirm = false
+                }) {
+                    val user = PreferencesManager().getUser(context)
+                    val token = PreferencesManager().getToken(context)
+                    completeProtocol(context = context, user, token)
+                    onConfirm = false
+                }
+            }
+        }
+
+
+
 
 }
 
@@ -564,7 +575,7 @@ fun CountInputField(model: IModel, label: String = "брой") {
 @Composable
 fun Title(page: Int) {
     Text(
-        text = "№${page}. ${titles[page]}",
+        text = "№${page+1}. ${titles[page]}",
         modifier = Modifier.padding(8.dp),
         fontSize = TITLE_FONT_SIZE,
         fontWeight = FontWeight.ExtraBold,

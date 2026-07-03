@@ -16,6 +16,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,8 +27,11 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerDefaults
 import androidx.compose.foundation.pager.PagerState
@@ -42,12 +47,16 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,6 +64,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -117,6 +127,7 @@ import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Response
 import java.io.File
+import androidx.lifecycle.lifecycleScope
 
 
 // Ctrl + Alt + O clean unused imports
@@ -314,9 +325,9 @@ fun LoginPage(modifier: Modifier, context: Context, onRefreshToken: (String?, St
 fun MainScreen(modifier: Modifier) {
 
     val pagerState = rememberPagerState(
-        1,
+        0,
         pageCount = {
-            mapOfModels.size + 2
+            mapOfModels.size
         })
 
     // 1. Create a custom fling behavior
@@ -328,44 +339,48 @@ fun MainScreen(modifier: Modifier) {
         )
     )
 
+    Column(modifier = Modifier.fillMaxSize()) {
 
-    // region Pager
-    HorizontalPager(
-        state = pagerState,
-        flingBehavior = customFlingBehavior,
-        userScrollEnabled = false,
-        // key = { pageIndex -> "page_key_$pageIndex" }
+        // region Pager
+        HorizontalPager(
+            state = pagerState,
+            flingBehavior = customFlingBehavior,
+            userScrollEnabled = false,
+            // key = { pageIndex -> "page_key_$pageIndex" }
+            modifier = Modifier.fillMaxWidth().weight(1f)
 
-    ) { page ->
-        when (page) {
-            0 -> InitialPage(modifier, pagerState)
-            1 -> OpenCamera(modifier, pagerState)
-            2 -> PageHeader(modifier, page, pagerState)
-            3 -> PageThree(modifier, page, pagerState)
-            4 -> PageFour(modifier, page, pagerState)
-            5 -> PageFive(modifier, page, pagerState)
-            6 -> PageSix(modifier, page, pagerState)
-            7, 8, 9 -> PageSeven(modifier, page, pagerState)
-            10, 11 -> PageTen(modifier, page, pagerState)
-            12 -> PageTwelve(modifier, page, pagerState)
-            13 -> PageThirteen(modifier, page, pagerState)
-            14 -> PageFourteen(modifier, page, pagerState)
-            15 -> PageFifteen(modifier, page, pagerState)
-            16, 17, 18 -> PageSixteen(modifier, page, pagerState)
-            19, 21 -> PageNineteen(modifier, page, pagerState)
-            20 -> PageTwenty(modifier, page, pagerState)
-            22 -> PageTwentyTwo(modifier, page, pagerState)
-            23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34 -> PageTwentyThree(
-                modifier,
-                page,
-                pagerState
-            )
+        ) { page ->
+            when (page) {
+               // 0 -> InitialPage(modifier, pagerState)
+                0 -> OpenCamera(modifier, pagerState)
+                1 -> PageHeader(modifier, page, pagerState)
+                2 -> PageThree(modifier, page, pagerState)
+                3 -> PageFour(modifier, page, pagerState)
+                4 -> PageFive(modifier, page, pagerState)
+                5 -> PageSix(modifier, page, pagerState)
+                6, 7, 8 -> PageSeven(modifier, page, pagerState)
+                9, 10 -> PageTen(modifier, page, pagerState)
+                11 -> PageTwelve(modifier, page, pagerState)
+                12 -> PageThirteen(modifier, page, pagerState)
+                13 -> PageFourteen(modifier, page, pagerState)
+                14 -> PageFifteen(modifier, page, pagerState)
+                15, 16, 17 -> PageSixteen(modifier, page, pagerState)
+                18, 20 -> PageNineteen(modifier, page, pagerState)
+                19 -> PageTwenty(modifier, page, pagerState)
+                21 -> PageTwentyTwo(modifier, page, pagerState)
+                22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33 -> PageTwentyThree(
+                    modifier,
+                    page,
+                    pagerState
+                )
 
-            35 -> LastPage(modifier, page, pagerState)
+                34 -> LastPage(modifier, page, pagerState)
+
+            }
 
         }
-
     }
+
     // endregion Pager
 }
 
@@ -642,7 +657,7 @@ fun PageFive(
         }
 
         // Навигацията - закована долу
-        BottomPaging(pagerState)
+        BottomPaging(pagerState, mandatoryTab = true)
         Spacer(modifier = Modifier.height(10.dp))
     }
 
@@ -743,10 +758,11 @@ fun PageSix(
 
             }
 
-            // 3. Навигацията - винаги видима
-            BottomPaging(pagerState)
-            Spacer(modifier = Modifier.height(8.dp))
+
         }
+        // 3. Навигацията - винаги видима
+        BottomPaging(pagerState)
+        Spacer(modifier = Modifier.height(8.dp))
     }
 }
 //endregion Page Fourth
@@ -2157,8 +2173,10 @@ fun completeProtocol(
         )
     debugFile.writeText(jsonString)
 
-
     val sunInterface = RetrofitInstance.getInstance().create(ISunotechAPI::class.java)
+
+
+
     sunInterface.writeProtokol(jsonBody, token).enqueue(object : retrofit2.Callback<ResponseBody> {
         @RequiresApi(Build.VERSION_CODES.Q)
         override fun onResponse(
@@ -2179,6 +2197,12 @@ fun completeProtocol(
                             // 1. Записваме файла на заден план (IO нишка)
                             savePdfToMediaStore(context, result, fileName)
                         }
+
+                        val activity = context as? Activity
+
+                        if (activity == null ||
+                            activity.isFinishing || activity.isDestroyed) return@launch
+
                         if (savedFile != null) {
                             openPdfFile(context, savedFile)
                         }
@@ -2189,7 +2213,8 @@ fun completeProtocol(
         }
 
         override fun onFailure(call: retrofit2.Call<ResponseBody>, t: Throwable) {
-            // Грешка при мрежовата връзка MyDialog().RetroDialog(500,t.message!!) { }
+                 // Грешка при мрежовата връзка
+                 // MyDialog().RetroDialog(500,t.message!!) { }
         }
     })
 

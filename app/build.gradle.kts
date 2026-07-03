@@ -7,13 +7,13 @@ plugins {
 android {
     signingConfigs {
         getByName("debug") {
-            storeFile = file("D:\\FireExtinguishingInstallationsMobile\\keystorefile.jks")
+            storeFile = file("D:\\PojarprotektMobile\\keystorefile.jks")
             storePassword = "pojarprotekt"
             keyPassword = "pojarprotekt"
             keyAlias = "key0"
         }
         create("release") {
-            storeFile = file("D:\\FireExtinguishingInstallationsMobile\\keystorefile.jks")
+            storeFile = file("D:\\PojarprotektMobile\\keystorefile.jks")
             storePassword = "pojarprotekt"
             keyAlias = "key0"
             keyPassword = "pojarprotekt"
@@ -94,6 +94,11 @@ dependencies {
     implementation(libs.signature.pad)
     // implementation("com.seanproctor:signaturepad:1.0.1")
     implementation(libs.androidx.compose.material.icons.extended)
+    // В build.gradle.kts (Module: app)
+    // Използвай изрично Android-специфичния пакет, за да спре да се бърка Gradle
+    implementation("androidx.lifecycle:lifecycle-runtime-android:2.8.7")
+
+
 
     implementation("androidx.core:core-splashscreen:1.2.0")
     implementation("androidx.camera:camera-core:1.6.1")
