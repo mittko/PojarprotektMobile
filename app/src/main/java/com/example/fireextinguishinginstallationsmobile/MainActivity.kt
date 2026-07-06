@@ -43,6 +43,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -58,6 +59,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -128,6 +130,9 @@ import retrofit2.Call
 import retrofit2.Response
 import java.io.File
 import androidx.lifecycle.lifecycleScope
+import com.example.fireextinguishinginstallationsmobile.models.auth.OnResponseBody
+import kotlinx.coroutines.coroutineScope
+import kotlin.collections.forEach
 
 
 // Ctrl + Alt + O clean unused imports
@@ -325,7 +330,7 @@ fun LoginPage(modifier: Modifier, context: Context, onRefreshToken: (String?, St
 fun MainScreen(modifier: Modifier) {
 
     val pagerState = rememberPagerState(
-        0,
+        1,
         pageCount = {
             mapOfModels.size
         })
@@ -1540,15 +1545,18 @@ private fun OpenCamera(
 ) {
     val context = LocalContext.current
 
+    var errorEvent by remember {
+        mutableStateOf<OnResponseBody?>(null)
+    }
+    var triggerCamera by remember {
+        mutableIntStateOf(0)
+    }
     var barcodeText by remember {
         mutableStateOf("")
     }
 
-    var initializationRequest by remember {
-        mutableStateOf(false)
-    }
 
-
+    val coroutineScope = rememberCoroutineScope()
     val permission = Manifest.permission.CAMERA
 
     var permissionGranted by remember {
@@ -1575,6 +1583,7 @@ private fun OpenCamera(
     // UI State branching
     if (permissionGranted) {
         StartCamera(modifier, pagerState) { resultFromScanning ->
+            triggerCamera++
             barcodeText = resultFromScanning
             PreferencesManager().setBarcodeNumber(context, barcodeText)
         }
@@ -1583,30 +1592,38 @@ private fun OpenCamera(
         Text(text = "Camera permission is required to use this feature.")
     }
 
-    if (barcodeText.isNotEmpty()) {
+
+    LaunchedEffect (triggerCamera) {
 
 
-        Text(text = barcodeText)
-        //barcodeText = ""
-        LoadMapData(
+        loadMapData(
             context,
+            triggerCamera,
             barcodeText,
             getTestURL() + "/get_sunotech_protokol_details_by_barcode"
         ) {
-            initializationRequest = it
+            onResult->
+            errorEvent = onResult
+            if (errorEvent?.responseCode == 200) {
 
+                    coroutineScope.launch {
+                        pagerState.animateScrollToPage(1)
+                    }
+
+            }
         }
-        if (initializationRequest) {
-            val coroutineScope = rememberCoroutineScope()
-            LaunchedEffect(Unit) {
-                coroutineScope.launch {
 
-                    pagerState.animateScrollToPage(2)
+    }
 
-                }
+    errorEvent?.let {
+        if(it.responseCode != 200) {
+            MyDialog().RetroDialog(it.responseCode, it.responseMessage) {
+                errorEvent = null
             }
         }
     }
+
+
 }
 
 
@@ -1702,129 +1719,163 @@ fun PageHeader(
     var barcodeField by remember {
         mutableStateOf(PreferencesManager().getBarcode(context))
     }
-    var loadData by remember {
+
+    var triggerRequest by remember {
+        mutableIntStateOf(0)
+    }
+    var errorEvent by remember {
+        mutableStateOf<OnResponseBody?>(null)
+    }
+    var loadingData by remember {
         mutableStateOf(false)
     }
     val models = mapOfModels[titles[page]] ?: emptyList()
 
-    val objectIdModel = models[0] as FieldModel
+
+    val objectIdModel = remember {
+        models[0] as FieldModel
+    }
     //objectIdModel.data = objectId
 
     val barcodeNumberModel = models[1] as FieldModel
     barcodeNumberModel.data = barcodeField
 
-    Column(modifier = modifier.fillMaxSize()) {
-        Text(
-            text = titles[page],
-            Modifier.padding(8.dp), fontSize = TITLE_FONT_SIZE,
-            fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground
-        )
-
-        MyColumn(
-            modifier = Modifier
-                .weight(1f)
-        ) {
-            MyCard {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-
-                    DataField(
-                        objectIdModel,
-                        value = objectIdModel.data,
-                        placeholder = "Номер на обект"
-                    ) {
-                        objectIdModel.data = it
-                    }
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    Button(onClick = {
-                        loadData = true
-                    }, modifier = Modifier.height(40.dp)) {
-                        Text(text = "Зареждане по номер на Обект")
-                    }
-                    Spacer(modifier = Modifier.height(5.dp))
-                }
-            }
-            MyCard() {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    DataField(
-                        barcodeNumberModel,
-                        value = barcodeNumberModel.data,
-                        placeholder = "Номер на баркод"
-                    ) {
-                        barcodeNumberModel.data = it
-                    }
-                }
-
-            }
+    Box(contentAlignment = Alignment.Center) {
+        Column(modifier = modifier.fillMaxSize()) {
 
 
-            for (i in 2 until models.size) {
-                val model = models[i]
+            Text(
+                text = titles[page],
+                Modifier.padding(8.dp), fontSize = TITLE_FONT_SIZE,
+                fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground
+            )
 
+            MyColumn(
+                modifier = Modifier
+                    .weight(1f)
+            ) {
                 MyCard {
-                    Column(Modifier.padding(16.dp)) {
-                        QuestionHeader(model.subTitle)
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
 
-                        when (model) {
-                            is CheckedModel -> {
-                                BinaryChoice(model)
-                            }
+                        DataField(
+                            objectIdModel,
+                            value = objectIdModel.data,
+                            placeholder = "Номер на обект"
+                        ) {
+                            objectIdModel.data = it
+                        }
 
-                            is CountModel -> {
-                                CountField(model, value = model.data)
-                            }
+                        Spacer(modifier = Modifier.height(20.dp))
 
-                            is FieldModel -> DataField(
-                                model,
-                                value = model.data,
-                                lamb = {
-                                    model.data = it
-                                })
+                        Button(onClick = {
+                            loadingData = true
+                            triggerRequest++
+                        }, modifier = Modifier.height(40.dp)) {
+                            Text(text = "Зареждане по номер на Обект")
+                        }
+                        Spacer(modifier = Modifier.height(5.dp))
+                    }
+                }
+                MyCard() {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        DataField(
+                            barcodeNumberModel,
+                            value = barcodeNumberModel.data,
+                            placeholder = "Номер на баркод"
+                        ) {
+                            barcodeNumberModel.data = it
+                        }
+                    }
 
-                            is DropDownModel -> {
-                                DropDownAutomatika(model)
-                            }
+                }
 
-                            is DropDownModelTwo -> {
-                                DropDownGasitelenAgent(model)
+
+                for (i in 2 until models.size) {
+                    val model = models[i]
+
+                    MyCard {
+                        Column(Modifier.padding(16.dp)) {
+                            QuestionHeader(model.subTitle)
+
+                            when (model) {
+                                is CheckedModel -> {
+                                    BinaryChoice(model)
+                                }
+
+                                is CountModel -> {
+                                    CountField(model, value = model.data)
+                                }
+
+                                is FieldModel -> DataField(
+                                    model,
+                                    value = model.data,
+                                    lamb = {
+                                        model.data = it
+                                    })
+
+                                is DropDownModel -> {
+                                    DropDownAutomatika(model)
+                                }
+
+                                is DropDownModelTwo -> {
+                                    DropDownGasitelenAgent(model)
+                                }
                             }
                         }
                     }
                 }
             }
+
+
+
+            BottomPaging(pagerState)
+            Spacer(modifier = Modifier.height(8.dp))
+
         }
-
-
-
-        BottomPaging(pagerState)
-        Spacer(modifier = Modifier.height(8.dp))
-
-    }
-
-    if (loadData) {
-        LoadMapData(
-            context, objectIdModel.data,
-            getTestURL() + "/get_sunotech_protokol_details_by_id",
-        ) {
-            loadData = false
+        if(loadingData) {
+            CircularProgressIndicator()
         }
     }
 
+
+
+    LaunchedEffect(triggerRequest) {
+
+            loadMapData(
+                context, triggerRequest,
+                objectIdModel.data,
+                getTestURL() + "/get_sunotech_protokol_details_by_id",
+            ) { onResponse ->
+                errorEvent = onResponse
+                loadingData = false
+            }
+
+
+    }
+    errorEvent?.let {
+        if(it.responseCode != 200) {
+            MyDialog().RetroDialog(it.responseCode, it.responseMessage) {
+                errorEvent = null
+            }
+        }
+    }
 
 }
 
 // endregion Page Header
-@Composable
-fun LoadMapData(
+
+fun loadMapData(
     context: Context,
+    triggerRequest : Int,
     id: String,
     url: String,
-    result: (onSuccess: Boolean) -> Unit
-) {
+    result : (onResponse : OnResponseBody) -> Unit) {
+
+    if(triggerRequest == 0) return
+
     val api: ISunotechAPI = RetrofitInstance.getInstance().create(ISunotechAPI::class.java)
 
 
@@ -1841,8 +1892,12 @@ fun LoadMapData(
                 call: Call<MyJsonObject?>,
                 response: Response<MyJsonObject?>
             ) {
+
+
                 val result = response.body()
+
                 if (result != null) {
+
 
                     PreferencesManager().setObjectId(context, result.objectId)
                     // very important !!!
@@ -2016,7 +2071,7 @@ fun LoadMapData(
 
                     }
                 }
-                result(true)
+                result(OnResponseBody(response.code(),response.message()))
 
             }
 
@@ -2026,11 +2081,13 @@ fun LoadMapData(
             ) {
                 t.printStackTrace()
                 // both success or failure we continue to hea
-                result(true)
+
+                result(OnResponseBody(500,t.message ?: "Сървърна грешка"))
             }
 
 
         })
+
 }
 
 fun completeProtocol(
@@ -2047,7 +2104,7 @@ fun completeProtocol(
     // for debugging
 
 
-    for (i in 2 until titles.size) {
+    for (i in 1 until titles.size) {
         val title = titles[i]
 
         //      val x = title
@@ -2149,7 +2206,7 @@ fun completeProtocol(
         }
         jsonMap.put(title, jsonList)
     }
-    val headerModels: ArrayList<IModel> = mapOfModels[titles[2]]!!
+    val headerModels: ArrayList<IModel> = mapOfModels[titles[1]]!!
     val objectIdModel = headerModels[0] as FieldModel
     val barcodeModel = headerModels[1] as FieldModel
     val documentDateModel = headerModels[5] as FieldModel

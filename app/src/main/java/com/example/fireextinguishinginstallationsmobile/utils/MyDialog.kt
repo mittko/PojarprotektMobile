@@ -35,7 +35,7 @@ class MyDialog {
     @Composable
     fun RetroDialog(
         title: Int, message: String,
-        backgroundColor: Color = Color(0xffcccccc),
+        backgroundColor: Color = Color(0xFFFEF7FF),
         onDismissRequest: () -> Unit
     ) {
 
@@ -52,7 +52,7 @@ class MyDialog {
                     Row(
                         Modifier
                             .fillMaxWidth()
-                            .background(Blue)
+                            .background(Color(0xFF674FA3))
                             .padding(start = 8.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
@@ -72,7 +72,7 @@ class MyDialog {
                         ) {
                             Button(
                                 onClick = onDismissRequest, shape = RectangleShape,
-                                colors = ButtonDefaults.buttonColors(Color.Transparent)
+                                colors = ButtonDefaults.buttonColors(Color(0xFFFFAF00))
                             ) {
                                 Icon(Icons.Default.Close, contentDescription = "Close")
                             }
@@ -89,7 +89,7 @@ class MyDialog {
 
                         Icon(
                             Icons.Filled.Info, contentDescription = "Error",
-                            tint = Red, modifier = Modifier.size(48.dp)
+                            tint = Color(0xFFFFAF00), modifier = Modifier.size(48.dp)
                         )
 
                         if (servermsg.isEmpty()) {
@@ -114,7 +114,7 @@ class MyDialog {
                     ) {
                         Button(
                             onClick = onDismissRequest, Modifier.padding(bottom = 10.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = Blue)
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF674FA3))
                         ) {
                             Text(
                                 text = "Ok", fontFamily = FontFamily.Monospace,

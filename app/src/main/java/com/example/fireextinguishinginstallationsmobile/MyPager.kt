@@ -60,6 +60,8 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.fireexPreviewOptioninguishinginsPreviewOptionallaPreviewOptionionsmobile.uPreviewOptionils.TextFieldMenu
@@ -100,14 +102,15 @@ fun ConfirmationDialog(
     AlertDialog(onDismissRequest = onDismissRequest, title = {
         Text(text = "", color = Color.Black)
     }, text = {
-        Text(text = "Сигурни ли сте че искате да запишете данните ?", color = Color.DarkGray)
+        Text(text = "Сигурни ли сте че искате да запишете данните ?", color = Color.DarkGray, fontSize = TextUnit(18f,
+            TextUnitType.Sp))
     }, confirmButton = {
         TextButton(onClick = onConfirm) {
-            Text(text = "Да", color = Color.Green)
+            Text(text = "Да", color = Color(0xFF674FA3), fontSize = TextUnit(18f, TextUnitType.Sp))
         }
     }, dismissButton = {
         TextButton(onClick = onDismissRequest) {
-            Text(text = "Не", color = Color.Gray)
+            Text(text = "Не", color = Color.Gray, fontSize = TextUnit(18f, TextUnitType.Sp))
         }
     })
 
