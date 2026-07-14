@@ -9,8 +9,7 @@ import com.example.fireextinguishinginstallationsmobile.interfaces.ICheckable
 
 @Stable
 data class ExtendedCheckedModel(
-    override val subTitle: String,
-    override val position: Int
+    override val subTitle: String
 ) : ICheckable {
 
 

@@ -1,5 +1,6 @@
 package com.example.fireextinguishinginstallationsmobile
 
+import android.R.attr.type
 import android.content.Context
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -8,16 +9,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -31,6 +29,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -57,7 +56,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.TextUnit
@@ -66,7 +65,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.fireexPreviewOptioninguishinginsPreviewOptionallaPreviewOptionionsmobile.uPreviewOptionils.TextFieldMenu
 import com.example.fireextinguishinginstallationsmobile.data.mapOfModels
-import com.example.fireextinguishinginstallationsmobile.data.titles
+import com.example.fireextinguishinginstallationsmobile.data.gasSections
+import com.example.fireextinguishinginstallationsmobile.enums.InstallationType
 import com.example.fireextinguishinginstallationsmobile.interfaces.ICheckable
 import com.example.fireextinguishinginstallationsmobile.interfaces.IModel
 import com.example.fireextinguishinginstallationsmobile.json.MyJsonObject
@@ -74,12 +74,14 @@ import com.example.fireextinguishinginstallationsmobile.models.CheckedModelTwo
 import com.example.fireextinguishinginstallationsmobile.models.CountModel
 import com.example.fireextinguishinginstallationsmobile.models.DropDownModel
 import com.example.fireextinguishinginstallationsmobile.models.DropDownModelTwo
+import com.example.fireextinguishinginstallationsmobile.models.ExtendedCheckedModel
 import com.example.fireextinguishinginstallationsmobile.models.TextModel
 import com.example.fireextinguishinginstallationsmobile.models.jsonmodels.JsonModel
+import com.example.fireextinguishinginstallationsmobile.retrofit.HttpResponse
+import com.example.fireextinguishinginstallationsmobile.utils.MyDialog
 import com.example.fireextinguishinginstallationsmobile.utils.PreferencesManager
 import com.example.fireextinguishinginstallationsmobile.utils.PreviewOption
 import com.example.fireextinguishinginstallationsmobile.utils.SpeechToTextManager
-import com.google.common.collect.Multimaps.index
 import com.google.gson.Gson
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -203,20 +205,18 @@ fun readProtocol(context: Context) {
     val x = 0
 }
 
+
 @Composable
-fun Modifier.setRippleEffectOnClick(onClick: () -> Unit): Modifier = composed {
-    clickable(
-        interactionSource = remember { MutableInteractionSource() },
-        indication = ripple(color = Color.Black),
-        onClick = onClick
-    )
-}
-@Composable
-fun BottomPaging(pagerState: PagerState, mandatoryTab : Boolean = false) {
+fun BottomPaging(pagerState: PagerState) {
 
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-
+    var onConfirm by remember {
+        mutableStateOf(false)
+    }
+    var httpResponse by remember {
+        mutableStateOf<HttpResponse?>(null)
+    }
 
     MyCard {
         ScrollableTabRow(
@@ -267,9 +267,7 @@ fun BottomPaging(pagerState: PagerState, mandatoryTab : Boolean = false) {
 
 
 
-            var onConfirm by remember {
-                mutableStateOf(false)
-            }
+
             Button(onClick = {
                 onConfirm = true
             }, modifier = Modifier.fillMaxWidth()) {
@@ -280,14 +278,25 @@ fun BottomPaging(pagerState: PagerState, mandatoryTab : Boolean = false) {
                 ConfirmationDialog(onDismissRequest = {
                     onConfirm = false
                 }) {
-                    val user = PreferencesManager().getUser(context)
-                    val token = PreferencesManager().getToken(context)
-                    completeProtocol(context = context, user, token)
+                    val prefManager = PreferencesManager()
+                    val user = prefManager.getUser(context)
+                    val token = prefManager.getToken(context)
+                    val installationType = prefManager.getInstallationType(context)
+                    completeProtocol(context = context, user, token, installationType) {
+                            httpResponse = it
+                    }
                     onConfirm = false
                 }
             }
         }
 
+           httpResponse?.let {
+               if(it.code != 200) {
+                   MyDialog().RetroDialog(it.code,it.message,) {
+                       httpResponse = null
+                   }
+               }
+           }
 
 
 
@@ -576,9 +585,9 @@ fun CountInputField(model: IModel, label: String = "брой") {
 }
 
 @Composable
-fun Title(page: Int) {
+fun Title(title : String) {
     Text(
-        text = "№${page+1}. ${titles[page]}",
+        text = title,
         modifier = Modifier.padding(8.dp),
         fontSize = TITLE_FONT_SIZE,
         fontWeight = FontWeight.ExtraBold,
@@ -611,3 +620,108 @@ fun MyColumn(modifier: Modifier, content: @Composable () -> Unit) {
     }
 }
 
+@Composable
+fun ExtendedCheckedCard(index: Int, model: ExtendedCheckedModel) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            // Ред 1: Номер и Заглавие
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "№${index + 1}. ",
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
+                )
+                QuestionHeader(model.subTitle)
+            }
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), thickness = 0.5.dp)
+
+            // Ред 2: Налягане (Текущо и Предишно едно до друго за сравнение)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                TextField(
+                    value = model.pressure.toString().replace("0.0", ""),
+                    onValueChange = { model.pressure = it.toFloatOrNull() ?: 0f },
+                    modifier = Modifier.weight(1f),
+                    label = { Text("Налягане (bar)", fontSize = 11.sp) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    singleLine = true,
+                    placeholder = { Text("текущо", fontSize = 10.sp) }
+                )
+                TextField(
+                    value = model.lastPressure.toString().replace("0.0", ""),
+                    onValueChange = { model.lastPressure = it.toFloatOrNull() ?: 0f },
+                    modifier = Modifier.weight(1f),
+                    label = { Text("Предишно (bar)", fontSize = 11.sp) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    singleLine = true,
+                    placeholder = { Text("от преден път", fontSize = 10.sp) }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Ред 3: Дата на последно хидростатично изпитване
+            TextField(
+                value = model.hidrostatMeasurementDate,
+                onValueChange = { model.hidrostatMeasurementDate = it },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Хидростатично изпитване важи до", fontSize = 11.sp) },
+                placeholder = { Text("дд.мм.гггг", fontSize = 12.sp) },
+                singleLine = true
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Ред 4: Устройство (Преместено под датата на отделен ред)
+            TextField(
+                value = model.device,
+                onValueChange = { model.device = it },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Устройство", fontSize = 11.sp) },
+                singleLine = true,
+                textStyle = TextStyle(fontSize = 14.sp)
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Ред 5: Фабричен номер (На отделен ред)
+            TextField(
+                value = model.fabNum,
+                onValueChange = { model.fabNum = it },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Фабричен №", fontSize = 11.sp) },
+                singleLine = true,
+                textStyle = TextStyle(fontSize = 14.sp)
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Ред 6: Статус Изправност (Да/Не)
+            LabeledBinaryChoice(model, label = "Техническа изправност") {
+                model.data = it
+            }
+
+            // Ред 7: Допълнителни бележки
+            Text(
+                text = "Забележки / Коментар:",
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
+            )
+            DataField(model, value = model.data, lamb = {
+                model.data = it
+            })
+        }
+    }
+}

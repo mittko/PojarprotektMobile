@@ -1,3 +1,3 @@
 package com.example.fireextinguishinginstallationsmobile.retrofit
 
-data class HttpResponse(val code: Int, var message: String)
+data class HttpResponse(var code: Int, var message: String)

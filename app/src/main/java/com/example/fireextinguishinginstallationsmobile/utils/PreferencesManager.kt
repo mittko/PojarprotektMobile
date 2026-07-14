@@ -2,6 +2,7 @@ package com.example.fireextinguishinginstallationsmobile.utils
 
 import android.content.Context
 import androidx.core.content.edit
+import com.example.fireextinguishinginstallationsmobile.enums.InstallationType
 
 class PreferencesManager {
 
@@ -29,19 +30,19 @@ class PreferencesManager {
         return "Bearer $token"
     }
 
-    fun setDataLoadingType(context: Context, defaultData: Boolean) {
+    fun setInstallationType(context: Context, type: InstallationType) {
         val sharedPreferences =
-            context.getSharedPreferences("DEFAULT_DATA_TYPE", Context.MODE_PRIVATE)
+            context.getSharedPreferences("INSTALLATION_DATA_TYPE", Context.MODE_PRIVATE)
         sharedPreferences.edit {
-            putBoolean("defaultData", defaultData)
+            putString("installationType",if(type == InstallationType.GAS) "gas" else "aerozol")
             apply()
         }
     }
 
-    fun getDataLoadingType(context: Context): Boolean {
+    fun getInstallationType(context: Context): String {
         val sharedPreferences =
-            context.getSharedPreferences("DEFAULT_DATA_TYPE", Context.MODE_PRIVATE)
-        return sharedPreferences.getBoolean("defaultData", false)
+            context.getSharedPreferences("INSTALLATION_DATA_TYPE", Context.MODE_PRIVATE)
+        return sharedPreferences.getString("installationType", "") ?: ""
     }
 
     fun setObjectId(context: Context, objectId: String) {

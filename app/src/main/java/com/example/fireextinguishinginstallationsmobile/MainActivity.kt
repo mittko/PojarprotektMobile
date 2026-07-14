@@ -16,8 +16,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,11 +25,8 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerDefaults
 import androidx.compose.foundation.pager.PagerState
@@ -48,16 +43,12 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -66,7 +57,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -76,8 +66,11 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.example.fireextinguishinginstallationsmobile.data.aerozolSections
+import com.example.fireextinguishinginstallationsmobile.data.dataMap
 import com.example.fireextinguishinginstallationsmobile.data.mapOfModels
-import com.example.fireextinguishinginstallationsmobile.data.titles
+import com.example.fireextinguishinginstallationsmobile.data.gasSections
+import com.example.fireextinguishinginstallationsmobile.enums.InstallationType
 import com.example.fireextinguishinginstallationsmobile.interfaces.IModel
 import com.example.fireextinguishinginstallationsmobile.json.MyJsonObject
 import com.example.fireextinguishinginstallationsmobile.json.ObjectIdModel
@@ -129,10 +122,9 @@ import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Response
 import java.io.File
-import androidx.lifecycle.lifecycleScope
 import com.example.fireextinguishinginstallationsmobile.models.auth.OnResponseBody
-import kotlinx.coroutines.coroutineScope
 import kotlin.collections.forEach
+import kotlin.text.Typography.section
 
 
 // Ctrl + Alt + O clean unused imports
@@ -224,12 +216,10 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
                         } else {
-                            MainScreen(
-                                Modifier
-                                    .padding(innerPadding)
-                                    .imePadding()
-                                    .padding(10.dp, 15.dp, 10.dp, 0.dp)
-                            )
+                            InitialPage(modifier = Modifier
+                                .padding(innerPadding)
+                                .imePadding()
+                                .padding(10.dp, 15.dp, 10.dp, 0.dp))
                         }
 
 
@@ -326,14 +316,44 @@ fun LoginPage(modifier: Modifier, context: Context, onRefreshToken: (String?, St
     }
 }
 
+
+
 @Composable
-fun MainScreen(modifier: Modifier) {
+fun MainScreen(modifier: Modifier, type : InstallationType) {
+
+    mapOfModels.clear()
+
+    when(type) {
+        InstallationType.AEROZOL ->  {
+            aerozolSections.forEachIndexed( action = {
+                index, value ->
+
+                val models = dataMap[value]
+                if(models != null) {
+                    mapOfModels.put(value, models)
+                }
+            })
+        }
+        InstallationType.GAS -> {
+             gasSections.forEachIndexed {
+                 index, value ->
+                 val models = dataMap[value]
+                 if(models != null) {
+                     mapOfModels.put(value, models)
+                 }
+
+             }
+        }
+    }
+
 
     val pagerState = rememberPagerState(
-        1,
+        0,
         pageCount = {
             mapOfModels.size
         })
+
+
 
     // 1. Create a custom fling behavior
     val customFlingBehavior = PagerDefaults.flingBehavior(
@@ -344,6 +364,9 @@ fun MainScreen(modifier: Modifier) {
         )
     )
 
+
+
+
     Column(modifier = Modifier.fillMaxSize()) {
 
         // region Pager
@@ -352,36 +375,189 @@ fun MainScreen(modifier: Modifier) {
             flingBehavior = customFlingBehavior,
             userScrollEnabled = false,
             // key = { pageIndex -> "page_key_$pageIndex" }
-            modifier = Modifier.fillMaxWidth().weight(1f)
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
 
         ) { page ->
-            when (page) {
-               // 0 -> InitialPage(modifier, pagerState)
-                0 -> OpenCamera(modifier, pagerState)
-                1 -> PageHeader(modifier, page, pagerState)
-                2 -> PageThree(modifier, page, pagerState)
-                3 -> PageFour(modifier, page, pagerState)
-                4 -> PageFive(modifier, page, pagerState)
-                5 -> PageSix(modifier, page, pagerState)
-                6, 7, 8 -> PageSeven(modifier, page, pagerState)
-                9, 10 -> PageTen(modifier, page, pagerState)
-                11 -> PageTwelve(modifier, page, pagerState)
-                12 -> PageThirteen(modifier, page, pagerState)
-                13 -> PageFourteen(modifier, page, pagerState)
-                14 -> PageFifteen(modifier, page, pagerState)
-                15, 16, 17 -> PageSixteen(modifier, page, pagerState)
-                18, 20 -> PageNineteen(modifier, page, pagerState)
-                19 -> PageTwenty(modifier, page, pagerState)
-                21 -> PageTwentyTwo(modifier, page, pagerState)
-                22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33 -> PageTwentyThree(
-                    modifier,
-                    page,
-                    pagerState
-                )
 
-                34 -> LastPage(modifier, page, pagerState)
 
+            when(type) {
+                InstallationType.AEROZOL -> {
+
+                    when (page) {
+
+                        0 -> OpenCamera(modifier, pagerState)
+                        1 -> {
+                            val section = aerozolSections[page]
+                            PageHeader(modifier, page, section,pagerState)
+                        }
+                        2 -> {
+                            val section = aerozolSections[page]
+                            PregledControlPanel(modifier, "№${page+1} $section", section, pagerState)
+                        }
+                        3 -> {
+                            val section = aerozolSections[page]
+                            FunkcionalenTestElTablo(modifier, title = "№${page+1} $section",section ,pagerState)
+                        }
+                        4 -> {
+                            val section = aerozolSections[page]
+                            TestOsnovnoZahranvane(modifier, "№${page+1} $section", section,pagerState)
+                        }
+                        5 -> {
+                            val section = aerozolSections[page]
+                            TestOsnovnaPlatka(modifier, title = "№${page+1} $section",  section = section,pagerState)
+                        }
+                        6 -> {
+                            val section = aerozolSections[page]
+                            ProverkaPravilnaSvyrzanost(modifier, "№${page+1} $section", section  = section,pagerState)
+                        }
+                        7 -> {
+                            val section = aerozolSections[page]
+                            FunkcionalenTestnaZvukovSignalizator(modifier,"№${page+1} $section",section,pagerState)
+                        }
+                        8  -> {
+                            val section = aerozolSections[page]
+                            PregledRezervnoZahranvane(modifier, "№${page+1} $section", section,pagerState)
+                        }
+                        9 -> {
+                            val section = aerozolSections[page]
+                            ProverkaLupoveILinii(modifier, "№${page+1} $section", section,pagerState)
+                        }
+                        10 -> {
+                            val section = aerozolSections[page]
+                            ProverkaPojaroizvestitelenDetektor(modifier, "№${page+1} $section", section,pagerState)
+                        }
+                        11 -> {
+                            val section = aerozolSections[page]
+                            ProverkaSvobodnoProstranstvoOkoloPojaroizvestitelenDetektor(modifier, "№${page+1} $section",
+                                section,pagerState)
+                        }
+                        12 -> {
+                            val section = aerozolSections[page]
+                            TestMehanizamVsekiRychenButon(modifier, "№${page+1} $section", section,pagerState)
+                        }
+                        13 -> {
+                            val section = aerozolSections[page]
+                            ProverkaNaDostypDoVsichkiPojaroizvestitelniButoni(modifier, "№${page+1} $section",
+                                section,pagerState)
+                        }
+                        14 -> {
+                            val section = aerozolSections[page]
+                            ProverkaZaNalichieUkazatelniZnaci(modifier,"№${page+1} $section",section,pagerState)
+                        }
+                        15 -> {
+                            val section = aerozolSections[page]
+                            VizualnaProverkaNaSydoveteZaGasitelenAgent(modifier, "№${page+1} $section",
+                                section,pagerState)
+                        }
+                        16 -> {
+                            val section = aerozolSections[page]
+                            ProverkaSignalniIIzneseniUstrojstva(modifier, "№${page+1} $section",
+                                section,pagerState)
+                        }
+                        17, 18, 19, 20, 21 -> {
+                            val section = aerozolSections[page]
+                            ZakluchitelniProverki(
+                                modifier,
+                                "№${page+1} $section",
+                                section,
+                                pagerState
+                            )
+                        }
+
+                        22 -> {
+                            val section = aerozolSections[page]
+                            LastPage(modifier, "№${page+1} $section",
+                            section,pagerState)
+                    }
+
+                    }
+                }
+                InstallationType.GAS -> {
+                    when (page) {
+
+                        0 -> OpenCamera(modifier, pagerState)
+                        1 -> {
+                            val section = gasSections[page]
+
+                            PageHeader(modifier, page, section,pagerState)
+                        }
+                        2 -> {
+                            val section = gasSections[page]
+                            PregledControlPanel(modifier, "№${page+1} $section", section,pagerState)
+                        }
+                        3 -> {
+                            val section = gasSections[page]
+                            FunkcionalenTestElTablo(modifier, "№${page+1} $section",section, pagerState)
+                        }
+                        4 -> {
+                            val section = gasSections[page]
+                            TestOsnovnoZahranvane(modifier, "№${page+1} $section", section,pagerState)
+                        }
+                        5 -> {
+                            val section = gasSections[page]
+                            TestOsnovnaPlatka(modifier, "№${page+1} $section", section,pagerState)
+                        }
+                        6, 7, 8 -> {
+                            val section = gasSections[page]
+                            ProverkaPravilnaSvyrzanost(modifier, "№${page+1} $section", section,pagerState)
+                        }
+                        9, 10 -> {
+                            val section = gasSections[page]
+                            ProverkaRychenSpiratelenKran(modifier, "№${page+1} $section",section, pagerState)
+                        }
+                        11 -> {
+                            val section = gasSections[page]
+                            PregledRezervnoZahranvane(modifier, "№${page+1} $section", section,pagerState)
+                        }
+                        12 -> {
+                            val section = gasSections[page]
+                            ProverkaLupoveILinii(modifier, "№${page+1} $section", section,pagerState)
+                        }
+                        13 -> {
+                            val section = gasSections[page]
+                            ProverkaPojaroizvestitelenDetektor(modifier, "№${page+1} $section", section,pagerState)
+                        }
+                        14 -> {
+                            val section = gasSections[page]
+                            ProverkaSvobodnoProstranstvoOkoloPojaroizvestitelenDetektor(modifier, "№${page+1} $section", section,pagerState)
+                        }
+                        15, 16, 17 -> {
+                            val section = gasSections[page]
+                            TestMehanizamVsekiRychenButon(modifier, "№${page+1} $section", section,pagerState)
+                        }
+                        18, 20 -> {
+                            val section = gasSections[page]
+                            VidSydZaGAsitelenAgent(modifier, "№${page+1} $section", section,pagerState)
+                        }
+                        19 -> {
+                            val section = gasSections[page]
+                            VizualnaProverkaNaSydoveteZaGasitelenAgent(modifier, "№${page+1} $section", section,pagerState)
+                        }
+                        21 -> {
+                            val section = gasSections[page]
+                            ProverkaSignalniIIzneseniUstrojstva(modifier, "№${page+1} $section", section,pagerState)
+                        }
+                        22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33 -> {
+                            val section = gasSections[page]
+                            ZakluchitelniProverki(
+                                modifier,
+                                "№${page+1} $section",
+                                section,
+                                pagerState
+                            )
+                        }
+
+                        34 -> {
+                            val section = gasSections[page]
+                            LastPage(modifier, "№${page+1} $section", section,pagerState)
+                        }
+
+                    }
+                }
             }
+
 
         }
     }
@@ -390,74 +566,59 @@ fun MainScreen(modifier: Modifier) {
 }
 
 @Composable
-fun InitialPage(modifier: Modifier, pagerState: PagerState) {
+fun InitialPage(modifier: Modifier) {
 
     val context = LocalContext.current
 
-    val coroutineScope = rememberCoroutineScope()
-
-    var shouldLoadDefaultData by remember {
-        mutableStateOf(false)
-    }
-    var shouldLoadCurrentData by remember {
-        mutableStateOf(false)
+    var shouldOpenPage by remember {
+        mutableIntStateOf(0)
     }
 
-    Box(contentAlignment = Alignment.Center) {
-        MyCard {
-            Column(
-                modifier = modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    TextField(value = "", onValueChange = {
+    when(shouldOpenPage) {
+        0 -> {
+            Box(contentAlignment = Alignment.Center) {
+                MyCard {
+                    Column(
+                        modifier = modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
 
-                    }, placeholder = {
-                        Text(text = "ID номер")
-                    })
-                    Spacer(modifier = Modifier.height(30.dp))
-                    Button(onClick = {
-                        shouldLoadDefaultData = true
-                    }, modifier = Modifier.height(60.dp)) {
-                        Text(text = "Зареждане")
+                            Button(onClick = {
+                               shouldOpenPage = 1
+                            }, modifier = Modifier.height(60.dp)) {
+                                Text(text = "Аерозолни ПГИ")
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(50.dp))
+
+                        Button(onClick = {
+                             shouldOpenPage = 2
+                        }, modifier = Modifier.height(60.dp)) {
+                            Text(text = "Газови ПГИ")
+                        }
                     }
                 }
-
-                Spacer(modifier = Modifier.height(50.dp))
-                Button(onClick = {
-                    shouldLoadCurrentData = true
-                }, modifier = Modifier.height(60.dp)) {
-                    Text(text = "Сканирай баркод")
-                }
             }
+        }
+        1 -> {
+            PreferencesManager().setInstallationType(context, InstallationType.AEROZOL)
+            MainScreen(modifier, InstallationType.AEROZOL)
+        }
+        2 -> {
+            PreferencesManager().setInstallationType(context, InstallationType.GAS)
+            MainScreen(modifier, InstallationType.GAS)
         }
     }
 
 
 
-    if (shouldLoadDefaultData) {
-        PreferencesManager().setDataLoadingType(context, true)
 
-        LaunchedEffect(Unit) {
-            coroutineScope.launch {
-                pagerState.animateScrollToPage(1)
-            }
-        }
-
-    }
-    if (shouldLoadCurrentData) {
-        PreferencesManager().setDataLoadingType(context, false)
-
-        LaunchedEffect(Unit) {
-            coroutineScope.launch {
-                pagerState.animateScrollToPage(1)
-            }
-        }
-    }
 
 
 }
@@ -465,18 +626,19 @@ fun InitialPage(modifier: Modifier, pagerState: PagerState) {
 
 //region Page One
 @Composable
-fun PageThree(
+fun PregledControlPanel(
     modifier: Modifier,
-    page: Int,
+    title : String,
+    section: String,
     pagerState: PagerState
 ) {
-
+    val models = mapOfModels[section] ?: emptyList()
 
     Column(modifier = modifier.fillMaxSize()) {
         // 1. Заглавие на страницата
-        Title(page)
+        Title(title)
 
-        val models = mapOfModels[titles[page]]!!
+
 
         // 2. Списъкът с карти - той заема свободното място (weight 1)
         MyColumn(
@@ -499,7 +661,7 @@ fun PageThree(
         }
 
         // 3. Навигацията - тя е ВИНАГИ видима тук
-        BottomPaging(pagerState)
+        BottomPaging(pagerState )
         Spacer(modifier = Modifier.height(8.dp))
     }
 }
@@ -507,17 +669,20 @@ fun PageThree(
 
 //region Page Two
 @Composable
-fun PageFour(
+fun FunkcionalenTestElTablo(
     modifier: Modifier,
-    page: Int,
+    title : String,
+    section: String,
     pagerState: PagerState
 ) {
+    val models = mapOfModels[section] ?: emptyList()
+
     Column(modifier = modifier.fillMaxSize()) {
 
         // 1. Заглавие на страницата
-        Title(page)
+        Title(title)
 
-        val models = mapOfModels[titles[page]]!!
+
 
         // 2. Списъкът с контроли (weight 1 заема средата)
         MyColumn(
@@ -565,17 +730,19 @@ fun PageTwoControls(model: IModel) {
 
 //region Page Three
 @Composable
-fun PageFive(
+fun TestOsnovnoZahranvane(
     modifier: Modifier,
-    page: Int,
+    title: String,
+    section: String,
     pagerState: PagerState
 ) {
-    val context = LocalContext.current
+    val models = mapOfModels[section] ?: emptyList()
+
     Column(modifier = modifier.fillMaxSize()) {
         // Заглавие на страницата
-        Title(page)
+        Title(title)
 
-        val models = mapOfModels[titles[page]]!!
+
 
         MyColumn(
             modifier = Modifier.weight(1f)
@@ -662,7 +829,7 @@ fun PageFive(
         }
 
         // Навигацията - закована долу
-        BottomPaging(pagerState, mandatoryTab = true)
+        BottomPaging(pagerState)
         Spacer(modifier = Modifier.height(10.dp))
     }
 
@@ -672,16 +839,20 @@ fun PageFive(
 
 //region Page Fourth
 @Composable
-fun PageSix(
+fun TestOsnovnaPlatka(
     modifier: Modifier,
-    page: Int,
+    title: String,
+    section: String,
     pagerState: PagerState
 ) {
+
+    val models = mapOfModels[section] ?: emptyList()
+
     Column(modifier = modifier.fillMaxSize()) {
         // 1. Заглавие на страницата
-        Title(page)
+        Title(title)
 
-        val models = mapOfModels[titles[page]]!!
+
 
         // 2. Списъкът с карти (weight 1 фиксира навигацията долу)
         MyColumn(
@@ -775,16 +946,19 @@ fun PageSix(
 
 //region Page Five
 @Composable
-fun PageSeven(
+fun ProverkaPravilnaSvyrzanost(
     modifier: Modifier,
-    page: Int,
+    title: String,
+    section: String,
     pagerState: PagerState
 ) {
+    val models = mapOfModels[section] ?: emptyList()
+
     Column(modifier = modifier.fillMaxSize()) {
         // 1. Заглавие на страницата
-        Title(page)
+        Title(title)
 
-        val models = mapOfModels[titles[page]] ?: emptyList()
+
 
         // 2. Списък с карти - ползваме weight(1f), за да не "избягат" стрелките
         MyColumn(
@@ -821,18 +995,117 @@ fun PageSeven(
 }
 // endregion Page Five
 
-
-// region Page Eight
 @Composable
-fun PageTen(
+fun FunkcionalenTestnaZvukovSignalizator(
     modifier: Modifier,
-    page: Int,
+    title: String,
+    section: String,
     pagerState: PagerState
 ) {
 
+    val models = mapOfModels[section] ?: emptyList()
+
     Column(modifier = modifier.fillMaxSize()) {
-        Title(page)
-        val models = mapOfModels[titles[page]]!!
+        // 1. Заглавие на страницата
+        Title(title)
+
+
+
+        // 2. Списък с карти - ползваме weight(1f), за да не "избягат" стрелките
+        MyColumn(
+            modifier = Modifier
+                .weight(1f)
+        ) {
+            models.forEach { model ->
+                MyCard {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        // Блокче 2: Ред с "изправни" и Да/Не бутони
+                        LabeledBinaryChoice(model, label = "изправни") {
+
+                        }
+
+                        // Блокче 3: Поле за забележка
+                        Spacer(modifier = Modifier.height(8.dp))
+                        val fieldModel = model as CheckedModel
+                        DataField(
+                            model,
+                            placeholder = "Забележка...",
+                            value = fieldModel.data,
+                            lamb = {
+                                fieldModel.data = it
+                            })
+                    }
+                }
+            }
+        }
+
+        // 3. Навигация (BottomPaging) - фиксирана най-отдолу
+        BottomPaging(pagerState)
+        Spacer(modifier = Modifier.height(8.dp))
+    }
+}
+@Composable
+fun ProverkaDopylnitelniSyoraveniq(
+    modifier: Modifier,
+    title : String,
+    section: String,
+    pagerState: PagerState
+) {
+
+    val models = mapOfModels[section] ?: emptyList()
+
+    Column(modifier = modifier.fillMaxSize()) {
+        // 1. Заглавие на страницата
+        Title(title)
+
+
+
+        // 2. Списък с карти - ползваме weight(1f), за да не "избягат" стрелките
+        MyColumn(
+            modifier = Modifier
+                .weight(1f)
+        ) {
+            models.forEach { model ->
+                MyCard {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        // Блокче 2: Ред с "изправни" и Да/Не бутони
+                        LabeledBinaryChoice(model, label = "изправни") {
+
+                        }
+
+                        // Блокче 3: Поле за забележка
+                        Spacer(modifier = Modifier.height(8.dp))
+                        val fieldModel = model as CheckedModel
+                        DataField(
+                            model,
+                            placeholder = "Забележка...",
+                            value = fieldModel.data,
+                            lamb = {
+                                fieldModel.data = it
+                            })
+                    }
+                }
+            }
+        }
+
+        // 3. Навигация (BottomPaging) - фиксирана най-отдолу
+        BottomPaging(pagerState)
+        Spacer(modifier = Modifier.height(8.dp))
+    }
+}
+// region Page Eight
+@Composable
+fun ProverkaRychenSpiratelenKran(
+    modifier: Modifier,
+    title: String,
+    section: String,
+    pagerState: PagerState
+) {
+    val models = mapOfModels[section] ?: emptyList()
+
+    Column(modifier = modifier.fillMaxSize()) {
+        Title(title)
+
         MyColumn(modifier = Modifier.weight(1f)) {
             models.forEach { model ->
                 val checkedModel = model as CheckedModel
@@ -852,19 +1125,52 @@ fun PageTen(
     }
 }
 // endregion Page Eight
-
-//region Page Ten
 @Composable
-fun PageTwelve(
+fun ProverkaRychnoPuskovoUstrojstvo(
     modifier: Modifier,
-    page: Int,
+    title: String,
+    section: String,
     pagerState: PagerState
 ) {
+    val models = mapOfModels[section] ?: emptyList()
+
+    Column(modifier = modifier.fillMaxSize()) {
+        Title(title = title)
+
+        MyColumn(modifier = Modifier.weight(1f)) {
+            models.forEach { model ->
+                val checkedModel = model as CheckedModel
+                MyCard {
+                    Column(Modifier.padding(16.dp)) {
+                        BinaryChoice(model)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        DataField(model, value = checkedModel.data, lamb = {
+                            checkedModel.data = it
+                        })
+                    }
+                }
+            }
+        }
+        BottomPaging(pagerState)
+        Spacer(modifier = Modifier.height(8.dp))
+    }
+}
+//region Page Ten
+@Composable
+fun PregledRezervnoZahranvane(
+    modifier: Modifier,
+    title: String,
+    section : String,
+    pagerState: PagerState
+) {
+
+    val models = mapOfModels[section] ?: emptyList()
+
     Column(modifier = modifier.fillMaxSize()) {
         // 1. Заглавие на страницата
-        Title(page)
+        Title(title)
 
-        val models = mapOfModels[titles[page]] ?: emptyList()
+
 
         // 2. Списък с карти (Автоматично обхожда всичките 14 модела)
         Column(
@@ -974,16 +1280,20 @@ fun PageTwelve(
 
 // region Page Eleven
 @Composable
-fun PageThirteen(
+fun ProverkaLupoveILinii(
     modifier: Modifier,
-    page: Int,
+    title: String,
+    section: String,
     pagerState: PagerState
 ) {
+
+    val models = mapOfModels[section] ?: emptyList()
+
     Column(modifier = modifier.fillMaxSize()) {
         // 1. Основно заглавие на страницата
-        Title(page)
+        Title(title)
 
-        val models = mapOfModels[titles[page]] ?: emptyList()
+
 
         // 2. Скролираща се част с картите (weight 1 държи навигацията долу)
         MyColumn(
@@ -1031,14 +1341,18 @@ fun PageThirteen(
 
 //region Page Twelve
 @Composable
-fun PageFourteen(
+fun ProverkaPojaroizvestitelenDetektor(
     modifier: Modifier,
-    page: Int,
+    title: String,
+    section: String,
     pagerState: PagerState
 ) {
+
+    val models = mapOfModels[section] ?: emptyList()
+
     Column(modifier = modifier.fillMaxSize()) {
-        Title(page)
-        val models = mapOfModels[titles[page]] ?: emptyList()
+        Title(title)
+
 
         Column(
             modifier = Modifier
@@ -1070,14 +1384,18 @@ fun PageFourteen(
 
 //region Page Fifteen
 @Composable
-fun PageFifteen(
+fun ProverkaSvobodnoProstranstvoOkoloPojaroizvestitelenDetektor(
     modifier: Modifier,
-    page: Int,
+    title: String,
+    section: String,
     pagerState: PagerState
 ) {
+
+    val models = mapOfModels[section] ?: emptyList()
+
     Column(modifier = modifier.fillMaxSize()) {
-        Title(page)
-        val models = mapOfModels[titles[page]] ?: emptyList()
+        Title(title)
+
 
         Column(
             modifier = Modifier
@@ -1118,10 +1436,13 @@ fun PageFifteen(
 //endregion
 
 @Composable
-fun PageSixteen(modifier: Modifier, page: Int, pagerState: PagerState) {
+fun TestMehanizamVsekiRychenButon(modifier: Modifier, title: String, section: String,pagerState: PagerState) {
+
+    val models = mapOfModels[section] ?: emptyList()
+
     Column(modifier = modifier.fillMaxSize()) {
-        Title(page)
-        val models = mapOfModels[titles[page]] ?: emptyList()
+        Title(title)
+
 
         Column(
             modifier = Modifier
@@ -1133,7 +1454,7 @@ fun PageSixteen(modifier: Modifier, page: Int, pagerState: PagerState) {
 
                 when (model) {
                     is CountModel -> {
-                        if (titles[page] == "Тест на механизма на всеки един Ръчен пожароизвестителен бутон чрез тест ключ или премахване на чупещия се елемент") {
+                        if (section == "Тест на механизма на всеки един Ръчен пожароизвестителен бутон чрез тест ключ или премахване на чупещия се елемент") {
                             MyCard {
                                 Column(modifier = Modifier.padding(16.dp)) {
                                     CountInputField(model, "брой")
@@ -1177,17 +1498,146 @@ fun PageSixteen(modifier: Modifier, page: Int, pagerState: PagerState) {
         Spacer(modifier = Modifier.height(8.dp))
     }
 }
+@Composable
+fun ProverkaNaDostypDoVsichkiPojaroizvestitelniButoni(modifier: Modifier, title: String, section: String,pagerState: PagerState) {
 
+    val models = mapOfModels[section] ?: emptyList()
+
+    Column(modifier = modifier.fillMaxSize()) {
+        Title(title)
+
+
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 4.dp)
+        ) {
+            models.forEach { model ->
+
+                when (model) {
+                    is CountModel -> {
+                        if (section == "Тест на механизма на всеки един Ръчен пожароизвестителен бутон чрез тест ключ или премахване на чупещия се елемент") {
+                            MyCard {
+                                Column(modifier = Modifier.padding(16.dp)) {
+                                    CountInputField(model, "брой")
+                                }
+                            }
+                        }
+                    }
+
+                    is CheckedModel -> {
+                        MyCard {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                //     QuestionHeader(model.subTitle)
+                                LabeledBinaryChoice(model) {
+
+                                }
+                                DataField(model, value = model.data, lamb = {
+                                    model.data = it
+                                })
+                            }
+                        }
+                    }
+
+                    is CheckedModelTwo -> {
+                        MyCard {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                //     QuestionHeader(model.subTitle)
+                                LabeledBinaryChoice(model) {
+
+                                }
+                                DataField(model, value = model.data, lamb = {
+                                    model.data = it
+                                })
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+        BottomPaging(pagerState)
+        Spacer(modifier = Modifier.height(8.dp))
+    }
+}
+@Composable
+fun ProverkaZaNalichieUkazatelniZnaci(modifier: Modifier, title: String, section: String,pagerState: PagerState) {
+
+    val models = mapOfModels[section] ?: emptyList()
+
+    Column(modifier = modifier.fillMaxSize()) {
+        Title(title)
+
+
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 4.dp)
+        ) {
+            models.forEach { model ->
+
+                when (model) {
+                    is CountModel -> {
+                        if (section == "Тест на механизма на всеки един Ръчен пожароизвестителен бутон чрез тест ключ или премахване на чупещия се елемент") {
+                            MyCard {
+                                Column(modifier = Modifier.padding(16.dp)) {
+                                    CountInputField(model, "брой")
+                                }
+                            }
+                        }
+                    }
+
+                    is CheckedModel -> {
+                        MyCard {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                //     QuestionHeader(model.subTitle)
+                                LabeledBinaryChoice(model) {
+
+                                }
+                                DataField(model, value = model.data, lamb = {
+                                    model.data = it
+                                })
+                            }
+                        }
+                    }
+
+                    is CheckedModelTwo -> {
+                        MyCard {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                //     QuestionHeader(model.subTitle)
+                                LabeledBinaryChoice(model) {
+
+                                }
+                                DataField(model, value = model.data, lamb = {
+                                    model.data = it
+                                })
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+        BottomPaging(pagerState)
+        Spacer(modifier = Modifier.height(8.dp))
+    }
+}
 //region Page Thourteen
 @Composable
-fun PageNineteen(
+fun VidSydZaGAsitelenAgent(
     modifier: Modifier,
-    page: Int,
+    title: String,
+    section: String,
     pagerState: PagerState
 ) {
+
+    val models = mapOfModels[section] ?: emptyList()
+
     Column(modifier = modifier.fillMaxSize()) {
-        Title(page)
-        val models = mapOfModels[titles[page]] ?: emptyList()
+        Title(title)
+
 
         Column(
             modifier = Modifier
@@ -1231,19 +1681,74 @@ fun PageNineteen(
 }
 //endregion
 
+@Composable
+fun ProverkaSistemaZaOtkrivaneNaTechove(
+    modifier: Modifier,
+    title: String,
+    section: String,
+    pagerState: PagerState
+) {
 
+    val models = mapOfModels[section] ?: emptyList()
+
+    Column(modifier = modifier.fillMaxSize()) {
+        Title(title = title)
+
+
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 4.dp)
+        ) {
+            models.forEach { model ->
+
+                if (model is CheckedModelTwo) {
+                    val checkedModel = model
+                    MyCard {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            //     QuestionHeader(model.subTitle)
+                            LabeledBinaryChoice(model) {
+                                model.data = it
+                            }
+                            DataField(model, value = model.data, lamb = {
+                                model.data = it
+                            })
+                        }
+                    }
+                } else if (model is CheckedModel) {
+                    MyCard {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            //     QuestionHeader(model.subTitle)
+                            LabeledBinaryChoice(model, label = "Херметически затворен") {
+                                model.data = it
+                            }
+                            DataField(model, value = model.data, lamb = {
+                                model.data = it
+                            })
+                        }
+                    }
+                }
+            }
+        }
+        BottomPaging(pagerState)
+        Spacer(modifier = Modifier.height(8.dp))
+    }
+}
 // region Page Seventeen
 @Composable
 fun SeventeenPage(
     modifier: Modifier,
-    page: Int,
+    title: String,
+    section: String,
     pagerState: PagerState
 ) {
+    val models = mapOfModels[section] ?: emptyList()
     Column(modifier = modifier.fillMaxSize()) {
         // 1. Заглавие
-        Title(page)
+        Title(title)
 
-        val models = mapOfModels[titles[page]] ?: emptyList()
+
 
         // 2. Списък с карти (weight 1 за фиксирана навигация)
         MyColumn(
@@ -1271,15 +1776,19 @@ fun SeventeenPage(
 
 // region Page Eighteen
 @Composable
-fun PageTwenty(
+fun VizualnaProverkaNaSydoveteZaGasitelenAgent(
     modifier: Modifier,
-    page: Int,
+    title: String,
+    section: String,
     pagerState: PagerState
 ) {
-    Column(modifier = modifier.fillMaxSize()) {
-        Title(page)
 
-        val models = mapOfModels[titles[page]] ?: emptyList()
+    val models = mapOfModels[section] ?: emptyList()
+
+    Column(modifier = modifier.fillMaxSize()) {
+        Title(title)
+
+
 
         Column(
             modifier = Modifier
@@ -1300,125 +1809,25 @@ fun PageTwenty(
     }
 }
 
-@Composable
-fun ExtendedCheckedCard(index: Int, model: ExtendedCheckedModel) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            // Ред 1: Номер и Заглавие
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = "№${index + 1}. ",
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp
-                )
-                QuestionHeader(model.subTitle)
-            }
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), thickness = 0.5.dp)
-
-            // Ред 2: Налягане (Текущо и Предишно едно до друго за сравнение)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                TextField(
-                    value = model.pressure.toString().replace("0.0", ""),
-                    onValueChange = { model.pressure = it.toFloatOrNull() ?: 0f },
-                    modifier = Modifier.weight(1f),
-                    label = { Text("Налягане (bar)", fontSize = 11.sp) },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    singleLine = true,
-                    placeholder = { Text("текущо", fontSize = 10.sp) }
-                )
-                TextField(
-                    value = model.lastPressure.toString().replace("0.0", ""),
-                    onValueChange = { model.lastPressure = it.toFloatOrNull() ?: 0f },
-                    modifier = Modifier.weight(1f),
-                    label = { Text("Предишно (bar)", fontSize = 11.sp) },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    singleLine = true,
-                    placeholder = { Text("от преден път", fontSize = 10.sp) }
-                )
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Ред 3: Дата на последно хидростатично изпитване
-            TextField(
-                value = model.hidrostatMeasurementDate,
-                onValueChange = { model.hidrostatMeasurementDate = it },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("Хидростатично изпитване важи до", fontSize = 11.sp) },
-                placeholder = { Text("дд.мм.гггг", fontSize = 12.sp) },
-                singleLine = true
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Ред 4: Устройство (Преместено под датата на отделен ред)
-            TextField(
-                value = model.device,
-                onValueChange = { model.device = it },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("Устройство", fontSize = 11.sp) },
-                singleLine = true,
-                textStyle = TextStyle(fontSize = 14.sp)
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Ред 5: Фабричен номер (На отделен ред)
-            TextField(
-                value = model.fabNum,
-                onValueChange = { model.fabNum = it },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("Фабричен №", fontSize = 11.sp) },
-                singleLine = true,
-                textStyle = TextStyle(fontSize = 14.sp)
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Ред 6: Статус Изправност (Да/Не)
-            LabeledBinaryChoice(model, label = "Техническа изправност") {
-                model.data = it
-            }
-
-            // Ред 7: Допълнителни бележки
-            Text(
-                text = "Забележки / Коментар:",
-                fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
-            )
-            DataField(model, value = model.data, lamb = {
-                model.data = it
-            })
-        }
-    }
-}
 // endregion
 
 // region Page twenty
 @Composable
-fun PageTwentyTwo(
+fun ProverkaSignalniIIzneseniUstrojstva(
     modifier: Modifier,
-    page: Int,
+    title: String,
+    section: String,
     pagerState: PagerState
 ) {
+
+    val models = mapOfModels[section] ?: emptyList()
+
     Column(modifier = modifier.fillMaxSize()) {
         // 1. Заглавие
-        Title(page)
+        Title(title)
 
-        val models = mapOfModels[titles[page]] ?: emptyList()
+
 
         // 2. Списък с модели
         MyColumn(
@@ -1464,16 +1873,20 @@ fun PageTwentyTwo(
 
 //region Page Twenty One (Универсална за 18-30)
 @Composable
-fun PageTwentyThree(
+fun ZakluchitelniProverki(
     modifier: Modifier,
-    page: Int,
+    title: String,
+    section: String,
     pagerState: PagerState
 ) {
+
+    val models = mapOfModels[section] ?: emptyList()
+
     Column(modifier = modifier.fillMaxSize()) {
         // 1. Заглавие на страницата
-        Title(page)
+        Title(title)
 
-        val models = mapOfModels[titles[page]] ?: emptyList()
+
 
         // 2. Списък с карти (Автоматично подреждане)
         MyColumn(
@@ -1512,15 +1925,16 @@ fun PageTwentyThree(
 @Composable
 fun LastPage(
     modifier: Modifier,
-    page: Int,
+    title: String,
+    section: String,
     pagerState: PagerState
 ) {
-    val context = LocalContext.current
+    val models = mapOfModels[section] ?: emptyList()
 
     Column(modifier = modifier.fillMaxSize()) {
-        Title(page)
+        Title(title)
 
-        val models = mapOfModels[titles[page]]!!
+
         val fieldModel = models[0] as FieldModel
         MyColumn(modifier = Modifier.weight(1f)) {
             MyCard {
@@ -1603,25 +2017,26 @@ private fun OpenCamera(
             getTestURL() + "/get_sunotech_protokol_details_by_barcode"
         ) {
             onResult->
-            errorEvent = onResult
-            if (errorEvent?.responseCode == 200) {
+         //   errorEvent = onResult
+         //   if (errorEvent?.responseCode == 200) {
 
+            // what response we get , we continue to page header !
                     coroutineScope.launch {
                         pagerState.animateScrollToPage(1)
                     }
 
-            }
+          //  }
         }
 
     }
 
-    errorEvent?.let {
-        if(it.responseCode != 200) {
-            MyDialog().RetroDialog(it.responseCode, it.responseMessage) {
-                errorEvent = null
-            }
-        }
-    }
+//    errorEvent?.let {
+//        if(it.responseCode != 200) {
+//            MyDialog().RetroDialog(it.responseCode, it.responseMessage) {
+//                errorEvent = null
+//            }
+//        }
+//    }
 
 
 }
@@ -1708,6 +2123,7 @@ private fun StartCamera(
 fun PageHeader(
     modifier: Modifier,
     page: Int,
+    section: String,
     pagerState: PagerState
 ) {
 
@@ -1729,7 +2145,7 @@ fun PageHeader(
     var loadingData by remember {
         mutableStateOf(false)
     }
-    val models = mapOfModels[titles[page]] ?: emptyList()
+    val models = mapOfModels[section] ?: emptyList()
 
 
     val objectIdModel = remember {
@@ -1745,7 +2161,7 @@ fun PageHeader(
 
 
             Text(
-                text = titles[page],
+                text = section,
                 Modifier.padding(8.dp), fontSize = TITLE_FONT_SIZE,
                 fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground
             )
@@ -1879,13 +2295,15 @@ fun loadMapData(
     val api: ISunotechAPI = RetrofitInstance.getInstance().create(ISunotechAPI::class.java)
 
 
-    val token = PreferencesManager().getToken(context)
+    val prefManager = PreferencesManager()
+    val token = prefManager.getToken(context)
+    val installationType = prefManager.getInstallationType(context)
 // for INIT DEFAULT DATA HELP barcodeText = "106 / 02.12.2024 г."
 
 
     api.getProtokolData(
         url,
-        ObjectIdModel(id), token
+        ObjectIdModel(installationType,id), token
     )
         .enqueue(object : retrofit2.Callback<MyJsonObject> {
             override fun onResponse(
@@ -1918,8 +2336,7 @@ fun loadMapData(
                                     val jsonCheckedModel = model as JsonCheckedModel
                                     val checkedModel =
                                         CheckedModel(
-                                            jsonCheckedModel.subTitle,
-                                            jsonCheckedModel.position
+                                            jsonCheckedModel.subTitle
                                         )
                                     checkedModel.checked = jsonCheckedModel.checked
                                     checkedModel.unchecked = jsonCheckedModel.unchecked
@@ -1931,8 +2348,7 @@ fun loadMapData(
                                     val jsonCheckedModelTwo = model as JsonCheckedDataModelTwo
                                     val checkedModelTwo =
                                         CheckedModelTwo(
-                                            jsonCheckedModelTwo.subTitle,
-                                            jsonCheckedModelTwo.position
+                                            jsonCheckedModelTwo.subTitle
                                         )
                                     checkedModelTwo.checked = jsonCheckedModelTwo.checked
                                     checkedModelTwo.unchecked = jsonCheckedModelTwo.unchecked
@@ -1946,8 +2362,7 @@ fun loadMapData(
                                         model as JsonCheckedDataModelThree
                                     val checkedModelThree =
                                         CheckedModelThree(
-                                            jsonCheckedModelThree.subTitle,
-                                            jsonCheckedModelThree.position
+                                            jsonCheckedModelThree.subTitle
                                         )
                                     checkedModelThree.checked = jsonCheckedModelThree.checked
                                     checkedModelThree.unchecked =
@@ -1963,8 +2378,7 @@ fun loadMapData(
                                 "count" -> {
                                     val jsonCountModel = model as JsonCountModel
                                     val countModel = CountModel(
-                                        jsonCountModel.subTitle,
-                                        jsonCountModel.position
+                                        jsonCountModel.subTitle
                                     )
                                     countModel.data = jsonCountModel.data
                                     newList.add(countModel)
@@ -1975,8 +2389,7 @@ fun loadMapData(
                                         model as JsonCheckedDataModelExtended
                                     val extendedCheckedModel =
                                         ExtendedCheckedModel(
-                                            jsonCheckedDataModelExtended.subTitle,
-                                            jsonCheckedDataModelExtended.position
+                                            jsonCheckedDataModelExtended.subTitle
                                         )
                                     extendedCheckedModel.checked =
                                         jsonCheckedDataModelExtended.checked
@@ -2000,8 +2413,7 @@ fun loadMapData(
                                 "field" -> {
                                     val jsonFiledModel = model as JsonFieldModel
                                     val fieldModel = FieldModel(
-                                        jsonFiledModel.subTitle,
-                                        jsonFiledModel.position
+                                        jsonFiledModel.subTitle
                                     )
                                     fieldModel.data = jsonFiledModel.data
                                     newList.add(fieldModel)
@@ -2011,8 +2423,7 @@ fun loadMapData(
                                     val jsonFieldModelTwo = model as JsonFieldModelTwo
                                     val fieldModelTwo =
                                         FieldModelTwo(
-                                            jsonFieldModelTwo.subTitle,
-                                            jsonFieldModelTwo.position
+                                            jsonFieldModelTwo.subTitle
                                         )
                                     fieldModelTwo.data = jsonFieldModelTwo.data
                                     fieldModelTwo.dataTwo = jsonFieldModelTwo.dataTwo
@@ -2023,8 +2434,7 @@ fun loadMapData(
                                     val jsonFieldModelThree = model as JsonFieldModelThree
                                     val fieldModelThree =
                                         FieldModelThree(
-                                            jsonFieldModelThree.subTitle,
-                                            jsonFieldModelThree.position
+                                            jsonFieldModelThree.subTitle
                                         )
                                     fieldModelThree.data = jsonFieldModelThree.data
                                     fieldModelThree.pressure = jsonFieldModelThree.pressure
@@ -2036,8 +2446,7 @@ fun loadMapData(
                                 "text" -> {
                                     val jsonTextModel = model as JsonTextModel
                                     val textModel = TextModel(
-                                        jsonTextModel.subTitle,
-                                        jsonTextModel.position
+                                        jsonTextModel.subTitle
                                     )
                                     textModel.data = jsonTextModel.data
                                     newList.add(textModel)
@@ -2046,8 +2455,7 @@ fun loadMapData(
                                 "dropdown" -> {
                                     val jsonDropDownModel = model as JsonDropDownModel
                                     val dropDownModel = DropDownModel(
-                                        jsonDropDownModel.subTitle,
-                                        jsonDropDownModel.position
+                                        jsonDropDownModel.subTitle
                                     )
                                     dropDownModel.data = jsonDropDownModel.data
                                     newList.add(dropDownModel)
@@ -2056,8 +2464,7 @@ fun loadMapData(
                                 "dropdowntwo" -> {
                                     val jsonDropDownModelTwo = model as JsonDropDownModelTwo
                                     val dropDownModelTwo = DropDownModelTwo(
-                                        jsonDropDownModelTwo.subTitle,
-                                        jsonDropDownModelTwo.position
+                                        jsonDropDownModelTwo.subTitle
                                     )
                                     dropDownModelTwo.data = jsonDropDownModelTwo.data
                                     newList.add(dropDownModelTwo)
@@ -2091,7 +2498,8 @@ fun loadMapData(
 }
 
 fun completeProtocol(
-    context: Context, user: String, token: String
+    context: Context, user: String, token: String, installationType: String,
+     onSuccess : (HttpResponse) -> Unit
 ) {
 
 
@@ -2102,34 +2510,35 @@ fun completeProtocol(
      }*/
 
     // for debugging
+    val titles = if(installationType == "aerozol") aerozolSections else gasSections
 
 
     for (i in 1 until titles.size) {
         val title = titles[i]
 
         //      val x = title
-        val values: ArrayList<IModel> = mapOfModels[title]!!
+        val values: ArrayList<IModel> = mapOfModels[title] ?: arrayListOf()
 
         val jsonList = arrayListOf<JsonModel>()
         values.forEach { model ->
 
             when (model) {
                 is TextModel -> {
-                    jsonList.add(JsonTextModel(model.subTitle, model.position, model.data))
+                    jsonList.add(JsonTextModel(model.subTitle,  model.data))
                 }
 
                 is CountModel -> {
-                    jsonList.add(JsonCountModel(model.subTitle, model.position, model.data))
+                    jsonList.add(JsonCountModel(model.subTitle,  model.data))
                 }
 
                 is FieldModel -> {
-                    jsonList.add(JsonFieldModel(model.subTitle, model.position, model.data))
+                    jsonList.add(JsonFieldModel(model.subTitle,  model.data))
                 }
 
                 is FieldModelTwo -> {
                     jsonList.add(
                         JsonFieldModelTwo(
-                            model.subTitle, model.position, model.data,
+                            model.subTitle, model.data,
                             model.dataTwo
                         )
                     )
@@ -2138,7 +2547,7 @@ fun completeProtocol(
                 is FieldModelThree -> {
                     jsonList.add(
                         JsonFieldModelThree(
-                            model.subTitle, model.position, model.data,
+                            model.subTitle,  model.data,
                             model.pressure, model.oldPressure
                         )
                     )
@@ -2147,7 +2556,7 @@ fun completeProtocol(
                 is CheckedModel -> {
                     jsonList.add(
                         JsonCheckedModel(
-                            model.subTitle, model.position,
+                            model.subTitle,
                             model.checked, model.unchecked,
                             model.data
                         )
@@ -2157,7 +2566,7 @@ fun completeProtocol(
                 is CheckedModelTwo -> {
                     jsonList.add(
                         JsonCheckedDataModelTwo(
-                            model.subTitle, model.position,
+                            model.subTitle,
                             model.checked, model.unchecked, model.data, model.count
                         )
                     )
@@ -2166,7 +2575,7 @@ fun completeProtocol(
                 is CheckedModelThree -> {
                     jsonList.add(
                         JsonCheckedDataModelThree(
-                            model.subTitle, model.position,
+                            model.subTitle,
                             model.checked, model.unchecked, model.data,
                             model.previousMeasurement, model.currentMeasurement
                         )
@@ -2176,7 +2585,7 @@ fun completeProtocol(
                 is ExtendedCheckedModel -> {
                     jsonList.add(
                         JsonCheckedDataModelExtended(
-                            model.subTitle, model.position,
+                            model.subTitle,
                             model.checked, model.unchecked, model.data,
                             model.pressure, model.lastPressure, model.fabNum,
                             model.hidrostatMeasurementDate, model.device
@@ -2187,7 +2596,7 @@ fun completeProtocol(
                 is DropDownModel -> {
                     jsonList.add(
                         JsonDropDownModel(
-                            model.subTitle, model.position,
+                            model.subTitle,
                             model.data
                         )
                     )
@@ -2196,7 +2605,7 @@ fun completeProtocol(
                 is DropDownModelTwo -> {
                     jsonList.add(
                         JsonDropDownModelTwo(
-                            model.subTitle, model.position,
+                            model.subTitle,
                             model.data
                         )
                     )
@@ -2216,6 +2625,7 @@ fun completeProtocol(
     val gson = Gson()
     val jsonBody =
         MyJsonObject(
+            installationType,
             objectId,
             barcodeNumber = barcodeNumber, operatorName = user,
             contractDate, jsonMap
@@ -2267,11 +2677,13 @@ fun completeProtocol(
                 }
 
             }
+            onSuccess(HttpResponse(response.code(),response.message()))
         }
 
         override fun onFailure(call: retrofit2.Call<ResponseBody>, t: Throwable) {
                  // Грешка при мрежовата връзка
                  // MyDialog().RetroDialog(500,t.message!!) { }
+                     onSuccess(HttpResponse(500,t.message ?: "Сървърна грешка"))
         }
     })
 

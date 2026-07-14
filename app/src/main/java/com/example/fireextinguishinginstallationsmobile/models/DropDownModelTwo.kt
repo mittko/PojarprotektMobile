@@ -8,8 +8,7 @@ import com.example.fireextinguishinginstallationsmobile.interfaces.IModel
 
 @Stable
 data class DropDownModelTwo(
-    override val subTitle: String,
-    override val position: Int
+    override val subTitle: String
 ) : IModel {
 
 

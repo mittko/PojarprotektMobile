@@ -6,8 +6,7 @@ import androidx.compose.runtime.setValue
 import com.example.fireextinguishinginstallationsmobile.interfaces.IModel
 
 data class FieldModelThree(
-    override val subTitle: String,
-    override val position: Int
+    override val subTitle: String
 ) : IModel {
 
     var data by mutableStateOf("")
