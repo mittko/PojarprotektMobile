@@ -33,14 +33,12 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -58,16 +56,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.example.fireextinguishinginstallationsmobile.data.aerozolMap
 import com.example.fireextinguishinginstallationsmobile.data.aerozolSections
-import com.example.fireextinguishinginstallationsmobile.data.dataMap
+import com.example.fireextinguishinginstallationsmobile.data.gasMap
 import com.example.fireextinguishinginstallationsmobile.data.mapOfModels
 import com.example.fireextinguishinginstallationsmobile.data.gasSections
 import com.example.fireextinguishinginstallationsmobile.enums.InstallationType
@@ -102,7 +98,7 @@ import com.example.fireextinguishinginstallationsmobile.models.jsonmodels.JsonTe
 import com.example.fireextinguishinginstallationsmobile.retrofit.HttpResponse
 import com.example.fireextinguishinginstallationsmobile.retrofit.ISunotechAPI
 import com.example.fireextinguishinginstallationsmobile.retrofit.RetrofitInstance
-import com.example.fireextinguishinginstallationsmobile.retrofit.RetrofitInstance.getTestURL
+import com.example.fireextinguishinginstallationsmobile.retrofit.RetrofitInstance.getURL
 import com.example.fireextinguishinginstallationsmobile.ui.theme.FireExtinguishingInstallationsMobileTheme
 import com.example.fireextinguishinginstallationsmobile.utils.MyDialog
 import com.example.fireextinguishinginstallationsmobile.utils.PreferencesManager
@@ -124,7 +120,6 @@ import retrofit2.Response
 import java.io.File
 import com.example.fireextinguishinginstallationsmobile.models.auth.OnResponseBody
 import kotlin.collections.forEach
-import kotlin.text.Typography.section
 
 
 // Ctrl + Alt + O clean unused imports
@@ -178,7 +173,9 @@ class MainActivity : ComponentActivity() {
                                 ) {
                                     if (response.isSuccessful) {
                                         isTokenValid = true
+                                        showDialog = false
                                     } else {
+                                        isTokenValid = false
                                         showDialog = true
                                         httpResponse =
                                             HttpResponse(response.code(), response.message())
@@ -247,6 +244,9 @@ fun LoginPage(modifier: Modifier, context: Context, onRefreshToken: (String?, St
     val authModel = AuthModel(user, password)
 
 
+    var httpResponse by remember {
+        mutableStateOf<HttpResponse?>(null)
+    }
     MyCard {
         Column(
             modifier = modifier,
@@ -285,14 +285,15 @@ fun LoginPage(modifier: Modifier, context: Context, onRefreshToken: (String?, St
                             call: Call<LoginRes?>,
                             response: Response<LoginRes?>
                         ) {
+                            httpResponse = HttpResponse(response.code(),response.message())
+
+
                             response.let {
                                 val loginResult = it.body()
 
                                 if (it.code() == 200) {
                                     onRefreshToken(loginResult?.user?.usser, loginResult?.token)
-
                                 }
-                                Log.e("token: ", " ${loginResult?.token}")
                             }
 
 
@@ -302,7 +303,7 @@ fun LoginPage(modifier: Modifier, context: Context, onRefreshToken: (String?, St
                             call: Call<LoginRes?>,
                             t: Throwable
                         ) {
-                            Log.e("Failure: ", t.message!!)
+                            httpResponse = HttpResponse(500,t.message ?: "")
                         }
 
                     })
@@ -312,6 +313,12 @@ fun LoginPage(modifier: Modifier, context: Context, onRefreshToken: (String?, St
             }
 
 
+        }
+    }
+
+    httpResponse?.let {
+        MyDialog().RetroDialog(it.code,it.message) {
+            httpResponse = null
         }
     }
 }
@@ -325,24 +332,28 @@ fun MainScreen(modifier: Modifier, type : InstallationType) {
 
     when(type) {
         InstallationType.AEROZOL ->  {
-            aerozolSections.forEachIndexed( action = {
-                index, value ->
 
-                val models = dataMap[value]
-                if(models != null) {
-                    mapOfModels.put(value, models)
-                }
-            })
+            mapOfModels.putAll(aerozolMap)
+//            aerozolSections.forEachIndexed( action = {
+//                index, value ->
+//
+//                val models = dataMap[value]
+//                if(models != null) {
+//                    mapOfModels.put(value, models)
+//                }
+//            })
         }
         InstallationType.GAS -> {
-             gasSections.forEachIndexed {
-                 index, value ->
-                 val models = dataMap[value]
-                 if(models != null) {
-                     mapOfModels.put(value, models)
-                 }
 
-             }
+            mapOfModels.putAll(gasMap)
+//             gasSections.forEachIndexed {
+//                 index, value ->
+//                 val models = dataMap[value]
+//                 if(models != null) {
+//                     mapOfModels.put(value, models)
+//                 }
+//
+//             }
         }
     }
 
@@ -394,32 +405,33 @@ fun MainScreen(modifier: Modifier, type : InstallationType) {
                         }
                         2 -> {
                             val section = aerozolSections[page]
-                            PregledControlPanel(modifier, "№${page+1} $section", section, pagerState)
+                            TestOsnovnoZahranvane(modifier, "№${page+1} $section", section,pagerState)
                         }
                         3 -> {
                             val section = aerozolSections[page]
-                            FunkcionalenTestElTablo(modifier, title = "№${page+1} $section",section ,pagerState)
-                        }
-                        4 -> {
-                            val section = aerozolSections[page]
-                            TestOsnovnoZahranvane(modifier, "№${page+1} $section", section,pagerState)
-                        }
-                        5 -> {
-                            val section = aerozolSections[page]
                             TestOsnovnaPlatka(modifier, title = "№${page+1} $section",  section = section,pagerState)
                         }
-                        6 -> {
-                            val section = aerozolSections[page]
-                            ProverkaPravilnaSvyrzanost(modifier, "№${page+1} $section", section  = section,pagerState)
-                        }
-                        7 -> {
-                            val section = aerozolSections[page]
-                            FunkcionalenTestnaZvukovSignalizator(modifier,"№${page+1} $section",section,pagerState)
-                        }
-                        8  -> {
+                        4  -> {
                             val section = aerozolSections[page]
                             PregledRezervnoZahranvane(modifier, "№${page+1} $section", section,pagerState)
                         }
+                        5 -> {
+                            val section = aerozolSections[page]
+                            PregledControlPanel(modifier, "№${page+1} $section", section, pagerState)
+                        }
+                        6 -> {
+                            val section = aerozolSections[page]
+                            FunkcionalenTestElTablo(modifier, title = "№${page+1} $section",section ,pagerState)
+                        }
+                        7 -> {
+                            val section = aerozolSections[page]
+                            ProverkaPravilnaSvyrzanost(modifier, "№${page+1} $section", section  = section,pagerState)
+                        }
+                        8 -> {
+                            val section = aerozolSections[page]
+                            FunkcionalenTestnaZvukovSignalizator(modifier,"№${page+1} $section",section,pagerState)
+                        }
+
                         9 -> {
                             val section = aerozolSections[page]
                             ProverkaLupoveILinii(modifier, "№${page+1} $section", section,pagerState)
@@ -448,7 +460,7 @@ fun MainScreen(modifier: Modifier, type : InstallationType) {
                         }
                         15 -> {
                             val section = aerozolSections[page]
-                            VizualnaProverkaNaSydoveteZaGasitelenAgent(modifier, "№${page+1} $section",
+                            VizualnaProverkaNaSydoveteZaGasitelenAgentAerozol(modifier, "№${page+1} $section",
                                 section,pagerState)
                         }
                         16 -> {
@@ -761,22 +773,17 @@ fun TestOsnovnoZahranvane(
                                         .weight(0.5f)
                                         .padding(0.dp, 0.dp, 4.dp, 8.dp)
                                 ) {
-                                    DataField(
-                                        model,
-                                        value = model.previousMeasurement,
-                                        enabled = false
-                                    )
+
+                                    CountFieldThree(model,value = model.previousMeasurement, enabled = false)
+
                                 }
                                 Row(
                                     Modifier
                                         .weight(0.5f)
                                         .padding(0.dp, 0.dp, 4.dp, 8.dp)
                                 ) {
-                                    DataField(
-                                        model, placeholder = "Текущ...",
-                                        value = model.currentMeasurement, lamb = {
-                                            model.currentMeasurement = it
-                                        })
+
+                                    CountFieldThree(model, value = model.currentMeasurement, placeholder = "Текущ...")
                                 }
                             }
                             DataField(
@@ -793,26 +800,19 @@ fun TestOsnovnoZahranvane(
                                         .weight(0.5f)
                                         .padding(0.dp, 0.dp, 4.dp, 8.dp)
                                 ) {
-                                    DataField(
-                                        model,
-                                        value = model.oldPressure,
-                                        enabled = false
-                                    )
+
+                                    CountFieldFour(model, value = model.oldPressure, enabled = false)
+
+
                                 }
                                 Row(
                                     Modifier
                                         .weight(0.5f)
                                         .padding(0.dp, 0.dp, 4.dp, 8.dp)
                                 ) {
-                                    DataField(
-                                        model,
-                                        placeholder = "Текущ...",
-                                        value = model.pressure,
-                                        lamb = {
-                                            // if (pressureAsFloat != null && pressureAsFloat > 0.0f) {
-                                            model.pressure = it
-                                            //  }
-                                        })
+                                    CountFieldFour(model, placeholder = "Текущ...",
+                                        value = model.pressure)
+
                                 }
                             }
                             // 3. Ако е TextModel (температурата - модел 1) ИЛИ е CheckedModel (за данни)
@@ -1808,6 +1808,40 @@ fun VizualnaProverkaNaSydoveteZaGasitelenAgent(
         Spacer(modifier = Modifier.height(8.dp))
     }
 }
+// region Page Eighteen
+@Composable
+fun VizualnaProverkaNaSydoveteZaGasitelenAgentAerozol(
+    modifier: Modifier,
+    title: String,
+    section: String,
+    pagerState: PagerState
+) {
+
+    val models = mapOfModels[section] ?: emptyList()
+
+    Column(modifier = modifier.fillMaxSize()) {
+        Title(title)
+
+
+
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 8.dp)
+        ) {
+            models.forEachIndexed { index, model ->
+                val extendedModel = model as ExtendedCheckedModel
+
+                ExtendedCheckedCardAerozol(index, extendedModel)
+
+            }
+        }
+
+        BottomPaging(pagerState)
+        Spacer(modifier = Modifier.height(8.dp))
+    }
+}
 
 
 // endregion
@@ -2014,7 +2048,7 @@ private fun OpenCamera(
             context,
             triggerCamera,
             barcodeText,
-            getTestURL() + "/get_sunotech_protokol_details_by_barcode"
+            getURL() + "/get_sunotech_protokol_details_by_barcode"
         ) {
             onResult->
          //   errorEvent = onResult
@@ -2263,7 +2297,7 @@ fun PageHeader(
             loadMapData(
                 context, triggerRequest,
                 objectIdModel.data,
-                getTestURL() + "/get_sunotech_protokol_details_by_id",
+                getURL() + "/get_sunotech_protokol_details_by_id",
             ) { onResponse ->
                 errorEvent = onResponse
                 loadingData = false
@@ -2652,32 +2686,32 @@ fun completeProtocol(
         ) {
             if (response.isSuccessful) {
                 // Успешно изпращане
-                val headers = response.headers()
-                val fileName = headers["fileName"] ?: "document_${System.currentTimeMillis()}"
-
-                val result = response.body()
-                if (result != null) {
-
-                    CoroutineScope(Dispatchers.Main).launch {
-
-                        val savedFile = withContext(Dispatchers.IO) {
-                            // 1. Записваме файла на заден план (IO нишка)
-                            savePdfToMediaStore(context, result, fileName)
-                        }
-
-                        val activity = context as? Activity
-
-                        if (activity == null ||
-                            activity.isFinishing || activity.isDestroyed) return@launch
-
-                        if (savedFile != null) {
-                            openPdfFile(context, savedFile)
-                        }
-                    }
-                }
-
-            }
-            onSuccess(HttpResponse(response.code(),response.message()))
+//                val headers = response.headers()
+//                val fileName = headers["fileName"] ?: "document_${System.currentTimeMillis()}"
+//
+//                val result = response.body()
+//                if (result != null) {
+//
+//                    CoroutineScope(Dispatchers.Main).launch {
+//
+//                        val savedFile = withContext(Dispatchers.IO) {
+//                            // 1. Записваме файла на заден план (IO нишка)
+//                            savePdfToMediaStore(context, result, fileName)
+//                        }
+//
+//                        val activity = context as? Activity
+//
+//                        if (activity == null ||
+//                            activity.isFinishing || activity.isDestroyed) return@launch
+//
+//                        if (savedFile != null) {
+//                            openPdfFile(context, savedFile)
+//                        }
+//                    }
+//                }
+//
+           }
+                       onSuccess(HttpResponse(response.code(),response.message()))
         }
 
         override fun onFailure(call: retrofit2.Call<ResponseBody>, t: Throwable) {

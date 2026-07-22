@@ -1,5 +1,6 @@
 package com.example.fireextinguishinginstallationsmobile
 
+import android.R.attr.enabled
 import android.R.attr.type
 import android.content.Context
 import android.util.Log
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -70,11 +72,13 @@ import com.example.fireextinguishinginstallationsmobile.enums.InstallationType
 import com.example.fireextinguishinginstallationsmobile.interfaces.ICheckable
 import com.example.fireextinguishinginstallationsmobile.interfaces.IModel
 import com.example.fireextinguishinginstallationsmobile.json.MyJsonObject
+import com.example.fireextinguishinginstallationsmobile.models.CheckedModelThree
 import com.example.fireextinguishinginstallationsmobile.models.CheckedModelTwo
 import com.example.fireextinguishinginstallationsmobile.models.CountModel
 import com.example.fireextinguishinginstallationsmobile.models.DropDownModel
 import com.example.fireextinguishinginstallationsmobile.models.DropDownModelTwo
 import com.example.fireextinguishinginstallationsmobile.models.ExtendedCheckedModel
+import com.example.fireextinguishinginstallationsmobile.models.FieldModelThree
 import com.example.fireextinguishinginstallationsmobile.models.TextModel
 import com.example.fireextinguishinginstallationsmobile.models.jsonmodels.JsonModel
 import com.example.fireextinguishinginstallationsmobile.retrofit.HttpResponse
@@ -231,7 +235,7 @@ fun BottomPaging(pagerState: PagerState) {
                     val isSelected = pagerState.currentPage == index
 
                     val tabColor =
-                        if(index == 4 || index == 11 || index == 19) {
+                        if(index == 2 || index == 3 || index == 4) {
                             Color(0xFFFFAF00)
                         } else {
                             Color.White
@@ -291,11 +295,11 @@ fun BottomPaging(pagerState: PagerState) {
         }
 
            httpResponse?.let {
-               if(it.code != 200) {
+              // if(it.code != 200) {
                    MyDialog().RetroDialog(it.code,it.message,) {
                        httpResponse = null
                    }
-               }
+          //     }
            }
 
 
@@ -368,6 +372,7 @@ fun DataField(
     value: String = "",
     enabled: Boolean = true,
     stringLabel: String = "",
+    keyBoardOptions: KeyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
     lamb: (value: String) -> Unit = {}
 ) {
     // 1. Дефинираме FocusRequester и FocusManager
@@ -397,6 +402,7 @@ fun DataField(
         },
         singleLine = true,
         enabled = enabled,
+        keyboardOptions = keyBoardOptions,
         trailingIcon = {
 
             Microfone(focusRequester) {
@@ -551,11 +557,11 @@ fun CountField(model: IModel, placeholder: String = "", value: String = "") {
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             singleLine = true,
             colors = TextFieldDefaults.colors(unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant),
-            trailingIcon = {
-                Microfone(focusRequester) {
-                    model.data = it
-                }
-            }
+//            trailingIcon = {
+//                Microfone(focusRequester) {
+//                    model.data = it
+//                }
+//            }
         )
     }
 }
@@ -583,7 +589,68 @@ fun CountInputField(model: IModel, label: String = "брой") {
         )
     }
 }
+@Composable
+fun CountFieldThree(model: IModel, placeholder: String = "", value: String = "", enabled: Boolean = true) {
 
+    val countModel = model as CheckedModelThree
+
+    var textValue by remember(value) {
+        mutableStateOf(value)
+    }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth(1f)
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        TextField(
+            value = textValue,
+            placeholder = {
+                Text(text = placeholder)
+            },
+            onValueChange = {
+                textValue = it
+                countModel.currentMeasurement = it
+
+            },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            singleLine = true,
+            colors = TextFieldDefaults.colors(unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant),
+            enabled = enabled
+        )
+    }
+}
+@Composable
+fun CountFieldFour(model: IModel, placeholder: String = "", value: String = "", enabled: Boolean = true) {
+
+    val countModel = model as FieldModelThree
+
+    var textValue by remember(value) {
+        mutableStateOf(value)
+    }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth(1f)
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        TextField(
+            value = textValue,
+            placeholder = {
+                Text(text = placeholder)
+            },
+            onValueChange = {
+                textValue = it
+                countModel.pressure = it
+
+            },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            singleLine = true,
+            colors = TextFieldDefaults.colors(unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant),
+            enabled = enabled
+        )
+    }
+}
 @Composable
 fun Title(title : String) {
     Text(
@@ -722,6 +789,80 @@ fun ExtendedCheckedCard(index: Int, model: ExtendedCheckedModel) {
             DataField(model, value = model.data, lamb = {
                 model.data = it
             })
+        }
+    }
+}
+@Composable
+fun ExtendedCheckedCardAerozol(index: Int, model: ExtendedCheckedModel) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            // Ред 1: Номер и Заглавие
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "№${index + 1}. ",
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
+                )
+                QuestionHeader(model.subTitle)
+            }
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), thickness = 0.5.dp)
+
+            // Ред 2: Налягане (Текущо и Предишно едно до друго за сравнение)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+
+                // Ред 4: Устройство (Преместено под датата на отделен ред)
+                TextField(
+                    value = model.device,
+                    onValueChange = { model.device = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("Електрическа запалка", fontSize = 11.sp) },
+                    singleLine = true,
+                    textStyle = TextStyle(fontSize = 14.sp)
+                )
+            }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Ред 5: Фабричен номер (На отделен ред)
+                TextField(
+                    value = model.fabNum,
+                    onValueChange = { model.fabNum = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("Фабричен № на аерозолен генератор", fontSize = 11.sp) },
+                    singleLine = true,
+                    textStyle = TextStyle(fontSize = 14.sp)
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Ред 6: Статус Изправност (Да/Не)
+                LabeledBinaryChoice(model, label = "Техническа изправност") {
+                    model.data = it
+                }
+
+                // Ред 7: Допълнителни бележки
+                Text(
+                    text = "Забележки / Коментар:",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
+                )
+                DataField(model, value = model.data, lamb = {
+                    model.data = it
+                })
+
         }
     }
 }

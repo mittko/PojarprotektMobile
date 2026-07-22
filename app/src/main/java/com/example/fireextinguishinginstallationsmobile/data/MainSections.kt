@@ -56,7 +56,7 @@ val titles =
     )
 
 val dataMap = mapOf<String, ArrayList<IModel>>(
-          //  titles[0] to arrayListOf(),
+
         titles[0] to arrayListOf(),
         titles[1] to arrayListOf(
             // Входни данни
