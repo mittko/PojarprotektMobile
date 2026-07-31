@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -102,23 +103,21 @@ import com.example.fireextinguishinginstallationsmobile.retrofit.RetrofitInstanc
 import com.example.fireextinguishinginstallationsmobile.ui.theme.FireExtinguishingInstallationsMobileTheme
 import com.example.fireextinguishinginstallationsmobile.utils.MyDialog
 import com.example.fireextinguishinginstallationsmobile.utils.PreferencesManager
-import com.example.fireextinguishinginstallationsmobile.utils.openPdfFile
-import com.example.fireextinguishinginstallationsmobile.utils.savePdfToMediaStore
 import com.google.gson.Gson
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.DecodeHintType
 import com.journeyapps.barcodescanner.CaptureManager
 import com.journeyapps.barcodescanner.CompoundBarcodeView
 import com.journeyapps.barcodescanner.DefaultDecoderFactory
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Response
 import java.io.File
 import com.example.fireextinguishinginstallationsmobile.models.auth.OnResponseBody
+import com.example.fireextinguishinginstallationsmobile.models.barcodeText
+import com.example.fireextinguishinginstallationsmobile.utils.PreviewOption
+import kotlinx.coroutines.delay
 import kotlin.collections.forEach
 
 
@@ -215,7 +214,9 @@ class MainActivity : ComponentActivity() {
                         } else {
                             InitialPage(modifier = Modifier
                                 .padding(innerPadding)
+                                .consumeWindowInsets(innerPadding)   // <-- добавяш това
                                 .imePadding()
+
                                 .padding(10.dp, 15.dp, 10.dp, 0.dp))
                         }
 
@@ -334,26 +335,10 @@ fun MainScreen(modifier: Modifier, type : InstallationType) {
         InstallationType.AEROZOL ->  {
 
             mapOfModels.putAll(aerozolMap)
-//            aerozolSections.forEachIndexed( action = {
-//                index, value ->
-//
-//                val models = dataMap[value]
-//                if(models != null) {
-//                    mapOfModels.put(value, models)
-//                }
-//            })
         }
         InstallationType.GAS -> {
 
             mapOfModels.putAll(gasMap)
-//             gasSections.forEachIndexed {
-//                 index, value ->
-//                 val models = dataMap[value]
-//                 if(models != null) {
-//                     mapOfModels.put(value, models)
-//                 }
-//
-//             }
         }
     }
 
@@ -581,8 +566,15 @@ fun MainScreen(modifier: Modifier, type : InstallationType) {
 fun InitialPage(modifier: Modifier) {
 
     val context = LocalContext.current
+    val preferencesManager = PreferencesManager()
+    val token = preferencesManager.getToken(context)
+    val api = RetrofitInstance.getInstance().create(ISunotechAPI::class.java)
 
     var shouldOpenPage by remember {
+        mutableIntStateOf(0)
+    }
+
+    var triggerDataLoading by remember {
         mutableIntStateOf(0)
     }
 
@@ -601,7 +593,8 @@ fun InitialPage(modifier: Modifier) {
                         ) {
 
                             Button(onClick = {
-                               shouldOpenPage = 1
+                                shouldOpenPage = 1
+                                triggerDataLoading++
                             }, modifier = Modifier.height(60.dp)) {
                                 Text(text = "Аерозолни ПГИ")
                             }
@@ -611,6 +604,7 @@ fun InitialPage(modifier: Modifier) {
 
                         Button(onClick = {
                              shouldOpenPage = 2
+                             triggerDataLoading++
                         }, modifier = Modifier.height(60.dp)) {
                             Text(text = "Газови ПГИ")
                         }
@@ -619,8 +613,203 @@ fun InitialPage(modifier: Modifier) {
             }
         }
         1 -> {
+
             PreferencesManager().setInstallationType(context, InstallationType.AEROZOL)
             MainScreen(modifier, InstallationType.AEROZOL)
+
+             LaunchedEffect(triggerDataLoading) {
+                 api.getDefaultProtocolData("/get_sunotech_protokols_default_data",
+                     "aerozol",token).enqueue(object :
+                     retrofit2.Callback<MyJsonObject> {
+                     override fun onResponse(
+                         call: Call<MyJsonObject>,
+                         response: Response<MyJsonObject>
+                     ) {
+                         val result = response.body()
+
+                         if (result != null) {
+
+
+                             PreferencesManager().setObjectId(context, result.objectId)
+                             // very important !!!
+                             mapOfModels.clear()
+
+
+
+                             val mutableMap = result.mutableMap
+                             mutableMap.put("Камера", ArrayList())
+
+
+                             mutableMap.forEach { key, value ->
+                                 // if we have barcode no need to overwrite it !!!
+
+                                 val list = mutableMap[key]
+                                 val newList = ArrayList<IModel>()
+                                 list?.forEach { model ->
+                                     when (model.type) {
+                                         "checkable" -> {
+                                             val jsonCheckedModel = model as JsonCheckedModel
+                                             val checkedModel =
+                                                 CheckedModel(
+                                                     jsonCheckedModel.subTitle
+                                                 )
+                                             checkedModel.checked = jsonCheckedModel.checked
+                                             checkedModel.unchecked = jsonCheckedModel.unchecked
+                                             checkedModel.data = jsonCheckedModel.data
+                                             newList.add(checkedModel)
+                                         }
+
+                                         "checkable count" -> {
+                                             val jsonCheckedModelTwo = model as JsonCheckedDataModelTwo
+                                             val checkedModelTwo =
+                                                 CheckedModelTwo(
+                                                     jsonCheckedModelTwo.subTitle
+                                                 )
+                                             checkedModelTwo.checked = jsonCheckedModelTwo.checked
+                                             checkedModelTwo.unchecked = jsonCheckedModelTwo.unchecked
+                                             checkedModelTwo.data = jsonCheckedModelTwo.data
+                                             checkedModelTwo.count = jsonCheckedModelTwo.count
+                                             newList.add(checkedModelTwo)
+                                         }
+
+                                         "checkable measure" -> {
+                                             val jsonCheckedModelThree =
+                                                 model as JsonCheckedDataModelThree
+                                             val checkedModelThree =
+                                                 CheckedModelThree(
+                                                     jsonCheckedModelThree.subTitle
+                                                 )
+                                             checkedModelThree.checked = jsonCheckedModelThree.checked
+                                             checkedModelThree.unchecked =
+                                                 jsonCheckedModelThree.unchecked
+                                             checkedModelThree.data = jsonCheckedModelThree.data
+                                             checkedModelThree.previousMeasurement =
+                                                 jsonCheckedModelThree.previousMeasurement
+                                             checkedModelThree.currentMeasurement =
+                                                 jsonCheckedModelThree.currentMeasurement
+                                             newList.add(checkedModelThree)
+                                         }
+
+                                         "count" -> {
+                                             val jsonCountModel = model as JsonCountModel
+                                             val countModel = CountModel(
+                                                 jsonCountModel.subTitle
+                                             )
+                                             countModel.data = jsonCountModel.data
+                                             newList.add(countModel)
+                                         }
+
+                                         "checkable extended" -> {
+                                             val jsonCheckedDataModelExtended =
+                                                 model as JsonCheckedDataModelExtended
+                                             val extendedCheckedModel =
+                                                 ExtendedCheckedModel(
+                                                     jsonCheckedDataModelExtended.subTitle
+                                                 )
+                                             extendedCheckedModel.checked =
+                                                 jsonCheckedDataModelExtended.checked
+                                             extendedCheckedModel.unchecked =
+                                                 jsonCheckedDataModelExtended.unchecked
+                                             extendedCheckedModel.data =
+                                                 jsonCheckedDataModelExtended.data
+                                             extendedCheckedModel.pressure =
+                                                 jsonCheckedDataModelExtended.pressure
+                                             extendedCheckedModel.lastPressure =
+                                                 jsonCheckedDataModelExtended.lastPressure
+                                             extendedCheckedModel.fabNum =
+                                                 jsonCheckedDataModelExtended.fabNum
+                                             extendedCheckedModel.hidrostatMeasurementDate =
+                                                 jsonCheckedDataModelExtended.hidrostatMeasurementDate
+                                             extendedCheckedModel.device =
+                                                 jsonCheckedDataModelExtended.device
+                                             newList.add(extendedCheckedModel)
+                                         }
+
+                                         "field" -> {
+                                             val jsonFiledModel = model as JsonFieldModel
+                                             val fieldModel = FieldModel(
+                                                 jsonFiledModel.subTitle
+                                             )
+                                             fieldModel.data = jsonFiledModel.data
+                                             newList.add(fieldModel)
+                                         }
+
+                                         "field data two" -> {
+                                             val jsonFieldModelTwo = model as JsonFieldModelTwo
+                                             val fieldModelTwo =
+                                                 FieldModelTwo(
+                                                     jsonFieldModelTwo.subTitle
+                                                 )
+                                             fieldModelTwo.data = jsonFieldModelTwo.data
+                                             fieldModelTwo.dataTwo = jsonFieldModelTwo.dataTwo
+                                             newList.add(fieldModelTwo)
+                                         }
+
+                                         "field data three" -> {
+                                             val jsonFieldModelThree = model as JsonFieldModelThree
+                                             val fieldModelThree =
+                                                 FieldModelThree(
+                                                     jsonFieldModelThree.subTitle
+                                                 )
+                                             fieldModelThree.data = jsonFieldModelThree.data
+                                             fieldModelThree.pressure = jsonFieldModelThree.pressure
+                                             fieldModelThree.oldPressure =
+                                                 jsonFieldModelThree.oldPressure
+                                             newList.add(fieldModelThree)
+                                         }
+
+                                         "text" -> {
+                                             val jsonTextModel = model as JsonTextModel
+                                             val textModel = TextModel(
+                                                 jsonTextModel.subTitle
+                                             )
+                                             textModel.data = jsonTextModel.data
+                                             newList.add(textModel)
+                                         }
+
+                                         "dropdown" -> {
+                                             val jsonDropDownModel = model as JsonDropDownModel
+                                             val dropDownModel = DropDownModel(
+                                                 jsonDropDownModel.subTitle
+                                             )
+                                             dropDownModel.data = jsonDropDownModel.data
+                                             newList.add(dropDownModel)
+                                         }
+
+                                         "dropdowntwo" -> {
+                                             val jsonDropDownModelTwo = model as JsonDropDownModelTwo
+                                             val dropDownModelTwo = DropDownModelTwo(
+                                                 jsonDropDownModelTwo.subTitle
+                                             )
+                                             dropDownModelTwo.data = jsonDropDownModelTwo.data
+                                             newList.add(dropDownModelTwo)
+                                         }
+                                     }
+
+
+                                 }
+                                 //mapOfModels[key]?.clear()
+                                 mapOfModels[key] = newList
+
+                             }
+                         }
+
+                     }
+
+                     override fun onFailure(
+                         call: Call<MyJsonObject>,
+                         t: Throwable
+                     ) {
+                        // wzemi json-a ot android (default data)
+                       // error dialog here
+                     }
+
+
+                 })
+
+             }
+
+
         }
         2 -> {
             PreferencesManager().setInstallationType(context, InstallationType.GAS)
@@ -753,8 +942,6 @@ fun TestOsnovnoZahranvane(
     Column(modifier = modifier.fillMaxSize()) {
         // Заглавие на страницата
         Title(title)
-
-
 
         MyColumn(
             modifier = Modifier.weight(1f)
@@ -908,13 +1095,10 @@ fun TestOsnovnaPlatka(
                                             .weight(0.5f)
                                             .padding(0.dp, 0.dp, 4.dp, 8.dp)
                                     ) {
-                                        DataField(
+                                        CountFieldFour(
                                             model,
                                             placeholder = "Текущ...",
-                                            value = model.pressure,
-                                            lamb = {
-                                                model.pressure = it
-                                            })
+                                            value = model.pressure)
                                     }
                                 }
 
@@ -1247,13 +1431,10 @@ fun PregledRezervnoZahranvane(
                                             .weight(0.5f)
                                             .padding(0.dp, 0.dp, 4.dp, 8.dp)
                                     ) {
-                                        DataField(
+                                        CountFieldThree(
                                             model,
                                             placeholder = "Текущ...",
-                                            value = model.currentMeasurement,
-                                            lamb = {
-                                                model.currentMeasurement = it
-                                            })
+                                            value = model.currentMeasurement)
                                     }
                                 }
                                 DataField(
@@ -1999,9 +2180,9 @@ private fun OpenCamera(
     var triggerCamera by remember {
         mutableIntStateOf(0)
     }
-    var barcodeText by remember {
-        mutableStateOf("")
-    }
+//    var barcodeText by remember {
+//        mutableStateOf("")
+//    }
 
 
     val coroutineScope = rememberCoroutineScope()
@@ -2032,8 +2213,8 @@ private fun OpenCamera(
     if (permissionGranted) {
         StartCamera(modifier, pagerState) { resultFromScanning ->
             triggerCamera++
-            barcodeText = resultFromScanning
-            PreferencesManager().setBarcodeNumber(context, barcodeText)
+            barcodeText.value = resultFromScanning
+          //  PreferencesManager().setBarcodeNumber(context, barcodeText.value)
         }
     } else {
         // Optional: Show a placeholder UI telling the user why you need the camera
@@ -2047,7 +2228,7 @@ private fun OpenCamera(
         loadMapData(
             context,
             triggerCamera,
-            barcodeText,
+            barcodeText.value,
             getURL() + "/get_sunotech_protokol_details_by_barcode"
         ) {
             onResult->
@@ -2056,6 +2237,7 @@ private fun OpenCamera(
 
             // what response we get , we continue to page header !
                     coroutineScope.launch {
+                        delay(400)
                         pagerState.animateScrollToPage(1)
                     }
 
@@ -2087,7 +2269,7 @@ private fun StartCamera(
     }
 
 // Hold reference outside AndroidView for lifecycle
-    var barcodeView: CompoundBarcodeView? = null
+    val barcodeView: CompoundBarcodeView? = null
 
     DisposableEffect(Unit) {
         onDispose {
@@ -2163,13 +2345,6 @@ fun PageHeader(
 
     val context = LocalContext.current
 
-//    var objectId by remember {
-//        mutableStateOf(PreferencesManager().getObjectId(context))
-//    }
-    var barcodeField by remember {
-        mutableStateOf(PreferencesManager().getBarcode(context))
-    }
-
     var triggerRequest by remember {
         mutableIntStateOf(0)
     }
@@ -2181,14 +2356,10 @@ fun PageHeader(
     }
     val models = mapOfModels[section] ?: emptyList()
 
+    val objectIdModel = models[0] as CountModel
 
-    val objectIdModel = remember {
-        models[0] as FieldModel
-    }
-    //objectIdModel.data = objectId
+    val barcodeNumberModel = models [1] as FieldModel
 
-    val barcodeNumberModel = models[1] as FieldModel
-    barcodeNumberModel.data = barcodeField
 
     Box(contentAlignment = Alignment.Center) {
         Column(modifier = modifier.fillMaxSize()) {
@@ -2210,13 +2381,7 @@ fun PageHeader(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
 
-                        DataField(
-                            objectIdModel,
-                            value = objectIdModel.data,
-                            placeholder = "Номер на обект"
-                        ) {
-                            objectIdModel.data = it
-                        }
+                        CountField(objectIdModel, placeholder = "Номер на обект",value = objectIdModel.data)
 
                         Spacer(modifier = Modifier.height(20.dp))
 
@@ -2267,7 +2432,17 @@ fun PageHeader(
                                     })
 
                                 is DropDownModel -> {
-                                    DropDownAutomatika(model)
+
+                                    DropDown(model, options = remember {
+                                        listOf(
+                                            PreviewOption("Smart Line", 1),
+                                            PreviewOption("Kentec Sigma XT K21021M2", 2),
+                                            PreviewOption("Tele Tek IVY", 3),
+                                            PreviewOption("Advanced Ex - 3001", 4),
+                                            PreviewOption("Siemenes XC 1001-A", 5),
+                                            PreviewOption("BOSCH", 6)
+                                        )
+                                    })
                                 }
 
                                 is DropDownModelTwo -> {
@@ -2335,7 +2510,7 @@ fun loadMapData(
 // for INIT DEFAULT DATA HELP barcodeText = "106 / 02.12.2024 г."
 
 
-    api.getProtokolData(
+    api.getProtocolData(
         url,
         ObjectIdModel(installationType,id), token
     )
@@ -2356,12 +2531,17 @@ fun loadMapData(
                     mapOfModels.clear()
 
 
+
                     val mutableMap = result.mutableMap
+                    mutableMap.put("Камера", ArrayList())
+
+
                     mutableMap.forEach { key, value ->
                         // if we have barcode no need to overwrite it !!!
-                        if (key == "Баркод") {
-                            return@forEach
+                        if (key == "Камера") {
+                      //      return@forEach
                         }
+
                         val list = mutableMap[key]
                         val newList = ArrayList<IModel>()
                         list?.forEach { model ->
@@ -2403,9 +2583,8 @@ fun loadMapData(
                                         jsonCheckedModelThree.unchecked
                                     checkedModelThree.data = jsonCheckedModelThree.data
                                     checkedModelThree.previousMeasurement =
-                                        jsonCheckedModelThree.previousMeasurement
-                                    checkedModelThree.currentMeasurement =
                                         jsonCheckedModelThree.currentMeasurement
+                                   // checkedModelThree.currentMeasurement = jsonCheckedModelThree.currentMeasurement
                                     newList.add(checkedModelThree)
                                 }
 
@@ -2431,10 +2610,9 @@ fun loadMapData(
                                         jsonCheckedDataModelExtended.unchecked
                                     extendedCheckedModel.data =
                                         jsonCheckedDataModelExtended.data
-                                    extendedCheckedModel.pressure =
-                                        jsonCheckedDataModelExtended.pressure
-                                    extendedCheckedModel.lastPressure =
-                                        jsonCheckedDataModelExtended.lastPressure
+
+                                    extendedCheckedModel.lastPressure = jsonCheckedDataModelExtended.pressure
+                                   // extendedCheckedModel.pressure = jsonCheckedDataModelExtended.pressure
                                     extendedCheckedModel.fabNum =
                                         jsonCheckedDataModelExtended.fabNum
                                     extendedCheckedModel.hidrostatMeasurementDate =
@@ -2471,9 +2649,9 @@ fun loadMapData(
                                             jsonFieldModelThree.subTitle
                                         )
                                     fieldModelThree.data = jsonFieldModelThree.data
-                                    fieldModelThree.pressure = jsonFieldModelThree.pressure
-                                    fieldModelThree.oldPressure =
-                                        jsonFieldModelThree.oldPressure
+
+                                    fieldModelThree.oldPressure = jsonFieldModelThree.pressure
+                                 //   fieldModelThree.pressure = jsonFieldModelThree.pressure
                                     newList.add(fieldModelThree)
                                 }
 
@@ -2650,7 +2828,7 @@ fun completeProtocol(
         jsonMap.put(title, jsonList)
     }
     val headerModels: ArrayList<IModel> = mapOfModels[titles[1]]!!
-    val objectIdModel = headerModels[0] as FieldModel
+    val objectIdModel = headerModels[0] as CountModel
     val barcodeModel = headerModels[1] as FieldModel
     val documentDateModel = headerModels[5] as FieldModel
     val objectId = objectIdModel.data
@@ -2677,14 +2855,32 @@ fun completeProtocol(
     val sunInterface = RetrofitInstance.getInstance().create(ISunotechAPI::class.java)
 
 
-
-    sunInterface.writeProtokol(jsonBody, token).enqueue(object : retrofit2.Callback<ResponseBody> {
-        @RequiresApi(Build.VERSION_CODES.Q)
+    sunInterface.writeDefaultProtocolData(jsonBody,token).enqueue(object : retrofit2.Callback<ResponseBody> {
         override fun onResponse(
-            call: Call<ResponseBody>,
-            response: Response<ResponseBody>
+            call: Call<ResponseBody?>,
+            response: Response<ResponseBody?>
         ) {
-            if (response.isSuccessful) {
+            onSuccess(HttpResponse(response.code(),response.message()))
+        }
+
+        override fun onFailure(call: Call<ResponseBody?>, t: Throwable) {
+            onSuccess(HttpResponse(500, t.message ?: "Сървърна Грешка"))
+        }
+
+    })
+
+//    sunInterface.writeProtokol(jsonBody,
+//        token).enqueue(object : retrofit2.Callback<ResponseBody> {
+//        @RequiresApi(Build.VERSION_CODES.Q)
+//        override fun onResponse(
+//            call: Call<ResponseBody>,
+//            response: Response<ResponseBody>
+//        ) {
+//            if (response.isSuccessful) {
+
+
+
+
                 // Успешно изпращане
 //                val headers = response.headers()
 //                val fileName = headers["fileName"] ?: "document_${System.currentTimeMillis()}"
@@ -2709,17 +2905,20 @@ fun completeProtocol(
 //                        }
 //                    }
 //                }
-//
-           }
-                       onSuccess(HttpResponse(response.code(),response.message()))
-        }
 
-        override fun onFailure(call: retrofit2.Call<ResponseBody>, t: Throwable) {
-                 // Грешка при мрежовата връзка
-                 // MyDialog().RetroDialog(500,t.message!!) { }
-                     onSuccess(HttpResponse(500,t.message ?: "Сървърна грешка"))
-        }
-    })
+
+
+
+//           }
+//                       onSuccess(HttpResponse(response.code(),response.message()))
+//        }
+//
+//        override fun onFailure(call: retrofit2.Call<ResponseBody>, t: Throwable) {
+//                 // Грешка при мрежовата връзка
+//                 // MyDialog().RetroDialog(500,t.message!!) { }
+//                     onSuccess(HttpResponse(500,t.message ?: "Сървърна грешка"))
+//        }
+//    })
 
 }
 

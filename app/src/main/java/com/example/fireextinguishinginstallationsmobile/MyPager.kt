@@ -86,6 +86,7 @@ import com.example.fireextinguishinginstallationsmobile.utils.MyDialog
 import com.example.fireextinguishinginstallationsmobile.utils.PreferencesManager
 import com.example.fireextinguishinginstallationsmobile.utils.PreviewOption
 import com.example.fireextinguishinginstallationsmobile.utils.SpeechToTextManager
+import com.google.common.collect.Multimaps.index
 import com.google.gson.Gson
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -123,27 +124,18 @@ fun ConfirmationDialog(
 }
 
 @Composable
-fun DropDownAutomatika(model: DropDownModel) {
-    val options = remember {
-        listOf(
-            PreviewOption("Smart Line", 1),
-            PreviewOption("Kentec Sigma XT K21021M2", 2),
-            PreviewOption("Tele Tek IVY", 3),
-            PreviewOption("Advanced Ex - 3001", 4),
-            PreviewOption("Siemenes XC 1001-A", 5),
-            PreviewOption("BOSCH", 6)
-        )
+fun DropDown(model : DropDownModel, options : List<PreviewOption>) {
+    var selectedOption = remember(model.data) {
+        options.find { it.text == model.data }
     }
-    val selectedOption = remember {
-        mutableStateOf<PreviewOption?>(null)
-    }
+
     TextFieldMenu(
         label = "", options = options,
         selectedOption =
-            selectedOption.value,
+            selectedOption,
         onOptionSelected = { it ->
-            selectedOption.value = it
-            model.data = selectedOption.value!!.text
+            selectedOption = it
+            model.data = selectedOption!!.text
         },
         optionToString = {
 
@@ -155,6 +147,42 @@ fun DropDownAutomatika(model: DropDownModel) {
         }
     )
 }
+@Composable
+fun DropDownAutomatika(model: DropDownModel) {
+    val options = remember {
+        listOf(
+            PreviewOption("Smart Line", 1),
+            PreviewOption("Kentec Sigma XT K21021M2", 2),
+            PreviewOption("Tele Tek IVY", 3),
+            PreviewOption("Advanced Ex - 3001", 4),
+            PreviewOption("Siemenes XC 1001-A", 5),
+            PreviewOption("BOSCH", 6)
+        )
+    }
+
+    var selectedOption = remember(model.data) {
+        options.find { it.text == model.data }
+    }
+
+    TextFieldMenu(
+        label = "", options = options,
+        selectedOption =
+            selectedOption,
+        onOptionSelected = { it ->
+            selectedOption = it
+            model.data = selectedOption!!.text
+        },
+        optionToString = {
+
+            it.text
+        }, filteredOptions = { searchInput ->
+            options.filter {
+                it.text.contains(searchInput, ignoreCase = true)
+            }
+        }
+    )
+}
+
 
 @Composable
 fun DropDownGasitelenAgent(model: DropDownModelTwo) {
@@ -168,16 +196,16 @@ fun DropDownGasitelenAgent(model: DropDownModelTwo) {
             PreviewOption(text = "HFC-125 - Флуоросъдържащ парников газ", 6),
         )
     }
-    val selectedOption = remember {
-        mutableStateOf<PreviewOption?>(null)
+    var selectedOption = remember(model.data) {
+        options.find { model.data == it.text }
     }
     TextFieldMenu(
         label = "", options = options,
         selectedOption =
-            selectedOption.value,
+            selectedOption,
         onOptionSelected = { it ->
-            selectedOption.value = it
-            model.data = selectedOption.value!!.text
+            selectedOption = it
+            model.data = selectedOption!!.text
         },
         optionToString = {
 
@@ -230,7 +258,8 @@ fun BottomPaging(pagerState: PagerState) {
             modifier = Modifier.fillMaxWidth().height(70.dp)
         ) {
 
-            (0..(mapOfModels.size-1)).forEach { index ->
+
+            for(index in 0 until mapOfModels.size) {
                 key(index) {
                     val isSelected = pagerState.currentPage == index
 
@@ -599,8 +628,7 @@ fun CountFieldThree(model: IModel, placeholder: String = "", value: String = "",
     }
     Row(
         modifier = Modifier
-            .fillMaxWidth(1f)
-            .padding(vertical = 8.dp),
+            .fillMaxWidth(1f),
         verticalAlignment = Alignment.CenterVertically
     ) {
         TextField(
@@ -630,8 +658,7 @@ fun CountFieldFour(model: IModel, placeholder: String = "", value: String = "", 
     }
     Row(
         modifier = Modifier
-            .fillMaxWidth(1f)
-            .padding(vertical = 8.dp),
+            .fillMaxWidth(1f),
         verticalAlignment = Alignment.CenterVertically
     ) {
         TextField(
@@ -865,4 +892,20 @@ fun ExtendedCheckedCardAerozol(index: Int, model: ExtendedCheckedModel) {
 
         }
     }
+}
+
+
+
+
+fun learnKotlin(predicate : (PreviewOption) -> Boolean) : PreviewOption? {
+    val listOfStrings = listOf<PreviewOption>(PreviewOption(text = "NC 1230 (FK-5-1-12)", 1),
+        PreviewOption(text = "Novec 1230", 2),
+        PreviewOption(text = "HFC 227ea", 3),)
+    listOfStrings.forEach {
+            element ->
+        if(predicate(element)) {
+            return element
+        }
+    }
+    return null
 }

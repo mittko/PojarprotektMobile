@@ -1,5 +1,6 @@
 package com.example.fireextinguishinginstallationsmobile.retrofit
 
+import com.example.fireextinguishinginstallationsmobile.enums.InstallationType
 import com.example.fireextinguishinginstallationsmobile.json.MyJsonObject
 import com.example.fireextinguishinginstallationsmobile.json.ObjectIdModel
 import com.example.fireextinguishinginstallationsmobile.models.auth.AuthModel
@@ -11,6 +12,8 @@ import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Headers
 import retrofit2.http.POST
+import retrofit2.http.Path
+import retrofit2.http.Query
 import retrofit2.http.Url
 
 interface ISunotechAPI {
@@ -21,13 +24,19 @@ interface ISunotechAPI {
         @Header("Authorization") accessToken: String
     ): Call<ResponseBody>
 
+    @POST(value = "/insert_sunotech_default_protocol_data")
+    fun writeDefaultProtocolData(@Body body: MyJsonObject, @Header("Authorization") accessToken: String) : Call<ResponseBody>
 
     @POST()
-    fun getProtokolData(
+    fun getProtocolData(
         @Url url: String,
         @Body body: ObjectIdModel,
         @Header("Authorization") accessToken: String
     ): Call<MyJsonObject>
+
+    @GET
+    fun getDefaultProtocolData(@Url url: String, @Query("installationType") installationType: String,
+                               @Header(value = "Authorization") accessToken : String) : Call<MyJsonObject>
 
     @POST(value = "/login/to/sunotech")
     fun logIn(@Body authModel: AuthModel): Call<LoginRes>
