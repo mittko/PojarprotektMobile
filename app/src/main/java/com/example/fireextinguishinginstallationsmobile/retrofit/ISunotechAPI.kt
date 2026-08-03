@@ -19,7 +19,7 @@ import retrofit2.http.Url
 interface ISunotechAPI {
     @Headers("Content-Type: application/json; charset=utf-8")
     @POST("/insert_sunotech_protokol")
-    fun writeProtokol(
+    fun writeProtocol(
         @Body body: MyJsonObject,
         @Header("Authorization") accessToken: String
     ): Call<ResponseBody>

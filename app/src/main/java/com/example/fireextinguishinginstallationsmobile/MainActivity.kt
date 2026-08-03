@@ -2356,9 +2356,7 @@ fun PageHeader(
     }
     val models = mapOfModels[section] ?: emptyList()
 
-    val objectIdModel = models[0] as CountModel
-
-    val barcodeNumberModel = models [1] as FieldModel
+    //val objectIdModel = models[0] as CountModel
 
 
     Box(contentAlignment = Alignment.Center) {
@@ -2381,7 +2379,9 @@ fun PageHeader(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
 
-                        CountField(objectIdModel, placeholder = "Номер на обект",value = objectIdModel.data)
+                        TestField(models[0], placeholder = "Номер на обект",value = (models[0] as CountModel).data) {
+                            (models[0] as CountModel).data = it
+                        }
 
                         Spacer(modifier = Modifier.height(20.dp))
 
@@ -2397,11 +2397,11 @@ fun PageHeader(
                 MyCard() {
                     Column(modifier = Modifier.padding(16.dp)) {
                         DataField(
-                            barcodeNumberModel,
-                            value = barcodeNumberModel.data,
+                            models[1],
+                            value = (models[1] as FieldModel).data,
                             placeholder = "Номер на баркод"
                         ) {
-                            barcodeNumberModel.data = it
+                            (models[1] as FieldModel).data = it
                         }
                     }
 
@@ -2433,21 +2433,63 @@ fun PageHeader(
 
                                 is DropDownModel -> {
 
-                                    DropDown(model, options = remember {
-                                        listOf(
-                                            PreviewOption("Smart Line", 1),
-                                            PreviewOption("Kentec Sigma XT K21021M2", 2),
-                                            PreviewOption("Tele Tek IVY", 3),
-                                            PreviewOption("Advanced Ex - 3001", 4),
-                                            PreviewOption("Siemenes XC 1001-A", 5),
-                                            PreviewOption("BOSCH", 6)
-                                        )
-                                    })
+                                    when(model.subTitle) {
+                                        "Обект" -> {
+                                            DropDown(model, options = remember {
+                                                listOf(
+                                                    PreviewOption("ФЕЦ Хасково 1", 1),
+                                                    PreviewOption("ФЕЦ Хасково 2", 2),
+                                                    PreviewOption("ФЕЦ Хасково 3", 3),
+                                                )
+                                            }) {
+                                                model.data = it
+                                            }
+                                        }
+                                        "Модел и тип на инсталацията" -> {
+                                            DropDown(model, options = remember {
+                                                listOf(
+                                                    PreviewOption("Аерозолна ПГИ", 1),
+                                                    PreviewOption("Газова ПГИ", 2)
+                                                )
+                                            }) {
+                                                model.data = it
+                                            }
+                                        }
+                                        "Модел на автоматика за управление" -> {
+                                            DropDown(model, options = remember {
+                                                listOf(
+                                                    PreviewOption("Smart Line", 1),
+                                                    PreviewOption("Kentec Sigma XT K21021M2", 2),
+                                                    PreviewOption("Tele Tek IVY", 3),
+                                                    PreviewOption("Advanced Ex - 3001", 4),
+                                                    PreviewOption("Siemenes XC 1001-A", 5),
+                                                    PreviewOption("BOSCH", 6)
+                                                )
+                                            }) {
+                                                model.data = it
+                                            }
+                                        }
+                                        "Вид на гасителен агент" -> {
+                                            DropDown(model, options = remember {
+                                                listOf(
+                                                    PreviewOption(text = "NC 1230 (FK-5-1-12)", 1),
+                                                    PreviewOption(text = "Novec 1230", 2),
+                                                    PreviewOption(text = "HFC 227ea", 3),
+                                                    PreviewOption(text = "FM 200", 4),
+                                                    PreviewOption(text = "АЗОТ", 5),
+                                                    PreviewOption(text = "HFC-125 - Флуоросъдържащ парников газ", 6),
+                                                )
+                                            }) {
+                                                model.data = it
+                                            }
+                                        }
+                                    }
+
                                 }
 
-                                is DropDownModelTwo -> {
-                                    DropDownGasitelenAgent(model)
-                                }
+//                                is DropDownModelTwo -> {
+//                                    DropDownGasitelenAgent(model)
+//                                }
                             }
                         }
                     }
@@ -2466,12 +2508,11 @@ fun PageHeader(
     }
 
 
-
     LaunchedEffect(triggerRequest) {
 
             loadMapData(
                 context, triggerRequest,
-                objectIdModel.data,
+                (models[0] as CountModel).data,
                 getURL() + "/get_sunotech_protokol_details_by_id",
             ) { onResponse ->
                 errorEvent = onResponse
@@ -2855,7 +2896,7 @@ fun completeProtocol(
     val sunInterface = RetrofitInstance.getInstance().create(ISunotechAPI::class.java)
 
 
-    sunInterface.writeDefaultProtocolData(jsonBody,token).enqueue(object : retrofit2.Callback<ResponseBody> {
+    sunInterface.writeProtocol(jsonBody,token).enqueue(object : retrofit2.Callback<ResponseBody> {
         override fun onResponse(
             call: Call<ResponseBody?>,
             response: Response<ResponseBody?>

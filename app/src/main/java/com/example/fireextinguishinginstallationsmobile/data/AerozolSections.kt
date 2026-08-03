@@ -49,11 +49,11 @@ val aerozolMap = mapOf<String, ArrayList<IModel>>(
         CountModel("Номер на обект"),
         FieldModel("Баркод"),
         FieldModel(String.format("Договор %s", numero)),
-        FieldModel("Обект"),
-        FieldModel("Модел и тип на инсталацията"),
+        DropDownModel("Обект"),
+        DropDownModel("Модел и тип на инсталацията"),
         FieldModel("Дата на монтаж на ПГИ"),
         DropDownModel("Модел на автоматика за управление"),
-        DropDownModelTwo("Вид на гасителен агент"),
+        DropDownModel("Вид на гасителен агент"),
 
         CountModel("Брой разпръскващи дюзи"),
         CountModel("Брой съдове за"),
@@ -166,9 +166,9 @@ val aerozolMap = mapOf<String, ArrayList<IModel>>(
 
     aerozolSections[12] to arrayListOf(
         // Тест на механизма на всеки един Ръчен пожароизвестителен бутон чрез тест ключ или премахване на чупещия се елемент
+        CountModel(subTitle = ""),
+        CheckedModelTwo("")
 
-        CheckedModelTwo(""),
-        CountModel(subTitle = "")
     ),
     aerozolSections[13] to arrayListOf(
 

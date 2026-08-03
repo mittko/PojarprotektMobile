@@ -124,7 +124,7 @@ fun ConfirmationDialog(
 }
 
 @Composable
-fun DropDown(model : DropDownModel, options : List<PreviewOption>) {
+fun DropDown(model : DropDownModel, options : List<PreviewOption>, lambda : (String) -> Unit) {
     var selectedOption = remember(model.data) {
         options.find { it.text == model.data }
     }
@@ -135,10 +135,10 @@ fun DropDown(model : DropDownModel, options : List<PreviewOption>) {
             selectedOption,
         onOptionSelected = { it ->
             selectedOption = it
-            model.data = selectedOption!!.text
+           // model.data = selectedOption!!.text
+            lambda(it!!.text)
         },
         optionToString = {
-
             it.text
         }, filteredOptions = { searchInput ->
             options.filter {
@@ -558,12 +558,42 @@ fun SimpleChoiceRow(model: IModel) {
         }
     }
 }
+@Composable
+fun TestField(model: IModel, placeholder: String = "", value: String = "", lambda : (String) -> Unit) {
 
+    val countModel = model as CountModel
+
+    var textValue by remember(value) {
+        mutableStateOf(value)
+    }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth(0.5f)
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        TextField(
+            value = textValue,
+            placeholder = {
+                Text(text = placeholder)
+            },
+            onValueChange = {
+                textValue = it
+                lambda(it)
+
+            },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            singleLine = true,
+            colors = TextFieldDefaults.colors(unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant),
+
+            )
+    }
+}
 @Composable
 fun CountField(model: IModel, placeholder: String = "", value: String = "") {
 
     val countModel = model as CountModel
-    val focusRequester = remember { FocusRequester() }
+
     var textValue by remember(value) {
         mutableStateOf(value)
     }
@@ -586,11 +616,7 @@ fun CountField(model: IModel, placeholder: String = "", value: String = "") {
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             singleLine = true,
             colors = TextFieldDefaults.colors(unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant),
-//            trailingIcon = {
-//                Microfone(focusRequester) {
-//                    model.data = it
-//                }
-//            }
+
         )
     }
 }
