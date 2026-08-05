@@ -2,6 +2,7 @@ package com.example.fireextinguishinginstallationsmobile
 
 
 import android.Manifest
+import android.R.attr.text
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
@@ -200,8 +201,7 @@ class MainActivity : ComponentActivity() {
                                     .fillMaxHeight()
                                     .padding(innerPadding)
                                     .imePadding()
-                                    .verticalScroll(rememberScrollState()),
-                                context
+                                    .verticalScroll(rememberScrollState())
                             ) { user, token ->
                                 PreferencesManager().putAuth(context, user, token)
                                 isTokenValid = true
@@ -216,13 +216,9 @@ class MainActivity : ComponentActivity() {
                                 .padding(innerPadding)
                                 .consumeWindowInsets(innerPadding)   // <-- добавяш това
                                 .imePadding()
-
                                 .padding(10.dp, 15.dp, 10.dp, 0.dp))
                         }
-
-
                     }
-
                 }
             }
         }
@@ -231,7 +227,7 @@ class MainActivity : ComponentActivity() {
 
 
 @Composable
-fun LoginPage(modifier: Modifier, context: Context, onRefreshToken: (String?, String?) -> Unit) {
+fun LoginPage(modifier: Modifier, onRefreshToken: (String?, String?) -> Unit) {
 
     var user by remember {
         mutableStateOf("")
@@ -386,7 +382,7 @@ fun MainScreen(modifier: Modifier, type : InstallationType) {
                         0 -> OpenCamera(modifier, pagerState)
                         1 -> {
                             val section = aerozolSections[page]
-                            PageHeader(modifier, page, section,pagerState)
+                            PageHeader(modifier,  section,pagerState)
                         }
                         2 -> {
                             val section = aerozolSections[page]
@@ -478,7 +474,7 @@ fun MainScreen(modifier: Modifier, type : InstallationType) {
                         1 -> {
                             val section = gasSections[page]
 
-                            PageHeader(modifier, page, section,pagerState)
+                            PageHeader(modifier, section,pagerState)
                         }
                         2 -> {
                             val section = gasSections[page]
@@ -1084,7 +1080,7 @@ fun TestOsnovnaPlatka(
                                             .weight(0.5f)
                                             .padding(0.dp, 0.dp, 4.dp, 8.dp)
                                     ) {
-                                        DataField(
+                                        CountFieldFour(
                                             model,
                                             enabled = false,
                                             value = model.oldPressure
@@ -1420,7 +1416,7 @@ fun PregledRezervnoZahranvane(
                                             .weight(0.5f)
                                             .padding(0.dp, 0.dp, 4.dp, 8.dp)
                                     ) {
-                                        DataField(
+                                        CountFieldThree(
                                             model,
                                             enabled = false,
                                             value = model.previousMeasurement
@@ -2338,12 +2334,13 @@ private fun StartCamera(
 @Composable
 fun PageHeader(
     modifier: Modifier,
-    page: Int,
     section: String,
     pagerState: PagerState
 ) {
 
     val context = LocalContext.current
+
+    val installationType = PreferencesManager().getInstallationType(context)
 
     var triggerRequest by remember {
         mutableIntStateOf(0)
@@ -2355,8 +2352,6 @@ fun PageHeader(
         mutableStateOf(false)
     }
     val models = mapOfModels[section] ?: emptyList()
-
-    //val objectIdModel = models[0] as CountModel
 
 
     Box(contentAlignment = Alignment.Center) {
@@ -2470,15 +2465,26 @@ fun PageHeader(
                                             }
                                         }
                                         "Вид на гасителен агент" -> {
-                                            DropDown(model, options = remember {
-                                                listOf(
-                                                    PreviewOption(text = "NC 1230 (FK-5-1-12)", 1),
-                                                    PreviewOption(text = "Novec 1230", 2),
-                                                    PreviewOption(text = "HFC 227ea", 3),
-                                                    PreviewOption(text = "FM 200", 4),
-                                                    PreviewOption(text = "АЗОТ", 5),
-                                                    PreviewOption(text = "HFC-125 - Флуоросъдържащ парников газ", 6),
-                                                )
+                                            DropDown(model, options =
+                                                if(installationType == "aerozol") {
+                                                    remember {
+                                                        listOf(
+                                                            PreviewOption(
+                                                                text = "Аерозол", 1))
+                                                    }
+                                                }
+                                                else {
+                                                    remember {
+                                                        listOf(
+                                                            PreviewOption(text = "NC 1230 (FK-5-1-12)", 1),
+                                                            PreviewOption(text = "Novec 1230", 2),
+                                                            PreviewOption(text = "HFC 227ea", 3),
+                                                            PreviewOption(text = "FM 200", 4),
+                                                            PreviewOption(text = "АЗОТ", 5),
+                                                            PreviewOption(text = "HFC-125 - Флуоросъдържащ парников газ", 6),
+                                                        )
+                                                }
+
                                             }) {
                                                 model.data = it
                                             }
