@@ -50,24 +50,22 @@ val aerozolMap = mapOf<String, ArrayList<IModel>>(
         FieldModel("Баркод"),
         FieldModel(String.format("Договор %s", numero)),
         DropDownModel("Обект"),
-        DropDownModel("Модел и тип на инсталацията"),
+      //  DropDownModel("Модел и тип на инсталацията"), ATENTION !!!
         FieldModel("Дата на монтаж на ПГИ"),
         DropDownModel("Модел на автоматика за управление"),
         DropDownModel("Вид на гасителен агент"),
 
         CountModel("Брой разпръскващи дюзи"),
-        CountModel("Брой съдове за"),
-        CountModel("Количество гасителен агент"),
-
-        CheckedModel("Флуоросъдържащ парников газ"),
-
-        FieldModel("Еквивалент в: t CO2 eq"),
+      //  CountModel("Брой съдове за"),
+      //  CountModel("Количество гасителен агент"),
+      //  CheckedModel("Флуоросъдържащ парников газ"),
+      //    FieldModel("Еквивалент в: t CO2 eq"),
 
         CountModel("Брой ръчни бутони \"СТАРТ\""),
-        CountModel("Брой ръчни бутони"),
-        CountModel("Брой ръчни бутони \"ЗАРЕЖДАНЕ\""),
+        CountModel("Брой ръчни бутони"), //  СТОП
+        CountModel("Брой ръчни бутони \"ЗАРЕЖДАНЕ\""), // ЗАДЪРЖАНЕ
         CountModel("Брой автоматични датчици"),
-        CountModel("Брой АПУ"),
+      //  CountModel("Брой АПУ"),
         CountModel("Брой изн. звукови сигнализатори")
     ),
     aerozolSections[2] to arrayListOf(
@@ -84,7 +82,8 @@ val aerozolMap = mapOf<String, ArrayList<IModel>>(
         CheckedModel("Откачени проводници,свръзки и букси"),
         TextModel(subTitle = "Измерено напрежение на изводите на линиите"),
         FieldModelThree("Линия / Кръг 1"),
-        FieldModelThree("Линия / Кръг 2")
+        FieldModelThree("Линия / Кръг 2"),
+        FieldModelThree("Линия / Кръг 3")
     ),
     aerozolSections[4] to arrayListOf(
         //Преглед на резервно захранване
@@ -133,14 +132,16 @@ val aerozolMap = mapOf<String, ArrayList<IModel>>(
     ),
     aerozolSections[8] to arrayListOf(
         //Функционален тест на действието на звуков сигнализатор / сирена за предупреждение на пуск на гасителния агент
-        CheckedModel("")
+        CheckedModel("Сирена"),
+        CheckedModel("Звънец")
     ),
 
 
     aerozolSections[9] to arrayListOf(
         // Техническа проверка на лупове и линии
-        CheckedModel("Кръг 1"),
-        CheckedModel("Кръг 2"),
+        CheckedModel("Линия / Кръг 1"),
+        CheckedModel("Линия / Кръг 2"),
+        CheckedModel("Линия / Кръг 3"),
         FieldModel(subTitle = "")
     ),
 
@@ -148,12 +149,12 @@ val aerozolMap = mapOf<String, ArrayList<IModel>>(
         // Техническа проверка на всеки един автоматичен пожароизвестителен детектор
         CheckedModelTwo("Тест на димо-оптични детектори"),
         CheckedModelTwo("Тест на термични детектори"),
-        CheckedModelTwo("Тест на термодифиренциални детектори"),
-        CheckedModelTwo("Тест на пламъчни детектори"),
-        CheckedModelTwo("Тест на комбинирани детектори"),
-        CheckedModelTwo("Тест на линейно-оптични детектори"),
-        CheckedModelTwo("Тест на Взриво защитен димен детектор"),
-        CheckedModelTwo("Тест на радиосигнала на безжични пожароизвестителни детектори")
+        CheckedModelTwo("Тест на взривозащитен водороден анализатор"),
+        CheckedModelTwo("Тест на взривозащитен CO анализатор"),
+     //   CheckedModelTwo("Тест на комбинирани детектори"),
+     //   CheckedModelTwo("Тест на линейно-оптични детектори"),
+     //   CheckedModelTwo("Тест на Взриво защитен димен детектор"),
+     //   CheckedModelTwo("Тест на радиосигнала на безжични пожароизвестителни детектори")
     ),
 
     aerozolSections[11] to arrayListOf(
@@ -189,6 +190,10 @@ val aerozolMap = mapOf<String, ArrayList<IModel>>(
     aerozolSections[15] to arrayListOf(
         // Визуална проверка на аерозолен генератор (за гасителен агент)
         ExtendedCheckedModel(""),
+        ExtendedCheckedModel(""),
+        ExtendedCheckedModel(""),
+        ExtendedCheckedModel(""),
+        ExtendedCheckedModel(""),
         ExtendedCheckedModel("")
     ),
 
@@ -220,12 +225,12 @@ val aerozolMap = mapOf<String, ArrayList<IModel>>(
 
     aerozolSections[19] to arrayListOf(
         CheckedModel(
-            // Визуална проверка за структурни или екслоатационни промени в обекта, които биха попречили на работата на ръчните бутони
+            // Визуална проверка за структурни или екслоатационни промени в обекта, които биха попречили на работата на ПГИ
             ""
         )
     ),
     aerozolSections[20] to arrayListOf(
-        // Проверка за наличие на актуалност на документацията, придружаваща ПИС
+        // Проверка за наличие на актуалност на документацията, придружаваща ПГИ
         CheckedModel("")
     ),
     aerozolSections[21] to arrayListOf(

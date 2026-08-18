@@ -321,7 +321,170 @@ fun LoginPage(modifier: Modifier, onRefreshToken: (String?, String?) -> Unit) {
 }
 
 
+@Composable
+fun ShortMenu(modifier: Modifier, pagerState: PagerState) {
+    val titleOne = "Преглед и тест на основно захранване"
+    val titleTwo = "Преглед и тест на основна платка"
+    val titleThree = "Преглед на резервно захранване"
+    var i = 1
 
+    val models = mapOfModels[titleOne] ?: emptyList()
+    val modelsTwo = mapOfModels[titleTwo] ?: emptyList()
+    val modelsThree = mapOfModels[titleThree] ?: emptyList()
+    Column(modifier = modifier.fillMaxSize()) {
+        MyColumn(modifier = Modifier.weight(1f)) {
+            MyCard {
+
+                Title(titleOne)
+                models.forEach { model ->
+                    if (model is CheckedModelThree) {
+
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            QuestionHeader(model.subTitle)
+                            CountFieldThree(model, value = model.currentMeasurement)
+                        }
+
+                    }
+
+                }
+            }
+
+            MyCard {
+                Title(titleTwo)
+                modelsTwo.forEach { model ->
+                    if (model is FieldModelThree) {
+
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            QuestionHeader(model.subTitle)
+                            CountFieldFour(model, value = model.pressure)
+                        }
+
+
+                    }
+                }
+            }
+            MyCard {
+                Title(titleThree)
+                i = 1
+                modelsThree.forEachIndexed { index, model ->
+                    if (model is CheckedModelThree) {
+
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            if(model.subTitle == "Зареждане на акумулаторни батерии") {
+                                 QuestionHeader(model.subTitle)
+                            } else {
+                                QuestionHeader("Акумулаторна батерия №${i++}")
+                            }
+                                CountFieldThree(model, value = model.currentMeasurement)
+
+                        }
+
+                    }
+                }
+
+            }
+        }
+    // Навигацията - закована долу
+    BottomPaging(pagerState)
+    Spacer(modifier = Modifier.height(10.dp))
+  }
+}
+
+
+//region Page Three
+@Composable
+fun TestOsnovnoZahranvane(
+    modifier: Modifier,
+    title: String,
+    section: String,
+    pagerState: PagerState
+) {
+    val models = mapOfModels[section] ?: emptyList()
+
+    Column(modifier = modifier.fillMaxSize()) {
+        // Заглавие на страницата
+        Title(title)
+
+        MyColumn(
+            modifier = Modifier.weight(1f)
+        ) {
+            models.forEach { model ->
+                MyCard {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        // 1. Винаги заглавие на въпроса
+                        QuestionHeader(model.subTitle)
+
+                        if (model is CheckedModelThree) {
+                            BinaryChoice(model)
+                            Row {
+                                Row(
+                                    Modifier
+                                        .weight(0.5f)
+                                        .padding(0.dp, 0.dp, 4.dp, 8.dp)
+                                ) {
+
+                                    CountFieldThree(model,value = model.previousMeasurement, enabled = false)
+
+                                }
+                                Row(
+                                    Modifier
+                                        .weight(0.5f)
+                                        .padding(0.dp, 0.dp, 4.dp, 8.dp)
+                                ) {
+
+                                    CountFieldThree(model, value = model.currentMeasurement, placeholder = "Текущ...")
+                                }
+                            }
+                            DataField(
+                                model,
+                                placeholder = "Забележка...",
+                                value = model.data,
+                                lamb = {
+                                    model.data = it
+                                })
+                        } else if (model is FieldModelThree) {
+                            Row {
+                                Row(
+                                    Modifier
+                                        .weight(0.5f)
+                                        .padding(0.dp, 0.dp, 4.dp, 8.dp)
+                                ) {
+
+                                    CountFieldFour(model, value = model.oldPressure, enabled = false)
+
+
+                                }
+                                Row(
+                                    Modifier
+                                        .weight(0.5f)
+                                        .padding(0.dp, 0.dp, 4.dp, 8.dp)
+                                ) {
+                                    CountFieldFour(model,  value = model.pressure, placeholder = "Текущ..."
+                                    )
+
+                                }
+                            }
+                            // 3. Ако е TextModel (температурата - модел 1) ИЛИ е CheckedModel (за данни)
+                            DataField(
+                                model, placeholder = "Забележка...", value = model.data,
+                                lamb = { model.data = it })
+                        }
+
+
+                    }
+                }
+            }
+
+        }
+
+        // Навигацията - закована долу
+        BottomPaging(pagerState)
+        Spacer(modifier = Modifier.height(10.dp))
+    }
+
+}
+
+//endregion
 @Composable
 fun MainScreen(modifier: Modifier, type : InstallationType) {
 
@@ -382,6 +545,7 @@ fun MainScreen(modifier: Modifier, type : InstallationType) {
                         0 -> OpenCamera(modifier, pagerState)
                         1 -> {
                             val section = aerozolSections[page]
+                            //ShortMenu(modifier, pagerState)
                             PageHeader(modifier,  section,pagerState)
                         }
                         2 -> {
@@ -685,7 +849,18 @@ fun InitialPage(modifier: Modifier) {
                                                  jsonCheckedModelThree.currentMeasurement
                                              newList.add(checkedModelThree)
                                          }
-
+                                         "field data three" -> {
+                                             val jsonFieldModelThree = model as JsonFieldModelThree
+                                             val fieldModelThree =
+                                                 FieldModelThree(
+                                                     jsonFieldModelThree.subTitle
+                                                 )
+                                             fieldModelThree.data = jsonFieldModelThree.data
+                                             fieldModelThree.pressure = jsonFieldModelThree.pressure
+                                             fieldModelThree.oldPressure =
+                                                 jsonFieldModelThree.oldPressure
+                                             newList.add(fieldModelThree)
+                                         }
                                          "count" -> {
                                              val jsonCountModel = model as JsonCountModel
                                              val countModel = CountModel(
@@ -741,18 +916,7 @@ fun InitialPage(modifier: Modifier) {
                                              newList.add(fieldModelTwo)
                                          }
 
-                                         "field data three" -> {
-                                             val jsonFieldModelThree = model as JsonFieldModelThree
-                                             val fieldModelThree =
-                                                 FieldModelThree(
-                                                     jsonFieldModelThree.subTitle
-                                                 )
-                                             fieldModelThree.data = jsonFieldModelThree.data
-                                             fieldModelThree.pressure = jsonFieldModelThree.pressure
-                                             fieldModelThree.oldPressure =
-                                                 jsonFieldModelThree.oldPressure
-                                             newList.add(fieldModelThree)
-                                         }
+
 
                                          "text" -> {
                                              val jsonTextModel = model as JsonTextModel
@@ -925,100 +1089,7 @@ fun PageTwoControls(model: IModel) {
 }
 //endregion Page Two Controls
 
-//region Page Three
-@Composable
-fun TestOsnovnoZahranvane(
-    modifier: Modifier,
-    title: String,
-    section: String,
-    pagerState: PagerState
-) {
-    val models = mapOfModels[section] ?: emptyList()
 
-    Column(modifier = modifier.fillMaxSize()) {
-        // Заглавие на страницата
-        Title(title)
-
-        MyColumn(
-            modifier = Modifier.weight(1f)
-        ) {
-            models.forEach { model ->
-                MyCard {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        // 1. Винаги заглавие на въпроса
-                        QuestionHeader(model.subTitle)
-
-                        if (model is CheckedModelThree) {
-                            BinaryChoice(model)
-                            Row {
-                                Row(
-                                    Modifier
-                                        .weight(0.5f)
-                                        .padding(0.dp, 0.dp, 4.dp, 8.dp)
-                                ) {
-
-                                    CountFieldThree(model,value = model.previousMeasurement, enabled = false)
-
-                                }
-                                Row(
-                                    Modifier
-                                        .weight(0.5f)
-                                        .padding(0.dp, 0.dp, 4.dp, 8.dp)
-                                ) {
-
-                                    CountFieldThree(model, value = model.currentMeasurement, placeholder = "Текущ...")
-                                }
-                            }
-                            DataField(
-                                model,
-                                placeholder = "Забележка...",
-                                value = model.data,
-                                lamb = {
-                                    model.data = it
-                                })
-                        } else if (model is FieldModelThree) {
-                            Row {
-                                Row(
-                                    Modifier
-                                        .weight(0.5f)
-                                        .padding(0.dp, 0.dp, 4.dp, 8.dp)
-                                ) {
-
-                                    CountFieldFour(model, value = model.oldPressure, enabled = false)
-
-
-                                }
-                                Row(
-                                    Modifier
-                                        .weight(0.5f)
-                                        .padding(0.dp, 0.dp, 4.dp, 8.dp)
-                                ) {
-                                    CountFieldFour(model, placeholder = "Текущ...",
-                                        value = model.pressure)
-
-                                }
-                            }
-                            // 3. Ако е TextModel (температурата - модел 1) ИЛИ е CheckedModel (за данни)
-                            DataField(
-                                model, placeholder = "Забележка...", value = model.data,
-                                lamb = { model.data = it })
-                        }
-
-
-                    }
-                }
-            }
-
-        }
-
-        // Навигацията - закована долу
-        BottomPaging(pagerState)
-        Spacer(modifier = Modifier.height(10.dp))
-    }
-
-}
-
-//endregion
 
 //region Page Fourth
 @Composable
@@ -1200,9 +1271,10 @@ fun FunkcionalenTestnaZvukovSignalizator(
                 MyCard {
                     Column(modifier = Modifier.padding(16.dp)) {
                         // Блокче 2: Ред с "изправни" и Да/Не бутони
-                        LabeledBinaryChoice(model, label = "изправни") {
 
-                        }
+                        QuestionHeader(model.subTitle)
+
+                        LabeledBinaryChoice(model, label = "изправни") {}
 
                         // Блокче 3: Поле за забележка
                         Spacer(modifier = Modifier.height(8.dp))
@@ -2384,7 +2456,7 @@ fun PageHeader(
                             loadingData = true
                             triggerRequest++
                         }, modifier = Modifier.height(40.dp)) {
-                            Text(text = "Зареждане по номер на Обект")
+                            Text(text = "Номер на Обект")
                         }
                         Spacer(modifier = Modifier.height(5.dp))
                     }
@@ -2394,7 +2466,7 @@ fun PageHeader(
                         DataField(
                             models[1],
                             value = (models[1] as FieldModel).data,
-                            placeholder = "Номер на баркод"
+                            placeholder = "НОМЕР НА БАРКОД"
                         ) {
                             (models[1] as FieldModel).data = it
                         }
@@ -2432,9 +2504,25 @@ fun PageHeader(
                                         "Обект" -> {
                                             DropDown(model, options = remember {
                                                 listOf(
-                                                    PreviewOption("ФЕЦ Хасково 1", 1),
-                                                    PreviewOption("ФЕЦ Хасково 2", 2),
-                                                    PreviewOption("ФЕЦ Хасково 3", 3),
+
+                                                    PreviewOption("ФЕЦ Нова Загора",0),
+                                                    PreviewOption("ФЕЦ Сливен Бършен",1),
+                                                    PreviewOption("ФЕЦ Сливен Самуилово", 2),
+                                                    PreviewOption("ФЕЦ Сливен Хаджидимитрово", 3),
+                                                    PreviewOption("ФЕЦ Горна Василица", 4),
+                                                    PreviewOption("ФЕЦ Камено 1",5),
+                                                    PreviewOption("ФЕЦ Камено 2",6),
+                                                    PreviewOption("ФЕЦ Любимец 1", 7),
+                                                    PreviewOption("ФЕЦ Любимец 2", 8),
+                                                    PreviewOption("ФЕЦ Каварна",9),
+                                                    PreviewOption("ФЕЦ Карлово", 10),
+                                                    PreviewOption("ФЕЦ Балчик",11),
+                                                    PreviewOption("ФЕЦ Хасково 1", 12),
+                                                    PreviewOption("ФЕЦ Хасково 2", 13),
+                                                    PreviewOption("ФЕЦ Хасково 3", 14),
+                                                    PreviewOption("ФЕЦ Старо Оряхово", 15),
+                                                    PreviewOption("ФЕЦ Силистра", 16),
+                                                    PreviewOption("ФЕЦ Момчилград", 17),
                                                 )
                                             }) {
                                                 model.data = it

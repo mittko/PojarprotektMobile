@@ -91,6 +91,7 @@ import com.google.gson.Gson
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
+import kotlin.text.Typography.section
 
 
 val TITLE_FONT_SIZE = 20.sp
@@ -324,11 +325,25 @@ fun BottomPaging(pagerState: PagerState) {
         }
 
            httpResponse?.let {
-              // if(it.code != 200) {
+
                    MyDialog().RetroDialog(it.code,it.message,) {
                        httpResponse = null
+
+                       if(it.code == 200) {
+                           val models = mapOfModels["Преглед и тест на основно захранване"]
+                           models?.forEach { model ->
+                               if(model is CheckedModelThree) {
+
+                                   model.currentMeasurement = ""
+
+                               }
+
+                           }
+                       }
                    }
-          //     }
+
+
+
            }
 
 
