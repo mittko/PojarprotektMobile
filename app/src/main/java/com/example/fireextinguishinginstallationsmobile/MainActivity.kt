@@ -120,6 +120,7 @@ import com.example.fireextinguishinginstallationsmobile.models.barcodeText
 import com.example.fireextinguishinginstallationsmobile.utils.PreviewOption
 import kotlinx.coroutines.delay
 import kotlin.collections.forEach
+import kotlin.text.Typography.section
 
 
 // Ctrl + Alt + O clean unused imports
@@ -545,28 +546,30 @@ fun MainScreen(modifier: Modifier, type : InstallationType) {
                         0 -> OpenCamera(modifier, pagerState)
                         1 -> {
                             val section = aerozolSections[page]
-                            //ShortMenu(modifier, pagerState)
                             PageHeader(modifier,  section,pagerState)
                         }
                         2 -> {
-                            val section = aerozolSections[page]
-                            TestOsnovnoZahranvane(modifier, "№${page+1} $section", section,pagerState)
+                            ShortMenu(modifier,pagerState)
                         }
+
                         3 -> {
-                            val section = aerozolSections[page]
-                            TestOsnovnaPlatka(modifier, title = "№${page+1} $section",  section = section,pagerState)
-                        }
-                        4  -> {
-                            val section = aerozolSections[page]
-                            PregledRezervnoZahranvane(modifier, "№${page+1} $section", section,pagerState)
-                        }
-                        5 -> {
                             val section = aerozolSections[page]
                             PregledControlPanel(modifier, "№${page+1} $section", section, pagerState)
                         }
-                        6 -> {
+                        4 -> {
                             val section = aerozolSections[page]
                             FunkcionalenTestElTablo(modifier, title = "№${page+1} $section",section ,pagerState)
+                        }
+
+                        5 -> {
+                            val section = aerozolSections[page]
+
+                            TestOsnovnoZahranvane(modifier, "№${page+1} $section", section,pagerState)
+                        }
+
+                        6 -> {
+                            val section = aerozolSections[page]
+                            TestOsnovnaPlatka(modifier, title = "№${page+1} $section",  section = section,pagerState)
                         }
                         7 -> {
                             val section = aerozolSections[page]
@@ -576,44 +579,58 @@ fun MainScreen(modifier: Modifier, type : InstallationType) {
                             val section = aerozolSections[page]
                             FunkcionalenTestnaZvukovSignalizator(modifier,"№${page+1} $section",section,pagerState)
                         }
-
                         9 -> {
+                            val section = aerozolSections[page]
+                            ZakluchitelniProverki(
+                                modifier,
+                                "№${page+1} $section",
+                                section,
+                                pagerState
+                            )
+                        }
+                        10  -> {
+                            val section = aerozolSections[page]
+                            PregledRezervnoZahranvane(modifier, "№${page+1} $section", section,pagerState)
+                        }
+
+                        11 -> {
                             val section = aerozolSections[page]
                             ProverkaLupoveILinii(modifier, "№${page+1} $section", section,pagerState)
                         }
-                        10 -> {
+
+                        12 -> {
                             val section = aerozolSections[page]
                             ProverkaPojaroizvestitelenDetektor(modifier, "№${page+1} $section", section,pagerState)
                         }
-                        11 -> {
+                        13 -> {
                             val section = aerozolSections[page]
                             ProverkaSvobodnoProstranstvoOkoloPojaroizvestitelenDetektor(modifier, "№${page+1} $section",
                                 section,pagerState)
                         }
-                        12 -> {
+                        14 -> {
                             val section = aerozolSections[page]
                             TestMehanizamVsekiRychenButon(modifier, "№${page+1} $section", section,pagerState)
                         }
-                        13 -> {
+                        15 -> {
                             val section = aerozolSections[page]
                             ProverkaNaDostypDoVsichkiPojaroizvestitelniButoni(modifier, "№${page+1} $section",
                                 section,pagerState)
                         }
-                        14 -> {
+                        16 -> {
                             val section = aerozolSections[page]
                             ProverkaZaNalichieUkazatelniZnaci(modifier,"№${page+1} $section",section,pagerState)
                         }
-                        15 -> {
+                        17 -> {
                             val section = aerozolSections[page]
                             VizualnaProverkaNaSydoveteZaGasitelenAgentAerozol(modifier, "№${page+1} $section",
                                 section,pagerState)
                         }
-                        16 -> {
+                        18 -> {
                             val section = aerozolSections[page]
                             ProverkaSignalniIIzneseniUstrojstva(modifier, "№${page+1} $section",
                                 section,pagerState)
                         }
-                        17, 18, 19, 20, 21 -> {
+                          19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31 -> {
                             val section = aerozolSections[page]
                             ZakluchitelniProverki(
                                 modifier,
@@ -623,7 +640,7 @@ fun MainScreen(modifier: Modifier, type : InstallationType) {
                             )
                         }
 
-                        22 -> {
+                        32 -> {
                             val section = aerozolSections[page]
                             LastPage(modifier, "№${page+1} $section",
                             section,pagerState)
@@ -798,6 +815,7 @@ fun InitialPage(modifier: Modifier) {
 
                              val mutableMap = result.mutableMap
                              mutableMap.put("Камера", ArrayList())
+                             mutableMap.put("Кратко меню", ArrayList())
 
 
                              mutableMap.forEach { key, value ->
@@ -2669,7 +2687,7 @@ fun loadMapData(
 
                     val mutableMap = result.mutableMap
                     mutableMap.put("Камера", ArrayList())
-
+                    mutableMap.put("Кратко меню", ArrayList())
 
                     mutableMap.forEach { key, value ->
                         // if we have barcode no need to overwrite it !!!
@@ -2678,6 +2696,8 @@ fun loadMapData(
                         }
 
                         val list = mutableMap[key]
+
+
                         val newList = ArrayList<IModel>()
                         list?.forEach { model ->
                             when (model.type) {

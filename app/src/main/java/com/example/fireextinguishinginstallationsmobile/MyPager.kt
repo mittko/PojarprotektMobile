@@ -265,11 +265,12 @@ fun BottomPaging(pagerState: PagerState) {
                     val isSelected = pagerState.currentPage == index
 
                     val tabColor =
-                        if(index == 2 || index == 3 || index == 4) {
+                        if(index == 2) {
                             Color(0xFFFFAF00)
                         } else {
                             Color.White
                         }
+
                     Tab(
                         selected = isSelected,
                         onClick = {
@@ -282,8 +283,7 @@ fun BottomPaging(pagerState: PagerState) {
                             }
                         },
                         // Задаваме само височината. Tab автоматично се центрира и разпъва на ширина.
-                        modifier = Modifier.height(70.dp)
-                            .background(color = tabColor))
+                        modifier = Modifier.height(70.dp).background(color = tabColor))
                      {
                         // Текстът вътре се центрира автоматично от Tab компонента
                         Text(
