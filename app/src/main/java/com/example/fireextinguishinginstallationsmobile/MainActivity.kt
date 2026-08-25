@@ -117,6 +117,7 @@ import retrofit2.Response
 import java.io.File
 import com.example.fireextinguishinginstallationsmobile.models.auth.OnResponseBody
 import com.example.fireextinguishinginstallationsmobile.models.barcodeText
+import com.example.fireextinguishinginstallationsmobile.utils.MyDate
 import com.example.fireextinguishinginstallationsmobile.utils.PreviewOption
 import kotlinx.coroutines.delay
 import kotlin.collections.forEach
@@ -333,7 +334,9 @@ fun ShortMenu(modifier: Modifier, pagerState: PagerState) {
     val modelsTwo = mapOfModels[titleTwo] ?: emptyList()
     val modelsThree = mapOfModels[titleThree] ?: emptyList()
     Column(modifier = modifier.fillMaxSize()) {
+        Title("Кратко меню")
         MyColumn(modifier = Modifier.weight(1f)) {
+
             MyCard {
 
                 Title(titleOne)
@@ -920,6 +923,10 @@ fun InitialPage(modifier: Modifier) {
                                                  jsonFiledModel.subTitle
                                              )
                                              fieldModel.data = jsonFiledModel.data
+                                             // patch
+                                             if(fieldModel.subTitle == "Дата на монтаж на ПГИ") {
+                                                 fieldModel.data = MyDate().GetReversedSystemDate()
+                                             }
                                              newList.add(fieldModel)
                                          }
 

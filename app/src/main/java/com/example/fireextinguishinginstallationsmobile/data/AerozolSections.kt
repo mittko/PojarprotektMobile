@@ -80,8 +80,8 @@ val aerozolMap = mapOf<String, ArrayList<IModel>>(
         DropDownModel("Вид на гасителен агент"),
         CountModel("Брой разпръскващи дюзи"),
         CountModel("Брой ръчни бутони \"СТАРТ\""),
-        CountModel("Брой ръчни бутони"), //  СТОП
-        CountModel("Брой ръчни бутони \"ЗАРЕЖДАНЕ\""), // ЗАДЪРЖАНЕ
+        CountModel("Брой ръчни бутони \"СТОП\""), //  СТОП
+        CountModel("Брой ръчни бутони \"ЗАДЪРЖАНЕ\""), // ЗАДЪРЖАНЕ
         CountModel("Брой автоматични датчици"),
         CountModel("Брой изн. звукови сигнализатори")
     ),
@@ -106,9 +106,9 @@ val aerozolMap = mapOf<String, ArrayList<IModel>>(
 
     aerozolSections[5] to arrayListOf(
         // Преглед и тест на основно захранване
-        CheckedModelThree("Основно захранване от електрическа мрежа"),
-        FieldModelThree("Температура на корпуса на ел.трансформатора"),
-        CheckedModelThree("Преобразувано захранване")
+        CheckedModelThree("Основно захранване от електрическа мрежа"), // currentMeasurement
+        FieldModelThree("Температура на корпуса на ел.трансформатора"), // pressure
+        CheckedModelThree("Преобразувано захранване") // currentMeasurement
     ),
 
     aerozolSections[6] to arrayListOf(

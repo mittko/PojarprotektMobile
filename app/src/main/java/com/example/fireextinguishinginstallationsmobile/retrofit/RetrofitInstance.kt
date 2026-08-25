@@ -66,6 +66,6 @@ object RetrofitInstance {
     }
 
     fun getURL(): String {
-        return TEST_URL
+        return PROD_URL
     }
 }

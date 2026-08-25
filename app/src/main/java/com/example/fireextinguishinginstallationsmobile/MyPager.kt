@@ -10,6 +10,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -302,11 +303,13 @@ fun BottomPaging(pagerState: PagerState) {
 
 
 
+        Box(modifier = Modifier.fillMaxWidth()) {
             Button(onClick = {
                 onConfirm = true
-            }, modifier = Modifier.fillMaxWidth()) {
+            }, modifier = Modifier.fillMaxWidth(0.5f).align(Alignment.Center)) {
                 Text(text = "Запиши")
             }
+        }
 
             if (onConfirm) {
                 ConfirmationDialog(onDismissRequest = {
@@ -333,11 +336,20 @@ fun BottomPaging(pagerState: PagerState) {
                            val models = mapOfModels["Преглед и тест на основно захранване"]
                            models?.forEach { model ->
                                if(model is CheckedModelThree) {
-
                                    model.currentMeasurement = ""
-
                                }
-
+                           }
+                           val modelsTwo = mapOfModels["Преглед и тест на основна платка"]
+                           modelsTwo?.forEach { model ->
+                               if(model is FieldModelThree) {
+                                   model.pressure = ""
+                               }
+                           }
+                           val modelsThree = mapOfModels["Преглед на резервно захранване"]
+                           modelsThree?.forEach { model ->
+                               if(model is CheckedModelThree) {
+                                   model.currentMeasurement = ""
+                               }
                            }
                        }
                    }
