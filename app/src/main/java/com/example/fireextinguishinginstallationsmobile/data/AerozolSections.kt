@@ -75,10 +75,13 @@ val aerozolMap = mapOf<String, ArrayList<IModel>>(
         FieldModel(String.format("Договор %s", numero)),
         DropDownModel("Обект"),
         DropDownModel("Модел и тип на инсталацията"), //ATENTION !!!
+
         FieldModel("Дата на монтаж на ПГИ"),
         DropDownModel("Модел на автоматика за управление"),
         DropDownModel("Вид на гасителен агент"),
+
         CountModel("Брой разпръскващи дюзи"),
+
         CountModel("Брой ръчни бутони \"СТАРТ\""),
         CountModel("Брой ръчни бутони \"СТОП\""), //  СТОП
         CountModel("Брой ръчни бутони \"ЗАДЪРЖАНЕ\""), // ЗАДЪРЖАНЕ
@@ -191,11 +194,8 @@ val aerozolMap = mapOf<String, ArrayList<IModel>>(
 
     ),
     aerozolSections[15] to arrayListOf(
-
-        CheckedModelTwo(
-            //  Проверка на безпрепятствен достъп до всички ръчни пожароизвестителни бутони
-            ""
-        ),
+   //  Проверка на безпрепятствен достъп до всички ръчни пожароизвестителни бутони
+        CheckedModelTwo(""),
         CountModel("")
     ),
 
@@ -217,15 +217,11 @@ val aerozolMap = mapOf<String, ArrayList<IModel>>(
     ),
 
     aerozolSections[18] to arrayListOf(
-        CheckedModelTwo(
-            // Проверка на сигнални и изнесени устройства
-            "Тест на всяка една вътрешна сирена/звънец"
-        ),
+        // Проверка на сигнални и изнесени устройства
+        CheckedModelTwo("Тест на всяка една вътрешна сирена/звънец"),
         CheckedModelTwo("Тест на всеки един изнесен индикатор"),
-        CheckedModel(
-            "Тест на устройство за препредаване на сигнал за пожар към център за управление"
-        ), CheckedModel(
-            "Тест на устройство за препредаване на сигнал за повреда към център за управление",
+        CheckedModel("Тест на устройство за препредаване на сигнал за пожар към център за управление"
+        ), CheckedModel("Тест на устройство за препредаване на сигнал за повреда към център за управление",
         ), CheckedModel("Тест на командно табло на пожарната служба")
     ),
 

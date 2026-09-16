@@ -657,66 +657,74 @@ fun MainScreen(modifier: Modifier, type : InstallationType) {
                         0 -> OpenCamera(modifier, pagerState)
                         1 -> {
                             val section = gasSections[page]
-
-                            PageHeader(modifier, section,pagerState)
+                            PageHeader(modifier,  section,pagerState)
                         }
                         2 -> {
-                            val section = gasSections[page]
-                            PregledControlPanel(modifier, "№${page+1} $section", section,pagerState)
+                            ShortMenu(modifier,pagerState)
                         }
                         3 -> {
                             val section = gasSections[page]
-                            FunkcionalenTestElTablo(modifier, "№${page+1} $section",section, pagerState)
+                            PregledControlPanel(modifier, "№${page+1} $section", section,pagerState)
                         }
                         4 -> {
                             val section = gasSections[page]
-                            TestOsnovnoZahranvane(modifier, "№${page+1} $section", section,pagerState)
+                            FunkcionalenTestElTablo(modifier, "№${page+1} $section",section, pagerState)
                         }
                         5 -> {
                             val section = gasSections[page]
+                            TestOsnovnoZahranvane(modifier, "№${page+1} $section", section,pagerState)
+                        }
+                        6 -> {
+                            val section = gasSections[page]
                             TestOsnovnaPlatka(modifier, "№${page+1} $section", section,pagerState)
                         }
-                        6, 7, 8 -> {
+                        7, 8, 9 -> {
                             val section = gasSections[page]
                             ProverkaPravilnaSvyrzanost(modifier, "№${page+1} $section", section,pagerState)
                         }
-                        9, 10 -> {
+                        10, 11 -> {
                             val section = gasSections[page]
                             ProverkaRychenSpiratelenKran(modifier, "№${page+1} $section",section, pagerState)
                         }
-                        11 -> {
+                        12 -> {
                             val section = gasSections[page]
                             PregledRezervnoZahranvane(modifier, "№${page+1} $section", section,pagerState)
                         }
-                        12 -> {
+                        13 -> {
                             val section = gasSections[page]
                             ProverkaLupoveILinii(modifier, "№${page+1} $section", section,pagerState)
                         }
-                        13 -> {
+                        14 -> {
                             val section = gasSections[page]
                             ProverkaPojaroizvestitelenDetektor(modifier, "№${page+1} $section", section,pagerState)
                         }
-                        14 -> {
+                        15 -> {
                             val section = gasSections[page]
                             ProverkaSvobodnoProstranstvoOkoloPojaroizvestitelenDetektor(modifier, "№${page+1} $section", section,pagerState)
                         }
-                        15, 16, 17 -> {
+                        16, 17, 18 -> {
                             val section = gasSections[page]
                             TestMehanizamVsekiRychenButon(modifier, "№${page+1} $section", section,pagerState)
                         }
-                        18, 20 -> {
+                        19 -> {
                             val section = gasSections[page]
                             VidSydZaGAsitelenAgent(modifier, "№${page+1} $section", section,pagerState)
                         }
-                        19 -> {
+                        20 -> {
                             val section = gasSections[page]
                             VizualnaProverkaNaSydoveteZaGasitelenAgent(modifier, "№${page+1} $section", section,pagerState)
                         }
                         21 -> {
                             val section = gasSections[page]
+
+                            ProverkaSistemaZaOtkrivaneNaTechove(modifier, "№${page+1} $section", section,pagerState)
+                        }
+                        22 -> {
+                            val section = gasSections[page]
+
                             ProverkaSignalniIIzneseniUstrojstva(modifier, "№${page+1} $section", section,pagerState)
                         }
-                        22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33 -> {
+                        23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34 -> {
                             val section = gasSections[page]
                             ZakluchitelniProverki(
                                 modifier,
@@ -726,7 +734,7 @@ fun MainScreen(modifier: Modifier, type : InstallationType) {
                             )
                         }
 
-                        34 -> {
+                        35 -> {
                             val section = gasSections[page]
                             LastPage(modifier, "№${page+1} $section", section,pagerState)
                         }

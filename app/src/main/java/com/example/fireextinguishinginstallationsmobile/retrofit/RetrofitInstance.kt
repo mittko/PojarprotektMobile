@@ -25,7 +25,7 @@ object RetrofitInstance {
     //public const val ACCESS_TOKEN = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiLQk9C10L7RgNCz0Lgg0JrQvtCy0LDRh9C60LgiLCJmaXJzdE5hbWUiOiLQk9C10L7RgNCz0Lgg0JrQvtCy0LDRh9C60LgiLCJsYXN0TmFtZSI6ItCz0L7Qs9C4IiwiZXhwIjoxNzMxOTU0MjUyfQ.B_EaH5o2xtySyLuETD_Ug5LO9IBnc6PTMVtJI0VcZlY"
 
     private const val PROD_URL = "http://78.142.42.215:1526";
-    private const val TEST_URL = "http://192.168.1.6:1526"
+    private const val TEST_URL = "http://192.168.1.7:1526"
     fun getInstance(): Retrofit {
 
         //   val logging = HttpLoggingInterceptor()
@@ -56,8 +56,6 @@ object RetrofitInstance {
 
         val gson = GsonBuilder().setLenient().registerTypeAdapterFactory(typeFactory).create()
 
-
-
         return Retrofit.Builder().baseUrl(getURL())
             .client(okHttpClient)
             .addConverterFactory(ScalarsConverterFactory.create()) //important
@@ -66,6 +64,6 @@ object RetrofitInstance {
     }
 
     fun getURL(): String {
-        return PROD_URL
+        return TEST_URL
     }
 }
