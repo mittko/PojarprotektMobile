@@ -19,9 +19,9 @@ data class ExtendedCheckedModel(
 
     var data by mutableStateOf("")
 
-    var pressure by mutableFloatStateOf(0f)
+    var pressure by mutableStateOf("")
 
-    var lastPressure by mutableStateOf(0f)
+    var lastPressure by mutableStateOf("")
 
     var fabNum by mutableStateOf("")
 

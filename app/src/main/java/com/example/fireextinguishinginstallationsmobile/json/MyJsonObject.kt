@@ -9,5 +9,6 @@ data class MyJsonObject(
     val barcodeNumber: String,
     val operatorName: String,
     val contractDate: String,
-    val mutableMap: MutableMap<String, ArrayList<JsonModel>>
+    val mutableMap: MutableMap<String, ArrayList<JsonModel>>,
+    val fecName:String
 )

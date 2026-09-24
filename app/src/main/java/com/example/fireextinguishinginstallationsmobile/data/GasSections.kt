@@ -84,7 +84,7 @@ val gasMap = mapOf<String, ArrayList<IModel>>(
     gasSections[0] to arrayListOf(),
     gasSections[2] to ArrayList(),
     gasSections[1] to arrayListOf(
-        // Входни данни
+        // Входни данни - зареждат се по подразбиране от бекенда
         CountModel("Номер на обект"),
         FieldModel("Баркод"),
         FieldModel(String.format("Договор %s", numero)),
@@ -262,7 +262,8 @@ val gasMap = mapOf<String, ArrayList<IModel>>(
         CheckedModelTwo("Тест на всеки един изнесен индикатор"),
         CheckedModel("Тест на устройство за препредаване на сигнал за пожар към център за управление"
         ), CheckedModel("Тест на устройство за препредаване на сигнал за повреда към център за управление",
-        ), CheckedModel("Тест на командно табло на пожарната служба")
+        ), CheckedModel("Тест на нивото на звука на външна сирена- до 88 bB"),
+        CheckedModel("Тест на нивото на звука на външен звънец – до 98  bB"),
     ),
 
     gasSections[23] to arrayListOf(

@@ -798,7 +798,7 @@ fun ExtendedCheckedCard(index: Int, model: ExtendedCheckedModel) {
             ) {
                 TextField(
                     value = model.pressure.toString().replace("0.0", ""),
-                    onValueChange = { model.pressure = it.toFloatOrNull() ?: 0f },
+                    onValueChange = { model.pressure = it },
                     modifier = Modifier.weight(1f),
                     label = { Text("Налягане (bar)", fontSize = 11.sp) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
@@ -807,7 +807,7 @@ fun ExtendedCheckedCard(index: Int, model: ExtendedCheckedModel) {
                 )
                 TextField(
                     value = model.lastPressure.toString().replace("0.0", ""),
-                    onValueChange = { model.lastPressure = it.toFloatOrNull() ?: 0f },
+                    onValueChange = { model.lastPressure = it },
                     modifier = Modifier.weight(1f),
                     label = { Text("Предишно (bar)", fontSize = 11.sp) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),

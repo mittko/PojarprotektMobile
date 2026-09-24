@@ -322,7 +322,92 @@ fun LoginPage(modifier: Modifier, onRefreshToken: (String?, String?) -> Unit) {
     }
 }
 
+@Composable
+fun ShortMenuGaz(modifier: Modifier, pagerState: PagerState) {
+    val titleOne = "Преглед и тест на основно захранване"
+    val titleTwo = "Преглед и тест на основна платка"
+    val titleThree = "Преглед на резервно захранване"
+    val titleFour = "Визуална проверка на съдовете за гасителен агент"
+    var i = 1
 
+    val models = mapOfModels[titleOne] ?: emptyList()
+    val modelsTwo = mapOfModels[titleTwo] ?: emptyList()
+    val modelsThree = mapOfModels[titleThree] ?: emptyList()
+    val modelsFour = mapOfModels[titleFour] ?: emptyList()
+
+    Column(modifier = modifier.fillMaxSize()) {
+        Title("Кратко меню")
+        MyColumn(modifier = Modifier.weight(1f)) {
+
+            MyCard {
+
+                Title(titleOne)
+                models.forEach { model ->
+                    if (model is CheckedModelThree) {
+
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            QuestionHeader(model.subTitle)
+                            CountFieldThree(model, value = model.currentMeasurement)
+                        }
+
+                    }
+
+                }
+            }
+
+            MyCard {
+                Title(titleTwo)
+                modelsTwo.forEach { model ->
+                    if (model is FieldModelThree) {
+
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            QuestionHeader(model.subTitle)
+                            CountFieldFour(model, value = model.pressure)
+                        }
+
+
+                    }
+                }
+            }
+            MyCard {
+                Title(titleThree)
+                i = 1
+                modelsThree.forEachIndexed { index, model ->
+                    if (model is CheckedModelThree) {
+
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            if(model.subTitle == "Зареждане на акумулаторни батерии") {
+                                QuestionHeader(model.subTitle)
+                            } else {
+                                QuestionHeader("Акумулаторна батерия №${i++}")
+                            }
+                            CountFieldThree(model, value = model.currentMeasurement)
+
+                        }
+
+                    }
+                }
+            }
+            MyCard {
+                Title(titleFour)
+                modelsFour.forEachIndexed { index, model ->
+                    if(model is ExtendedCheckedModel) {
+                        val f : FieldModelThree = FieldModelThree("")
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            CountFieldFour(f,"",value = (model.pressure))
+                        }
+
+                        return@MyCard
+                    }
+
+                }
+            }
+        }
+        // Навигацията - закована долу
+        BottomPaging(pagerState)
+        Spacer(modifier = Modifier.height(10.dp))
+    }
+}
 @Composable
 fun ShortMenu(modifier: Modifier, pagerState: PagerState) {
     val titleOne = "Преглед и тест на основно захранване"
@@ -394,6 +479,229 @@ fun ShortMenu(modifier: Modifier, pagerState: PagerState) {
   }
 }
 
+// region Page Header
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PageHeader(
+    modifier: Modifier,
+    section: String,
+    pagerState: PagerState
+) {
+
+    val context = LocalContext.current
+
+    val installationType = PreferencesManager().getInstallationType(context)
+
+    var triggerRequest by remember {
+        mutableIntStateOf(0)
+    }
+    var errorEvent by remember {
+        mutableStateOf<OnResponseBody?>(null)
+    }
+    var loadingData by remember {
+        mutableStateOf(false)
+    }
+    val models = mapOfModels[section] ?: emptyList()
+
+
+    Box(contentAlignment = Alignment.Center) {
+        Column(modifier = modifier.fillMaxSize()) {
+
+
+            Text(
+                text = section,
+                Modifier.padding(8.dp), fontSize = TITLE_FONT_SIZE,
+                fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground
+            )
+
+            MyColumn(
+                modifier = Modifier
+                    .weight(1f)
+            ) {
+                MyCard {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+
+                        TestField(models[0], placeholder = "Номер на обект",value = (models[0] as CountModel).data) {
+                            (models[0] as CountModel).data = it
+                        }
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        Button(onClick = {
+                            loadingData = true
+                            triggerRequest++
+                        }, modifier = Modifier.height(40.dp)) {
+                            Text(text = "Номер на Обект")
+                        }
+                        Spacer(modifier = Modifier.height(5.dp))
+                    }
+                }
+                MyCard() {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        DataField(
+                            models[1],
+                            value = (models[1] as FieldModel).data,
+                            placeholder = "НОМЕР НА БАРКОД"
+                        ) {
+                            (models[1] as FieldModel).data = it
+                        }
+                    }
+
+                }
+
+
+                for (i in 2 until models.size) {
+                    val model = models[i]
+
+                    MyCard {
+                        Column(Modifier.padding(16.dp)) {
+                            QuestionHeader(model.subTitle)
+
+                            when (model) {
+                                is CheckedModel -> {
+                                    BinaryChoice(model)
+                                }
+
+                                is CountModel -> {
+                                    CountField(model, value = model.data)
+                                }
+
+                                is FieldModel -> DataField(
+                                    model,
+                                    value = model.data,
+                                    lamb = {
+                                        model.data = it
+                                    })
+
+                                is DropDownModel -> {
+
+                                    when(model.subTitle) {
+                                        "Обект" -> {
+                                            DropDown(model, options = remember {
+                                                listOf(
+
+                                                    PreviewOption("ФЕЦ Нова Загора",0),
+                                                    PreviewOption("ФЕЦ Сливен Бършен",1),
+                                                    PreviewOption("ФЕЦ Сливен Самуилово", 2),
+                                                    PreviewOption("ФЕЦ Сливен Хаджидимитрово", 3),
+                                                    PreviewOption("ФЕЦ Горна Василица", 4),
+                                                    PreviewOption("ФЕЦ Камено 1",5),
+                                                    PreviewOption("ФЕЦ Камено 2",6),
+                                                    PreviewOption("ФЕЦ Любимец 1", 7),
+                                                    PreviewOption("ФЕЦ Любимец 2", 8),
+                                                    PreviewOption("ФЕЦ Каварна",9),
+                                                    PreviewOption("ФЕЦ Карлово", 10),
+                                                    PreviewOption("ФЕЦ Балчик",11),
+                                                    PreviewOption("ФЕЦ Хасково 1", 12),
+                                                    PreviewOption("ФЕЦ Хасково 2", 13),
+                                                    PreviewOption("ФЕЦ Хасково 3", 14),
+                                                    PreviewOption("ФЕЦ Старо Оряхово", 15),
+                                                    PreviewOption("ФЕЦ Силистра", 16),
+                                                    PreviewOption("ФЕЦ Момчилград", 17),
+                                                )
+                                            }) {
+                                                model.data = it
+                                            }
+                                        }
+                                        "Модел и тип на инсталацията" -> {
+                                            DropDown(model, options = remember {
+                                                listOf(
+                                                    PreviewOption("Аерозолна ПГИ", 1),
+                                                    PreviewOption("Газова ПГИ", 2)
+                                                )
+                                            }) {
+                                                model.data = it
+                                            }
+                                        }
+                                        "Модел на автоматика за управление" -> {
+                                            DropDown(model, options = remember {
+                                                listOf(
+                                                    PreviewOption("Smart Line", 1),
+                                                    PreviewOption("Kentec Sigma XT K21021M2", 2),
+                                                    PreviewOption("Tele Tek IVY", 3),
+                                                    PreviewOption("Advanced Ex - 3001", 4),
+                                                    PreviewOption("Siemenes XC 1001-A", 5),
+                                                    PreviewOption("BOSCH", 6)
+                                                )
+                                            }) {
+                                                model.data = it
+                                            }
+                                        }
+                                        "Вид на гасителен агент" -> {
+                                            DropDown(model, options =
+                                                if(installationType == "aerozol") {
+                                                    remember {
+                                                        listOf(
+                                                            PreviewOption(
+                                                                text = "Аерозол", 1))
+                                                    }
+                                                }
+                                                else {
+                                                    remember {
+                                                        listOf(
+                                                            PreviewOption(text = "NC 1230 (FK-5-1-12)", 1),
+                                                            PreviewOption(text = "Novec 1230", 2),
+                                                            PreviewOption(text = "HFC 227ea", 3),
+                                                            PreviewOption(text = "FM 200", 4),
+                                                            PreviewOption(text = "АЗОТ", 5),
+                                                            PreviewOption(text = "HFC-125 - Флуоросъдържащ парников газ", 6),
+                                                        )
+                                                    }
+
+                                                }) {
+                                                model.data = it
+                                            }
+                                        }
+                                    }
+
+                                }
+
+//                                is DropDownModelTwo -> {
+//                                    DropDownGasitelenAgent(model)
+//                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+
+
+            BottomPaging(pagerState)
+            Spacer(modifier = Modifier.height(8.dp))
+
+        }
+        if(loadingData) {
+            CircularProgressIndicator()
+        }
+    }
+
+
+    LaunchedEffect(triggerRequest) {
+
+        loadMapData(
+            context, triggerRequest,
+            (models[0] as CountModel).data,
+            getURL() + "/get_sunotech_protokol_details_by_id",
+        ) { onResponse ->
+            errorEvent = onResponse
+            loadingData = false
+        }
+
+
+    }
+    errorEvent?.let {
+        if(it.responseCode != 200) {
+            MyDialog().RetroDialog(it.responseCode, it.responseMessage) {
+                errorEvent = null
+            }
+        }
+    }
+
+}
 
 //region Page Three
 @Composable
@@ -660,7 +968,7 @@ fun MainScreen(modifier: Modifier, type : InstallationType) {
                             PageHeader(modifier,  section,pagerState)
                         }
                         2 -> {
-                            ShortMenu(modifier,pagerState)
+                            ShortMenuGaz(modifier,pagerState)
                         }
                         3 -> {
                             val section = gasSections[page]
@@ -2434,229 +2742,6 @@ private fun StartCamera(
 
 }
 
-// region Page Header
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun PageHeader(
-    modifier: Modifier,
-    section: String,
-    pagerState: PagerState
-) {
-
-    val context = LocalContext.current
-
-    val installationType = PreferencesManager().getInstallationType(context)
-
-    var triggerRequest by remember {
-        mutableIntStateOf(0)
-    }
-    var errorEvent by remember {
-        mutableStateOf<OnResponseBody?>(null)
-    }
-    var loadingData by remember {
-        mutableStateOf(false)
-    }
-    val models = mapOfModels[section] ?: emptyList()
-
-
-    Box(contentAlignment = Alignment.Center) {
-        Column(modifier = modifier.fillMaxSize()) {
-
-
-            Text(
-                text = section,
-                Modifier.padding(8.dp), fontSize = TITLE_FONT_SIZE,
-                fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground
-            )
-
-            MyColumn(
-                modifier = Modifier
-                    .weight(1f)
-            ) {
-                MyCard {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-
-                        TestField(models[0], placeholder = "Номер на обект",value = (models[0] as CountModel).data) {
-                            (models[0] as CountModel).data = it
-                        }
-
-                        Spacer(modifier = Modifier.height(20.dp))
-
-                        Button(onClick = {
-                            loadingData = true
-                            triggerRequest++
-                        }, modifier = Modifier.height(40.dp)) {
-                            Text(text = "Номер на Обект")
-                        }
-                        Spacer(modifier = Modifier.height(5.dp))
-                    }
-                }
-                MyCard() {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        DataField(
-                            models[1],
-                            value = (models[1] as FieldModel).data,
-                            placeholder = "НОМЕР НА БАРКОД"
-                        ) {
-                            (models[1] as FieldModel).data = it
-                        }
-                    }
-
-                }
-
-
-                for (i in 2 until models.size) {
-                    val model = models[i]
-
-                    MyCard {
-                        Column(Modifier.padding(16.dp)) {
-                            QuestionHeader(model.subTitle)
-
-                            when (model) {
-                                is CheckedModel -> {
-                                    BinaryChoice(model)
-                                }
-
-                                is CountModel -> {
-                                    CountField(model, value = model.data)
-                                }
-
-                                is FieldModel -> DataField(
-                                    model,
-                                    value = model.data,
-                                    lamb = {
-                                        model.data = it
-                                    })
-
-                                is DropDownModel -> {
-
-                                    when(model.subTitle) {
-                                        "Обект" -> {
-                                            DropDown(model, options = remember {
-                                                listOf(
-
-                                                    PreviewOption("ФЕЦ Нова Загора",0),
-                                                    PreviewOption("ФЕЦ Сливен Бършен",1),
-                                                    PreviewOption("ФЕЦ Сливен Самуилово", 2),
-                                                    PreviewOption("ФЕЦ Сливен Хаджидимитрово", 3),
-                                                    PreviewOption("ФЕЦ Горна Василица", 4),
-                                                    PreviewOption("ФЕЦ Камено 1",5),
-                                                    PreviewOption("ФЕЦ Камено 2",6),
-                                                    PreviewOption("ФЕЦ Любимец 1", 7),
-                                                    PreviewOption("ФЕЦ Любимец 2", 8),
-                                                    PreviewOption("ФЕЦ Каварна",9),
-                                                    PreviewOption("ФЕЦ Карлово", 10),
-                                                    PreviewOption("ФЕЦ Балчик",11),
-                                                    PreviewOption("ФЕЦ Хасково 1", 12),
-                                                    PreviewOption("ФЕЦ Хасково 2", 13),
-                                                    PreviewOption("ФЕЦ Хасково 3", 14),
-                                                    PreviewOption("ФЕЦ Старо Оряхово", 15),
-                                                    PreviewOption("ФЕЦ Силистра", 16),
-                                                    PreviewOption("ФЕЦ Момчилград", 17),
-                                                )
-                                            }) {
-                                                model.data = it
-                                            }
-                                        }
-                                        "Модел и тип на инсталацията" -> {
-                                            DropDown(model, options = remember {
-                                                listOf(
-                                                    PreviewOption("Аерозолна ПГИ", 1),
-                                                    PreviewOption("Газова ПГИ", 2)
-                                                )
-                                            }) {
-                                                model.data = it
-                                            }
-                                        }
-                                        "Модел на автоматика за управление" -> {
-                                            DropDown(model, options = remember {
-                                                listOf(
-                                                    PreviewOption("Smart Line", 1),
-                                                    PreviewOption("Kentec Sigma XT K21021M2", 2),
-                                                    PreviewOption("Tele Tek IVY", 3),
-                                                    PreviewOption("Advanced Ex - 3001", 4),
-                                                    PreviewOption("Siemenes XC 1001-A", 5),
-                                                    PreviewOption("BOSCH", 6)
-                                                )
-                                            }) {
-                                                model.data = it
-                                            }
-                                        }
-                                        "Вид на гасителен агент" -> {
-                                            DropDown(model, options =
-                                                if(installationType == "aerozol") {
-                                                    remember {
-                                                        listOf(
-                                                            PreviewOption(
-                                                                text = "Аерозол", 1))
-                                                    }
-                                                }
-                                                else {
-                                                    remember {
-                                                        listOf(
-                                                            PreviewOption(text = "NC 1230 (FK-5-1-12)", 1),
-                                                            PreviewOption(text = "Novec 1230", 2),
-                                                            PreviewOption(text = "HFC 227ea", 3),
-                                                            PreviewOption(text = "FM 200", 4),
-                                                            PreviewOption(text = "АЗОТ", 5),
-                                                            PreviewOption(text = "HFC-125 - Флуоросъдържащ парников газ", 6),
-                                                        )
-                                                }
-
-                                            }) {
-                                                model.data = it
-                                            }
-                                        }
-                                    }
-
-                                }
-
-//                                is DropDownModelTwo -> {
-//                                    DropDownGasitelenAgent(model)
-//                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-
-
-            BottomPaging(pagerState)
-            Spacer(modifier = Modifier.height(8.dp))
-
-        }
-        if(loadingData) {
-            CircularProgressIndicator()
-        }
-    }
-
-
-    LaunchedEffect(triggerRequest) {
-
-            loadMapData(
-                context, triggerRequest,
-                (models[0] as CountModel).data,
-                getURL() + "/get_sunotech_protokol_details_by_id",
-            ) { onResponse ->
-                errorEvent = onResponse
-                loadingData = false
-            }
-
-
-    }
-    errorEvent?.let {
-        if(it.responseCode != 200) {
-            MyDialog().RetroDialog(it.responseCode, it.responseMessage) {
-                errorEvent = null
-            }
-        }
-    }
-
-}
 
 // endregion Page Header
 
@@ -3001,16 +3086,18 @@ fun completeProtocol(
     val objectIdModel = headerModels[0] as CountModel
     val barcodeModel = headerModels[1] as FieldModel
     val documentDateModel = headerModels[5] as FieldModel
+    val fecNameModel = headerModels[3] as DropDownModel
     val objectId = objectIdModel.data
     val barcodeNumber = barcodeModel.data
     val contractDate = documentDateModel.data
+    val fecName = fecNameModel.data
     val gson = Gson()
     val jsonBody =
         MyJsonObject(
             installationType,
             objectId,
             barcodeNumber = barcodeNumber, operatorName = user,
-            contractDate, jsonMap
+            contractDate, jsonMap, fecName
         )
     val jsonString: String = gson.toJson(jsonBody)
     Log.d("RETROFIT_DEBUG", "Sending JSON: $jsonString")
