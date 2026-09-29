@@ -392,9 +392,8 @@ fun ShortMenuGaz(modifier: Modifier, pagerState: PagerState) {
                 Title(titleFour)
                 modelsFour.forEachIndexed { index, model ->
                     if(model is ExtendedCheckedModel) {
-                        val f : FieldModelThree = FieldModelThree("")
                         Column(modifier = Modifier.padding(16.dp)) {
-                            CountFieldFour(f,"",value = (model.pressure))
+                            CountFieldFive(model,"",value = (model.pressure))
                         }
 
                         return@MyCard
@@ -409,7 +408,7 @@ fun ShortMenuGaz(modifier: Modifier, pagerState: PagerState) {
     }
 }
 @Composable
-fun ShortMenu(modifier: Modifier, pagerState: PagerState) {
+fun ShortMenuAerozol(modifier: Modifier, pagerState: PagerState) {
     val titleOne = "Преглед и тест на основно захранване"
     val titleTwo = "Преглед и тест на основна платка"
     val titleThree = "Преглед на резервно захранване"
@@ -578,34 +577,37 @@ fun PageHeader(
 
                                 is DropDownModel -> {
 
-                                    when(model.subTitle) {
+                                    when (model.subTitle) {
                                         "Обект" -> {
                                             DropDown(model, options = remember {
                                                 listOf(
 
-                                                    PreviewOption("ФЕЦ Нова Загора",0),
-                                                    PreviewOption("ФЕЦ Сливен Бършен",1),
+                                                    PreviewOption("ФЕЦ Нова Загора", 0),
+                                                    PreviewOption("ФЕЦ Сливен Бършен", 1),
                                                     PreviewOption("ФЕЦ Сливен Самуилово", 2),
                                                     PreviewOption("ФЕЦ Сливен Хаджидимитрово", 3),
                                                     PreviewOption("ФЕЦ Горна Василица", 4),
-                                                    PreviewOption("ФЕЦ Камено 1",5),
-                                                    PreviewOption("ФЕЦ Камено 2",6),
+                                                    PreviewOption("ФЕЦ Камено 1", 5),
+                                                    PreviewOption("ФЕЦ Камено 2", 6),
                                                     PreviewOption("ФЕЦ Любимец 1", 7),
                                                     PreviewOption("ФЕЦ Любимец 2", 8),
-                                                    PreviewOption("ФЕЦ Каварна",9),
+                                                    PreviewOption("ФЕЦ Каварна", 9),
                                                     PreviewOption("ФЕЦ Карлово", 10),
-                                                    PreviewOption("ФЕЦ Балчик",11),
+                                                    PreviewOption("ФЕЦ Балчик", 11),
                                                     PreviewOption("ФЕЦ Хасково 1", 12),
                                                     PreviewOption("ФЕЦ Хасково 2", 13),
                                                     PreviewOption("ФЕЦ Хасково 3", 14),
                                                     PreviewOption("ФЕЦ Старо Оряхово", 15),
                                                     PreviewOption("ФЕЦ Силистра", 16),
                                                     PreviewOption("ФЕЦ Момчилград", 17),
+                                                    PreviewOption("ССЕ Рудозем", 18),
+                                                    PreviewOption("ССЕ Любимец", 19),
                                                 )
                                             }) {
                                                 model.data = it
                                             }
                                         }
+
                                         "Модел и тип на инсталацията" -> {
                                             DropDown(model, options = remember {
                                                 listOf(
@@ -616,6 +618,17 @@ fun PageHeader(
                                                 model.data = it
                                             }
                                         }
+                                        "Tип на инсталацията" -> {
+                                            DropDown(model, options = remember {
+                                                listOf(
+                                                    PreviewOption("Адресируема", 1),
+                                                    PreviewOption("Конвенционална", 2)
+                                                )
+                                            }) {
+                                                model.data = it
+                                            }
+                                        }
+
                                         "Модел на автоматика за управление" -> {
                                             DropDown(model, options = remember {
                                                 listOf(
@@ -630,28 +643,43 @@ fun PageHeader(
                                                 model.data = it
                                             }
                                         }
-                                        "Вид на гасителен агент" -> {
-                                            DropDown(model, options =
-                                                if(installationType == "aerozol") {
-                                                    remember {
-                                                        listOf(
-                                                            PreviewOption(
-                                                                text = "Аерозол", 1))
-                                                    }
-                                                }
-                                                else {
-                                                    remember {
-                                                        listOf(
-                                                            PreviewOption(text = "NC 1230 (FK-5-1-12)", 1),
-                                                            PreviewOption(text = "Novec 1230", 2),
-                                                            PreviewOption(text = "HFC 227ea", 3),
-                                                            PreviewOption(text = "FM 200", 4),
-                                                            PreviewOption(text = "АЗОТ", 5),
-                                                            PreviewOption(text = "HFC-125 - Флуоросъдържащ парников газ", 6),
-                                                        )
-                                                    }
 
-                                                }) {
+                                        "Вид на гасителен агент" -> {
+                                            DropDown(
+                                                model, options =
+                                                    if (installationType == "aerozol") {
+                                                        remember {
+                                                            listOf(
+                                                                PreviewOption(
+                                                                    text = "Аерозол", 1
+                                                                )
+                                                            )
+                                                        }
+                                                    } else {
+                                                        remember {
+                                                            listOf(
+                                                                PreviewOption(
+                                                                    text = "NC 1230 (FK-5-1-12)",
+                                                                    1
+                                                                ),
+                                                                PreviewOption(
+                                                                    text = "Novec 1230",
+                                                                    2
+                                                                ),
+                                                                PreviewOption(
+                                                                    text = "HFC 227ea",
+                                                                    3
+                                                                ),
+                                                                PreviewOption(text = "FM 200", 4),
+                                                                PreviewOption(text = "АЗОТ", 5),
+                                                                PreviewOption(
+                                                                    text = "HFC-125 - Флуоросъдържащ парников газ",
+                                                                    6
+                                                                ),
+                                                            )
+                                                        }
+
+                                                    }) {
                                                 model.data = it
                                             }
                                         }
@@ -659,9 +687,7 @@ fun PageHeader(
 
                                 }
 
-//                                is DropDownModelTwo -> {
-//                                    DropDownGasitelenAgent(model)
-//                                }
+
                             }
                         }
                     }
@@ -860,7 +886,7 @@ fun MainScreen(modifier: Modifier, type : InstallationType) {
                             PageHeader(modifier,  section,pagerState)
                         }
                         2 -> {
-                            ShortMenu(modifier,pagerState)
+                            ShortMenuAerozol(modifier,pagerState)
                         }
 
                         3 -> {
@@ -1032,7 +1058,7 @@ fun MainScreen(modifier: Modifier, type : InstallationType) {
 
                             ProverkaSignalniIIzneseniUstrojstva(modifier, "№${page+1} $section", section,pagerState)
                         }
-                        23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34 -> {
+                        23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36 -> {
                             val section = gasSections[page]
                             ZakluchitelniProverki(
                                 modifier,
@@ -1042,7 +1068,7 @@ fun MainScreen(modifier: Modifier, type : InstallationType) {
                             )
                         }
 
-                        35 -> {
+                        37 -> {
                             val section = gasSections[page]
                             LastPage(modifier, "№${page+1} $section", section,pagerState)
                         }
@@ -1113,7 +1139,7 @@ fun InitialPage(modifier: Modifier) {
             PreferencesManager().setInstallationType(context, InstallationType.AEROZOL)
             MainScreen(modifier, InstallationType.AEROZOL)
 
-             LaunchedEffect(triggerDataLoading) {
+            LaunchedEffect(triggerDataLoading) {
                  api.getDefaultProtocolData("/get_sunotech_protokols_default_data",
                      "aerozol",token).enqueue(object :
                      retrofit2.Callback<MyJsonObject> {
@@ -1315,6 +1341,195 @@ fun InitialPage(modifier: Modifier) {
         2 -> {
             PreferencesManager().setInstallationType(context, InstallationType.GAS)
             MainScreen(modifier, InstallationType.GAS)
+
+            LaunchedEffect(triggerDataLoading) {
+                api.getDefaultProtocolData("/get_sunotech_protokols_default_data",
+                    "gas",token).enqueue(object :
+                    retrofit2.Callback<MyJsonObject> {
+                    override fun onResponse(
+                        call: Call<MyJsonObject>,
+                        response: Response<MyJsonObject>
+                    ) {
+                        val result = response.body()
+
+                        if (result != null) {
+
+
+                            PreferencesManager().setObjectId(context, result.objectId)
+                            // very important !!!
+                            mapOfModels.clear()
+
+
+
+                            val mutableMap = result.mutableMap
+                            mutableMap.put("Камера", ArrayList())
+                            mutableMap.put("Кратко меню", ArrayList())
+
+
+                            mutableMap.forEach { key, value ->
+                                // if we have barcode no need to overwrite it !!!
+
+                                val list = mutableMap[key]
+                                val newList = ArrayList<IModel>()
+                                list?.forEach { model ->
+                                    when (model.type) {
+                                        "checkable" -> {
+                                            val jsonCheckedModel = model as JsonCheckedModel
+                                            val checkedModel =
+                                                CheckedModel(
+                                                    jsonCheckedModel.subTitle
+                                                )
+                                            checkedModel.checked = jsonCheckedModel.checked
+                                            checkedModel.unchecked = jsonCheckedModel.unchecked
+                                            checkedModel.data = jsonCheckedModel.data
+                                            newList.add(checkedModel)
+                                        }
+
+                                        "checkable count" -> {
+                                            val jsonCheckedModelTwo = model as JsonCheckedDataModelTwo
+                                            val checkedModelTwo =
+                                                CheckedModelTwo(
+                                                    jsonCheckedModelTwo.subTitle
+                                                )
+                                            checkedModelTwo.checked = jsonCheckedModelTwo.checked
+                                            checkedModelTwo.unchecked = jsonCheckedModelTwo.unchecked
+                                            checkedModelTwo.data = jsonCheckedModelTwo.data
+                                            checkedModelTwo.count = jsonCheckedModelTwo.count
+                                            newList.add(checkedModelTwo)
+                                        }
+
+                                        "checkable measure" -> {
+                                            val jsonCheckedModelThree =
+                                                model as JsonCheckedDataModelThree
+                                            val checkedModelThree =
+                                                CheckedModelThree(
+                                                    jsonCheckedModelThree.subTitle
+                                                )
+                                            checkedModelThree.checked = jsonCheckedModelThree.checked
+                                            checkedModelThree.unchecked =
+                                                jsonCheckedModelThree.unchecked
+                                            checkedModelThree.data = jsonCheckedModelThree.data
+                                            checkedModelThree.previousMeasurement =
+                                                jsonCheckedModelThree.previousMeasurement
+                                            checkedModelThree.currentMeasurement =
+                                                jsonCheckedModelThree.currentMeasurement
+                                            newList.add(checkedModelThree)
+                                        }
+                                        "field data three" -> {
+                                            val jsonFieldModelThree = model as JsonFieldModelThree
+                                            val fieldModelThree =
+                                                FieldModelThree(
+                                                    jsonFieldModelThree.subTitle
+                                                )
+                                            fieldModelThree.data = jsonFieldModelThree.data
+                                            fieldModelThree.pressure = jsonFieldModelThree.pressure
+                                            fieldModelThree.oldPressure =
+                                                jsonFieldModelThree.oldPressure
+                                            newList.add(fieldModelThree)
+                                        }
+                                        "count" -> {
+                                            val jsonCountModel = model as JsonCountModel
+                                            val countModel = CountModel(
+                                                jsonCountModel.subTitle
+                                            )
+                                            countModel.data = jsonCountModel.data
+                                            newList.add(countModel)
+                                        }
+
+                                        "checkable extended" -> {
+                                            val jsonCheckedDataModelExtended =
+                                                model as JsonCheckedDataModelExtended
+                                            val extendedCheckedModel =
+                                                ExtendedCheckedModel(
+                                                    jsonCheckedDataModelExtended.subTitle
+                                                )
+                                            extendedCheckedModel.checked =
+                                                jsonCheckedDataModelExtended.checked
+                                            extendedCheckedModel.unchecked =
+                                                jsonCheckedDataModelExtended.unchecked
+                                            extendedCheckedModel.data =
+                                                jsonCheckedDataModelExtended.data
+                                            extendedCheckedModel.pressure =
+                                                jsonCheckedDataModelExtended.pressure
+                                            extendedCheckedModel.lastPressure =
+                                                jsonCheckedDataModelExtended.lastPressure
+                                            extendedCheckedModel.fabNum =
+                                                jsonCheckedDataModelExtended.fabNum
+                                            extendedCheckedModel.hidrostatMeasurementDate =
+                                                jsonCheckedDataModelExtended.hidrostatMeasurementDate
+                                            extendedCheckedModel.device =
+                                                jsonCheckedDataModelExtended.device
+                                            newList.add(extendedCheckedModel)
+                                        }
+
+                                        "field" -> {
+                                            val jsonFiledModel = model as JsonFieldModel
+                                            val fieldModel = FieldModel(
+                                                jsonFiledModel.subTitle
+                                            )
+                                            fieldModel.data = jsonFiledModel.data
+                                            // patch
+                                            if(fieldModel.subTitle == "Дата на монтаж на ПГИ") {
+                                                fieldModel.data = MyDate().GetReversedSystemDate()
+                                            }
+                                            newList.add(fieldModel)
+                                        }
+
+                                        "field data two" -> {
+                                            val jsonFieldModelTwo = model as JsonFieldModelTwo
+                                            val fieldModelTwo =
+                                                FieldModelTwo(
+                                                    jsonFieldModelTwo.subTitle
+                                                )
+                                            fieldModelTwo.data = jsonFieldModelTwo.data
+                                            fieldModelTwo.dataTwo = jsonFieldModelTwo.dataTwo
+                                            newList.add(fieldModelTwo)
+                                        }
+
+
+                                        "text" -> {
+                                            val jsonTextModel = model as JsonTextModel
+                                            val textModel = TextModel(
+                                                jsonTextModel.subTitle
+                                            )
+                                            textModel.data = jsonTextModel.data
+                                            newList.add(textModel)
+                                        }
+
+                                        "dropdown" -> {
+                                            val jsonDropDownModel = model as JsonDropDownModel
+                                            val dropDownModel = DropDownModel(
+                                                jsonDropDownModel.subTitle
+                                            )
+                                            dropDownModel.data = jsonDropDownModel.data
+                                            newList.add(dropDownModel)
+                                        }
+
+
+                                    }
+
+
+                                }
+                                //mapOfModels[key]?.clear()
+                                mapOfModels[key] = newList
+
+                            }
+                        }
+
+                    }
+
+                    override fun onFailure(
+                        call: Call<MyJsonObject>,
+                        t: Throwable
+                    ) {
+                        // wzemi json-a ot android (default data)
+                        // error dialog here
+                    }
+
+
+                })
+
+            }
         }
     }
 
@@ -3112,7 +3327,7 @@ fun completeProtocol(
     val sunInterface = RetrofitInstance.getInstance().create(ISunotechAPI::class.java)
 
 
-    sunInterface.writeProtocol(jsonBody,token).enqueue(object : retrofit2.Callback<ResponseBody> {
+ /*   sunInterface.writeProtocol(jsonBody,token).enqueue(object : retrofit2.Callback<ResponseBody> {
         override fun onResponse(
             call: Call<ResponseBody?>,
             response: Response<ResponseBody?>
@@ -3124,58 +3339,21 @@ fun completeProtocol(
             onSuccess(HttpResponse(500, t.message ?: "Сървърна Грешка"))
         }
 
-    })
+    })*/
 
-//    sunInterface.writeProtokol(jsonBody,
-//        token).enqueue(object : retrofit2.Callback<ResponseBody> {
-//        @RequiresApi(Build.VERSION_CODES.Q)
-//        override fun onResponse(
-//            call: Call<ResponseBody>,
-//            response: Response<ResponseBody>
-//        ) {
-//            if (response.isSuccessful) {
+  /*  sunInterface.writeDefaultProtocolData(jsonBody, accessToken = token).enqueue(object : retrofit2.Callback<ResponseBody> {
+        override fun onResponse(
+            call: Call<ResponseBody?>,
+            response: Response<ResponseBody?>
+        ) {
+            onSuccess(HttpResponse(response.code(),response.message()))
+        }
 
+        override fun onFailure(call: Call<ResponseBody?>, t: Throwable) {
+            onSuccess(HttpResponse(code = 500, t.message ?: "Сървърна Грешка"))
+        }
 
-
-
-                // Успешно изпращане
-//                val headers = response.headers()
-//                val fileName = headers["fileName"] ?: "document_${System.currentTimeMillis()}"
-//
-//                val result = response.body()
-//                if (result != null) {
-//
-//                    CoroutineScope(Dispatchers.Main).launch {
-//
-//                        val savedFile = withContext(Dispatchers.IO) {
-//                            // 1. Записваме файла на заден план (IO нишка)
-//                            savePdfToMediaStore(context, result, fileName)
-//                        }
-//
-//                        val activity = context as? Activity
-//
-//                        if (activity == null ||
-//                            activity.isFinishing || activity.isDestroyed) return@launch
-//
-//                        if (savedFile != null) {
-//                            openPdfFile(context, savedFile)
-//                        }
-//                    }
-//                }
-
-
-
-
-//           }
-//                       onSuccess(HttpResponse(response.code(),response.message()))
-//        }
-//
-//        override fun onFailure(call: retrofit2.Call<ResponseBody>, t: Throwable) {
-//                 // Грешка при мрежовата връзка
-//                 // MyDialog().RetroDialog(500,t.message!!) { }
-//                     onSuccess(HttpResponse(500,t.message ?: "Сървърна грешка"))
-//        }
-//    })
+    })*/
 
 }
 

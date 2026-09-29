@@ -32,10 +32,16 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuAnchorType
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
@@ -124,100 +130,61 @@ fun ConfirmationDialog(
     })
 
 }
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DropDown(model : DropDownModel, options : List<PreviewOption>, lambda : (String) -> Unit) {
-    var selectedOption = remember(model.data) {
-        options.find { it.text == model.data }
-    }
+fun DropDown(
+    model: DropDownModel,
+    options: List<PreviewOption>,
+    lambda: (String) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    var text by remember(model.data) { mutableStateOf(model.data ?: "") }
+    var isTyping by remember { mutableStateOf(false) }
 
-    TextFieldMenu(
-        label = "", options = options,
-        selectedOption =
-            selectedOption,
-        onOptionSelected = { it ->
-            selectedOption = it
-           // model.data = selectedOption!!.text
-            lambda(it!!.text)
-        },
-        optionToString = {
-            it.text
-        }, filteredOptions = { searchInput ->
-            options.filter {
-                it.text.contains(searchInput, ignoreCase = true)
-            }
-        }
-    )
-}
-@Composable
-fun DropDownAutomatika(model: DropDownModel) {
-    val options = remember {
-        listOf(
-            PreviewOption("Smart Line", 1),
-            PreviewOption("Kentec Sigma XT K21021M2", 2),
-            PreviewOption("Tele Tek IVY", 3),
-            PreviewOption("Advanced Ex - 3001", 4),
-            PreviewOption("Siemenes XC 1001-A", 5),
-            PreviewOption("BOSCH", 6)
+    // Без писане -> всички опции; при писане -> филтър
+    val filtered = if (isTyping && text.isNotEmpty()) {
+        options.filter { it.text.contains(text, ignoreCase = true) }
+    } else options
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = it }
+    ) {
+        OutlinedTextField(
+            value = text,
+            onValueChange = {
+                text = it
+                isTyping = true
+                expanded = true
+            },
+            singleLine = true,
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = Modifier
+                .menuAnchor(MenuAnchorType.PrimaryEditable) // при стара версия: Modifier.menuAnchor()
+                .fillMaxWidth()
         )
-    }
 
-    var selectedOption = remember(model.data) {
-        options.find { it.text == model.data }
-    }
-
-    TextFieldMenu(
-        label = "", options = options,
-        selectedOption =
-            selectedOption,
-        onOptionSelected = { it ->
-            selectedOption = it
-            model.data = selectedOption!!.text
-        },
-        optionToString = {
-
-            it.text
-        }, filteredOptions = { searchInput ->
-            options.filter {
-                it.text.contains(searchInput, ignoreCase = true)
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = {
+                expanded = false
+                isTyping = false
+                text = model.data ?: ""   // връща последния избор, ако не е избрано нищо
+            }
+        ) {
+            filtered.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option.text) },
+                    onClick = {
+                        text = option.text
+                        isTyping = false
+                        expanded = false
+                        lambda(option.text)
+                    }
+                )
             }
         }
-    )
-}
-
-
-@Composable
-fun DropDownGasitelenAgent(model: DropDownModelTwo) {
-    val options = remember {
-        listOf(
-            PreviewOption(text = "NC 1230 (FK-5-1-12)", 1),
-            PreviewOption(text = "Novec 1230", 2),
-            PreviewOption(text = "HFC 227ea", 3),
-            PreviewOption(text = "FM 200", 4),
-            PreviewOption(text = "АЗОТ", 5),
-            PreviewOption(text = "HFC-125 - Флуоросъдържащ парников газ", 6),
-        )
     }
-    var selectedOption = remember(model.data) {
-        options.find { model.data == it.text }
-    }
-    TextFieldMenu(
-        label = "", options = options,
-        selectedOption =
-            selectedOption,
-        onOptionSelected = { it ->
-            selectedOption = it
-            model.data = selectedOption!!.text
-        },
-        optionToString = {
-
-            it.text
-        }, filteredOptions = { searchInput ->
-            options.filter {
-                it.text.contains(searchInput, ignoreCase = true)
-            }
-        }
-    )
 }
 
 
@@ -266,7 +233,7 @@ fun BottomPaging(pagerState: PagerState) {
                     val isSelected = pagerState.currentPage == index
 
                     val tabColor =
-                        if(index == 2) {
+                        if(isSelected) {
                             Color(0xFFFFAF00)
                         } else {
                             Color.White
@@ -705,6 +672,35 @@ fun CountFieldThree(model: IModel, placeholder: String = "", value: String = "",
 fun CountFieldFour(model: IModel, placeholder: String = "", value: String = "", enabled: Boolean = true) {
 
     val countModel = model as FieldModelThree
+
+    var textValue by remember(value) {
+        mutableStateOf(value)
+    }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth(1f),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        TextField(
+            value = textValue,
+            placeholder = {
+                Text(text = placeholder)
+            },
+            onValueChange = {
+                textValue = it
+                countModel.pressure = it
+
+            },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            singleLine = true,
+            colors = TextFieldDefaults.colors(unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant),
+            enabled = enabled
+        )
+    }
+}@Composable
+fun CountFieldFive(model: IModel, placeholder: String = "", value: String = "", enabled: Boolean = true) {
+
+    val countModel = model as ExtendedCheckedModel
 
     var textValue by remember(value) {
         mutableStateOf(value)

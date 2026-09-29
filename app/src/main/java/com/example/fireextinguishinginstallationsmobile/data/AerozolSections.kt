@@ -188,7 +188,7 @@ val aerozolMap = mapOf<String, ArrayList<IModel>>(
 
 
     aerozolSections[14] to arrayListOf(
-        // Тест на механизма на всеки един Ръчен пожароизвестителен бутон чрез тест ключ или премахване на чупещия се елемент
+        //     "Тест на механизма на всеки един „Ръчен бутон“ ( СТОП ГАСЕНЕ, ЗАДЪРЖАНЕ, СТАРТ ГАСЕНЕ ) чрез тест ключ за възстановяване",
         CountModel(subTitle = ""),
         CheckedModelTwo("")
 
@@ -257,8 +257,8 @@ val aerozolMap = mapOf<String, ArrayList<IModel>>(
         )
     ),
     aerozolSections[24] to arrayListOf(
+        // Проверка на аварийна клапа за повишено налягане
         CheckedModel(
-            // Проверка на аварийна клапа за повишено налягане
             ""
         )
     ),
