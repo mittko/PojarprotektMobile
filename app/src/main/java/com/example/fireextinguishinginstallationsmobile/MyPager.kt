@@ -187,7 +187,63 @@ fun DropDown(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DropDownTwo(
+    model: DropDownModel,
+    options: List<PreviewOption>,
+    lambda: (String) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val selectedOption = model.innerOptions
+    var text by remember(selectedOption) { mutableStateOf(selectedOption ?: "") }
+    var isTyping by remember { mutableStateOf(false) }
 
+    // Без писане -> всички опции; при писане -> филтър
+    val filtered = if (isTyping && text.isNotEmpty()) {
+        options.filter { it.text.contains(text, ignoreCase = true) }
+    } else options
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = it }
+    ) {
+        OutlinedTextField(
+            value = text,
+            onValueChange = {
+                text = it
+                isTyping = true
+                expanded = true
+            },
+            singleLine = true,
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = Modifier
+                .menuAnchor(MenuAnchorType.PrimaryEditable) // при стара версия: Modifier.menuAnchor()
+                .fillMaxWidth()
+        )
+
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = {
+                expanded = false
+                isTyping = false
+                text = selectedOption   // връща последния избор, ако не е избрано нищо
+            }
+        ) {
+            filtered.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option.text) },
+                    onClick = {
+                        text = option.text
+                        isTyping = false
+                        expanded = false
+                        lambda(option.text)
+                    }
+                )
+            }
+        }
+    }
+}
 fun readProtocol(context: Context) {
     val gson = Gson()
     val fileName = "jsonModels.txt"

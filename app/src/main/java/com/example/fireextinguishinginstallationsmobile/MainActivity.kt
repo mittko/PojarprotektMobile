@@ -10,6 +10,7 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -51,6 +52,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -335,6 +337,10 @@ fun ShortMenuGaz(modifier: Modifier, pagerState: PagerState) {
     val modelsThree = mapOfModels[titleThree] ?: emptyList()
     val modelsFour = mapOfModels[titleFour] ?: emptyList()
 
+    val listOfOptions = mapOfModels["Входни данни"] ?: emptyList()
+    val dropDownModel = listOfOptions[4] as DropDownModel
+
+
     Column(modifier = modifier.fillMaxSize()) {
         Title("Кратко меню")
         MyColumn(modifier = Modifier.weight(1f)) {
@@ -359,13 +365,17 @@ fun ShortMenuGaz(modifier: Modifier, pagerState: PagerState) {
                 Title(titleTwo)
                 modelsTwo.forEach { model ->
                     if (model is FieldModelThree) {
-
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            QuestionHeader(model.subTitle)
-                            CountFieldFour(model, value = model.pressure)
+                        if (dropDownModel.innerOptions == "Адресируем" && model.subTitle.contains("Кръг")) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                QuestionHeader(model.subTitle)
+                                CountFieldFour(model, value = model.pressure)
+                            }
+                        } else  if (dropDownModel.innerOptions == "Конвенционален" && model.subTitle.contains("Линия")) {
+                                Column(modifier = Modifier.padding(16.dp)) {
+                                    QuestionHeader(model.subTitle)
+                                    CountFieldFour(model, value = model.pressure)
+                                }
                         }
-
-
                     }
                 }
             }
@@ -609,7 +619,7 @@ fun PageHeader(
                                         }
 
                                         "Модел и тип на инсталацията" -> {
-                                            DropDown(model, options = remember {
+                                            DropDown (model, options = remember {
                                                 listOf(
                                                     PreviewOption("Аерозолна ПГИ", 1),
                                                     PreviewOption("Газова ПГИ", 2)
@@ -617,17 +627,19 @@ fun PageHeader(
                                             }) {
                                                 model.data = it
                                             }
+
+                                                DropDownTwo (model, options = remember {
+                                                    listOf(
+                                                        PreviewOption("Адресируем", 1),
+                                                        PreviewOption("Конвенционален", 2)
+                                                    )
+                                                }) {
+                                                    model.innerOptions = it
+                                                }
+
+
                                         }
-                                        "Tип на инсталацията" -> {
-                                            DropDown(model, options = remember {
-                                                listOf(
-                                                    PreviewOption("Адресируема", 1),
-                                                    PreviewOption("Конвенционална", 2)
-                                                )
-                                            }) {
-                                                model.data = it
-                                            }
-                                        }
+
 
                                         "Модел на автоматика за управление" -> {
                                             DropDown(model, options = remember {
@@ -1080,7 +1092,6 @@ fun MainScreen(modifier: Modifier, type : InstallationType) {
 
         }
     }
-
     // endregion Pager
 }
 
@@ -1095,7 +1106,9 @@ fun InitialPage(modifier: Modifier) {
     var shouldOpenPage by remember {
         mutableIntStateOf(0)
     }
-
+    BackHandler(enabled = shouldOpenPage != 0) {
+        shouldOpenPage = 0
+    }
     var triggerDataLoading by remember {
         mutableIntStateOf(0)
     }
@@ -1656,7 +1669,11 @@ fun TestOsnovnaPlatka(
     pagerState: PagerState
 ) {
 
+
     val models = mapOfModels[section] ?: emptyList()
+
+    val listOfOptions = mapOfModels["Входни данни"] ?: emptyList()
+    val dropDownModel = listOfOptions[4] as DropDownModel
 
     Column(modifier = modifier.fillMaxSize()) {
         // 1. Заглавие на страницата
@@ -1670,74 +1687,131 @@ fun TestOsnovnaPlatka(
                 .weight(1f)
         ) {
             models.forEach { model ->
-                MyCard {
-                    Column(modifier = Modifier.padding(16.dp)) {
+          //      MyCard {
+         //           Column(modifier = Modifier.padding(16.dp)) {
 
                         when (model) {
                             is CheckedModel -> {
-                                // Блокче 1: Заглавие на въпроса
-                                QuestionHeader(model.subTitle)
+                                MyCard {
+                                    Column(modifier = Modifier.padding(16.dp)) {
+                                        // Блокче 1: Заглавие на въпроса
+                                        QuestionHeader(model.subTitle)
 
-                                // Блокче 2: Чекбоксове "Да/Не" с етикет "изправни" (като на Page 1)
-                                LabeledBinaryChoice(model) {
-                                    // model.data = it
+                                        // Блокче 2: Чекбоксове "Да/Не" с етикет "изправни" (като на Page 1)
+                                        LabeledBinaryChoice(model) {
+                                            // model.data = it
 
+                                        }
+
+
+                                        // Блокче 3: Поле за забележка (само ако моделът поддържа данни)
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        DataField(
+                                            model,
+                                            placeholder = "Забележка...",
+                                            value = model.data,
+                                            lamb = {
+                                                model.data = it
+                                            })
+                                    }
                                 }
-
-                                // Блокче 3: Поле за забележка (само ако моделът поддържа данни)
-                                Spacer(modifier = Modifier.height(8.dp))
-                                DataField(
-                                    model,
-                                    placeholder = "Забележка...",
-                                    value = model.data,
-                                    lamb = {
-                                        model.data = it
-                                    })
                             }
 
                             is TextModel -> {
-                                Text(text = model.subTitle)
+                                MyCard {
+                                    Column(modifier = Modifier.padding(16.dp)) {
+                                        Text(text = model.subTitle)
+                                    }
+                                }
                             }
 
                             is FieldModelThree -> {
-                                QuestionHeader(model.subTitle)
-                                Row {
-                                    Row(
-                                        Modifier
-                                            .weight(0.5f)
-                                            .padding(0.dp, 0.dp, 4.dp, 8.dp)
-                                    ) {
-                                        CountFieldFour(
-                                            model,
-                                            enabled = false,
-                                            value = model.oldPressure
-                                        )
-                                    }
-                                    Row(
-                                        Modifier
-                                            .weight(0.5f)
-                                            .padding(0.dp, 0.dp, 4.dp, 8.dp)
-                                    ) {
-                                        CountFieldFour(
-                                            model,
-                                            placeholder = "Текущ...",
-                                            value = model.pressure)
-                                    }
-                                }
+                                if (dropDownModel.innerOptions == "Адресируем" && model.subTitle.contains("Кръг")) {
+                                    MyCard {
+                                        Column(modifier = Modifier.padding(16.dp)) {
+                                            QuestionHeader(model.subTitle)
+                                            Row {
+                                                Row(
+                                                    Modifier
+                                                        .weight(0.5f)
+                                                        .padding(0.dp, 0.dp, 4.dp, 8.dp)
+                                                ) {
+                                                    CountFieldFour(
+                                                        model,
+                                                        enabled = false,
+                                                        value = model.oldPressure
+                                                    )
+                                                }
+                                                Row(
+                                                    Modifier
+                                                        .weight(0.5f)
+                                                        .padding(0.dp, 0.dp, 4.dp, 8.dp)
+                                                ) {
+                                                    CountFieldFour(
+                                                        model,
+                                                        placeholder = "Текущ...",
+                                                        value = model.pressure
+                                                    )
+                                                }
+                                            }
 
-                                // 3. Ако е TextModel (температурата - модел 1) ИЛИ е CheckedModel (за данни)
-                                DataField(
-                                    model,
-                                    placeholder = "Забележка...",
-                                    value = model.data,
-                                    lamb = {
-                                        model.data = it
-                                    })
+                                            // 3. Ако е TextModel (температурата - модел 1) ИЛИ е CheckedModel (за данни)
+                                            DataField(
+                                                model,
+                                                placeholder = "Забележка...",
+                                                value = model.data,
+                                                lamb = {
+                                                    model.data = it
+                                                })
+                                        }
+                                    }
+
+                                } else if (dropDownModel.innerOptions == "Конвенционален" && model.subTitle.contains("Линия")) {
+                                    MyCard {
+                                        Column(modifier = Modifier.padding(16.dp)) {
+                                            QuestionHeader(model.subTitle)
+                                            Row {
+                                                Row(
+                                                    Modifier
+                                                        .weight(0.5f)
+                                                        .padding(0.dp, 0.dp, 4.dp, 8.dp)
+                                                ) {
+                                                    CountFieldFour(
+                                                        model,
+                                                        enabled = false,
+                                                        value = model.oldPressure
+                                                    )
+                                                }
+                                                Row(
+                                                    Modifier
+                                                        .weight(0.5f)
+                                                        .padding(0.dp, 0.dp, 4.dp, 8.dp)
+                                                ) {
+                                                    CountFieldFour(
+                                                        model,
+                                                        placeholder = "Текущ...",
+                                                        value = model.pressure
+                                                    )
+                                                }
+                                            }
+
+                                            // 3. Ако е TextModel (температурата - модел 1) ИЛИ е CheckedModel (за данни)
+                                            DataField(
+                                                model,
+                                                placeholder = "Забележка...",
+                                                value = model.data,
+                                                lamb = {
+                                                    model.data = it
+                                                })
+                                        }
+                                      }
+
+                                }
                             }
                         }
 
-                    }
-                }
+                //    }
+             //   }
 
             }
 
@@ -3327,7 +3401,7 @@ fun completeProtocol(
     val sunInterface = RetrofitInstance.getInstance().create(ISunotechAPI::class.java)
 
 
- /*   sunInterface.writeProtocol(jsonBody,token).enqueue(object : retrofit2.Callback<ResponseBody> {
+    sunInterface.writeProtocol(jsonBody,token).enqueue(object : retrofit2.Callback<ResponseBody> {
         override fun onResponse(
             call: Call<ResponseBody?>,
             response: Response<ResponseBody?>
@@ -3339,7 +3413,7 @@ fun completeProtocol(
             onSuccess(HttpResponse(500, t.message ?: "Сървърна Грешка"))
         }
 
-    })*/
+    })
 
   /*  sunInterface.writeDefaultProtocolData(jsonBody, accessToken = token).enqueue(object : retrofit2.Callback<ResponseBody> {
         override fun onResponse(

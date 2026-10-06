@@ -120,9 +120,10 @@ val aerozolMap = mapOf<String, ArrayList<IModel>>(
         CheckedModel("Наличие на запрашеност върху ел.трансформатора"),
         CheckedModel("Откачени проводници,свръзки и букси"),
         TextModel(subTitle = "Измерено напрежение на изводите на линиите"),
-        FieldModelThree("Линия / Кръг 1"),
-        FieldModelThree("Линия / Кръг 2"),
-        FieldModelThree("Линия / Кръг 3")
+        FieldModelThree("Линия 1"),
+        FieldModelThree("Линия 2"),
+        FieldModelThree("Линия 3"),
+        FieldModelThree("Кръг 1"),
     ),
     aerozolSections[7] to arrayListOf(
         //Проверка за правилната свързаност и последователност на задействане

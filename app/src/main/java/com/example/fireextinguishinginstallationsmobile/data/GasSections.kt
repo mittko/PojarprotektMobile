@@ -91,7 +91,7 @@ val gasMap = mapOf<String, ArrayList<IModel>>(
         FieldModel(String.format("Договор %s", numero)),
         DropDownModel("Обект"),
         DropDownModel("Модел и тип на инсталацията"),
-        DropDownModel("Tип на инсталацията"),
+
         FieldModel("Дата на монтаж на ПГИ"),
         DropDownModel("Модел на автоматика за управление"),
         DropDownModel("Вид на гасителен агент"),
@@ -143,9 +143,10 @@ val gasMap = mapOf<String, ArrayList<IModel>>(
         CheckedModel("Наличие на запрашеност върху ел.трансформатора"),
         CheckedModel("Откачени проводници,свръзки и букси"),
         TextModel(subTitle = "Измерено напрежение на изводите на линиите"),
-        FieldModelThree("Линия / Кръг 1"),
-        FieldModelThree("Линия / Кръг 2"),
-        FieldModelThree("Линия / Кръг 3")
+        FieldModelThree("Линия 1"),
+        FieldModelThree("Линия 2"),
+        FieldModelThree("Линия 3"),
+        FieldModelThree("Кръг 1"),
     ),
 
     gasSections[7] to arrayListOf(

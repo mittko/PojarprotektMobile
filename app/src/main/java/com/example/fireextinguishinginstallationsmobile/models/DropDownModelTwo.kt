@@ -13,4 +13,10 @@ data class DropDownModelTwo(
 
 
     var data by mutableStateOf("")
+
+ //   val innerOptions = InnerOptions(addressable = true, conventional = false)
 }
+
+//class InnerOptions(var addressable : Boolean, var conventional : Boolean) {
+//
+//}

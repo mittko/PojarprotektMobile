@@ -13,4 +13,6 @@ data class DropDownModel(
 
 
     var data by mutableStateOf("")
+
+    var innerOptions by mutableStateOf("Адресируем")
 }
