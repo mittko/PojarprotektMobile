@@ -2,11 +2,10 @@ package com.example.fireextinguishinginstallationsmobile
 
 
 import android.Manifest
-import android.R.attr.text
+import android.R
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -15,7 +14,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
@@ -52,7 +50,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -123,7 +120,6 @@ import com.example.fireextinguishinginstallationsmobile.utils.MyDate
 import com.example.fireextinguishinginstallationsmobile.utils.PreviewOption
 import kotlinx.coroutines.delay
 import kotlin.collections.forEach
-import kotlin.text.Typography.section
 
 
 // Ctrl + Alt + O clean unused imports
@@ -427,6 +423,10 @@ fun ShortMenuAerozol(modifier: Modifier, pagerState: PagerState) {
     val models = mapOfModels[titleOne] ?: emptyList()
     val modelsTwo = mapOfModels[titleTwo] ?: emptyList()
     val modelsThree = mapOfModels[titleThree] ?: emptyList()
+
+    val listOfOptions = mapOfModels["Входни данни"] ?: emptyList()
+    val dropDownModel = listOfOptions[4] as DropDownModel
+
     Column(modifier = modifier.fillMaxSize()) {
         Title("Кратко меню")
         MyColumn(modifier = Modifier.weight(1f)) {
@@ -452,10 +452,18 @@ fun ShortMenuAerozol(modifier: Modifier, pagerState: PagerState) {
                 modelsTwo.forEach { model ->
                     if (model is FieldModelThree) {
 
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            QuestionHeader(model.subTitle)
-                            CountFieldFour(model, value = model.pressure)
+                        if (dropDownModel.innerOptions == "Адресируем" && model.subTitle.contains("Кръг")) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                QuestionHeader(model.subTitle)
+                                CountFieldFour(model, value = model.pressure)
+                            }
+                        } else  if (dropDownModel.innerOptions == "Конвенционален" && model.subTitle.contains("Линия")) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                QuestionHeader(model.subTitle)
+                                CountFieldFour(model, value = model.pressure)
+                            }
                         }
+
 
 
                     }
@@ -494,8 +502,8 @@ fun ShortMenuAerozol(modifier: Modifier, pagerState: PagerState) {
 fun PageHeader(
     modifier: Modifier,
     section: String,
-    pagerState: PagerState
-) {
+    pagerState: PagerState,
+    index : Int) {
 
     val context = LocalContext.current
 
@@ -512,6 +520,10 @@ fun PageHeader(
     }
     val models = mapOfModels[section] ?: emptyList()
 
+    val selectedOptionModel = models[index] as FieldModel
+    var selected by remember {
+        mutableStateOf(selectedOptionModel.data)
+    }
 
     Box(contentAlignment = Alignment.Center) {
         Column(modifier = modifier.fillMaxSize()) {
@@ -528,10 +540,21 @@ fun PageHeader(
                     .weight(1f)
             ) {
                 MyCard {
+                    RadioButtonSingleSelection(selected,
+                        modifier = Modifier.padding(16.dp), onOptionSelected = {
+
+                        selected = it
+                        selectedOptionModel.data = it
+
+                    })
+                }
+                MyCard {
                     Column(
                         modifier = Modifier.padding(16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+
+
 
                         TestField(models[0], placeholder = "Номер на обект",value = (models[0] as CountModel).data) {
                             (models[0] as CountModel).data = it
@@ -870,7 +893,7 @@ fun MainScreen(modifier: Modifier, type : InstallationType) {
     )
 
 
-
+    InstallationTypeBadge(type)
 
     Column(modifier = Modifier.fillMaxSize()) {
 
@@ -895,7 +918,7 @@ fun MainScreen(modifier: Modifier, type : InstallationType) {
                         0 -> OpenCamera(modifier, pagerState)
                         1 -> {
                             val section = aerozolSections[page]
-                            PageHeader(modifier,  section,pagerState)
+                            PageHeader(modifier,  section,pagerState,14)
                         }
                         2 -> {
                             ShortMenuAerozol(modifier,pagerState)
@@ -1003,7 +1026,7 @@ fun MainScreen(modifier: Modifier, type : InstallationType) {
                         0 -> OpenCamera(modifier, pagerState)
                         1 -> {
                             val section = gasSections[page]
-                            PageHeader(modifier,  section,pagerState)
+                            PageHeader(modifier,  section,pagerState,19)
                         }
                         2 -> {
                             ShortMenuGaz(modifier,pagerState)
@@ -1058,7 +1081,7 @@ fun MainScreen(modifier: Modifier, type : InstallationType) {
                         }
                         20 -> {
                             val section = gasSections[page]
-                            VizualnaProverkaNaSydoveteZaGasitelenAgent(modifier, "№${page+1} $section", section,pagerState)
+                            VizualnaProverkaNaSydoveteZaGasitelenAgentGas(modifier, "№${page+1} $section", section,pagerState)
                         }
                         21 -> {
                             val section = gasSections[page]
@@ -1313,6 +1336,7 @@ fun InitialPage(modifier: Modifier) {
                                                  jsonDropDownModel.subTitle
                                              )
                                              dropDownModel.data = jsonDropDownModel.data
+                                             dropDownModel.innerOptions = jsonDropDownModel.innerOptions
                                              newList.add(dropDownModel)
                                          }
 
@@ -1515,6 +1539,7 @@ fun InitialPage(modifier: Modifier) {
                                                 jsonDropDownModel.subTitle
                                             )
                                             dropDownModel.data = jsonDropDownModel.data
+                                            dropDownModel.innerOptions = jsonDropDownModel.innerOptions
                                             newList.add(dropDownModel)
                                         }
 
@@ -2229,6 +2254,9 @@ fun ProverkaPojaroizvestitelenDetektor(
 
     val models = mapOfModels[section] ?: emptyList()
 
+ //   val headerModels = mapOfModels[""] ?: emptyList()
+ //   val seletedPGIOption = (headerModels[19] as FieldModel).data
+
     Column(modifier = modifier.fillMaxSize()) {
         Title(title)
 
@@ -2655,7 +2683,7 @@ fun SeventeenPage(
 
 // region Page Eighteen
 @Composable
-fun VizualnaProverkaNaSydoveteZaGasitelenAgent(
+fun VizualnaProverkaNaSydoveteZaGasitelenAgentGas(
     modifier: Modifier,
     title: String,
     section: String,
@@ -2663,6 +2691,9 @@ fun VizualnaProverkaNaSydoveteZaGasitelenAgent(
 ) {
 
     val models = mapOfModels[section] ?: emptyList()
+
+    val headerModels = mapOfModels["Входни данни"] ?: emptyList()
+    val brojSydoveZa = headerModels[9] as CountModel
 
     Column(modifier = modifier.fillMaxSize()) {
         Title(title)
@@ -2676,6 +2707,9 @@ fun VizualnaProverkaNaSydoveteZaGasitelenAgent(
                 .padding(horizontal = 8.dp)
         ) {
             models.forEachIndexed { index, model ->
+                if(index + 1 > (brojSydoveZa.data.toInt())) {
+                    return@Column
+                }
                 val extendedModel = model as ExtendedCheckedModel
 
                 ExtendedCheckedCard(index, extendedModel)
@@ -3353,7 +3387,8 @@ fun completeProtocol(
                     jsonList.add(
                         JsonDropDownModel(
                             model.subTitle,
-                            model.data
+                            model.data,
+                            model.innerOptions
                         )
                     )
                 }
@@ -3376,17 +3411,34 @@ fun completeProtocol(
     val barcodeModel = headerModels[1] as FieldModel
     val documentDateModel = headerModels[5] as FieldModel
     val fecNameModel = headerModels[3] as DropDownModel
+    val checkingTypeModel = if(installationType == "gas") (headerModels[19] as FieldModel) else (headerModels[14] as FieldModel)
     val objectId = objectIdModel.data
     val barcodeNumber = barcodeModel.data
     val contractDate = documentDateModel.data
     val fecName = fecNameModel.data
+    val checkingType = when(checkingTypeModel.data) {
+        "Едномесечно" -> {
+            "MONTHLY"
+        }
+        "Тримесечно" -> {
+            "QUARTERLY"
+        }
+        "Шестмесечно" -> {
+            "SEMIANNUAL"
+        }
+        "Дванадесетмесечно"  -> {
+            "ANNUAL"
+        }
+
+        else -> {"MONTHLY"}
+    }
     val gson = Gson()
     val jsonBody =
         MyJsonObject(
             installationType,
             objectId,
             barcodeNumber = barcodeNumber, operatorName = user,
-            contractDate, jsonMap, fecName
+            contractDate, jsonMap, fecName, checkingType
         )
     val jsonString: String = gson.toJson(jsonBody)
     Log.d("RETROFIT_DEBUG", "Sending JSON: $jsonString")

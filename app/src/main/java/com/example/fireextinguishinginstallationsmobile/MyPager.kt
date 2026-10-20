@@ -4,8 +4,10 @@ import android.R.attr.enabled
 import android.R.attr.type
 import android.content.Context
 import android.util.Log
+import android.widget.RadioButton
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -18,8 +20,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -42,7 +47,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -65,9 +72,11 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
@@ -108,7 +117,40 @@ val celzium = "°";
 
 val jsonMap = mutableMapOf<String, ArrayList<JsonModel>>()
 
+@Composable
+fun RadioButtonSingleSelection(option:String, modifier: Modifier = Modifier, onOptionSelected : (String) -> Unit) {
+    val radioOptions = listOf("Едномесечно", "Тримесечно", "Шестмесечно","Дванадесетмесечно")
+   // val (selectedOption) = remember { mutableStateOf(option) }
+    // Note that Modifier.selectableGroup() is essential to ensure correct accessibility behavior
+    Column(modifier.wrapContentHeight().selectableGroup()) {
 
+        Title("Вид обслужване на ПГИ")
+        radioOptions.forEach { text ->
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .height(32.dp)
+                    .selectable(
+                        selected = (text == option),
+                        onClick = { onOptionSelected(text) },
+                        role = Role.RadioButton
+                    )
+                    .padding(horizontal = 8.dp, vertical = 2.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                RadioButton(
+                    selected = (text == option),
+                    onClick = null // null recommended for accessibility with screen readers
+                )
+                Text(
+                    text = text,
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
+        }
+    }
+}
 @Composable
 fun ConfirmationDialog(
     onDismissRequest: () -> Unit,
@@ -227,7 +269,7 @@ fun DropDownTwo(
             onDismissRequest = {
                 expanded = false
                 isTyping = false
-                text = selectedOption   // връща последния избор, ако не е избрано нищо
+                text = selectedOption!!   // връща последния избор, ако не е избрано нищо
             }
         ) {
             filtered.forEach { option ->
@@ -999,7 +1041,28 @@ fun ExtendedCheckedCardAerozol(index: Int, model: ExtendedCheckedModel) {
     }
 }
 
+@Composable
+fun InstallationTypeBadge(type: InstallationType) {
+    val label = when (type) {
+        InstallationType.AEROZOL -> "Аерозолна инсталация"
+        InstallationType.GAS -> "Газова инсталация"
+    }
 
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+        shape = RoundedCornerShape(8.dp)
+    ) {
+        Text(
+            text = label,
+            modifier = Modifier.padding(vertical = 8.dp),
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onPrimaryContainer
+        )
+    }
+}
 
 
 fun learnKotlin(predicate : (PreviewOption) -> Boolean) : PreviewOption? {

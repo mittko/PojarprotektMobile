@@ -13,6 +13,7 @@ import com.example.fireextinguishinginstallationsmobile.models.FieldModelThree
 import com.example.fireextinguishinginstallationsmobile.models.FieldModelTwo
 import com.example.fireextinguishinginstallationsmobile.models.TextModel
 import com.example.fireextinguishinginstallationsmobile.numero
+import java.lang.reflect.Field
 
 val aerozolSections =
     arrayOf(
@@ -86,7 +87,8 @@ val aerozolMap = mapOf<String, ArrayList<IModel>>(
         CountModel("Брой ръчни бутони \"СТОП\""), //  СТОП
         CountModel("Брой ръчни бутони \"ЗАДЪРЖАНЕ\""), // ЗАДЪРЖАНЕ
         CountModel("Брой автоматични датчици"),
-        CountModel("Брой изн. звукови сигнализатори")
+        CountModel("Брой изн. звукови сигнализатори"),
+        FieldModel(subTitle = "Вид обслужване на ПГИ")
     ),
     aerozolSections[3] to arrayListOf(
         // Преглед на контролен панел, ел.табло - индикация

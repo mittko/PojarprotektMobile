@@ -107,7 +107,9 @@ val gasMap = mapOf<String, ArrayList<IModel>>(
         CountModel("Брой ръчни бутони \"ЗАДЪРЖАНЕ\""), // ЗАДЪРЖАНЕ
         CountModel("Брой автоматични датчици"),
         CountModel("Брой АПУ"),
-        CountModel("Брой изн. звукови сигнализатори")
+        CountModel("Брой изн. звукови сигнализатори"),
+        FieldModel(subTitle = "Вид обслужване на ПГИ")
+
     ),
 
     gasSections[3] to arrayListOf(
@@ -167,7 +169,7 @@ val gasMap = mapOf<String, ArrayList<IModel>>(
         CheckedModel("")
     ),
     gasSections[11] to arrayListOf(
-        //Проверка за положението на "Ръчно Пъсково Устройство\
+        //Проверка за положението на Ръчни Пускови Устройства
         CheckedModel(subTitle = "")
     ),
 
@@ -205,12 +207,6 @@ val gasMap = mapOf<String, ArrayList<IModel>>(
         CheckedModelTwo("Тест на термични детектори"),
         CheckedModelTwo("Тест на взривозащитен водороден анализатор"),
         CheckedModelTwo("Тест на взривозащитен CO анализатор")
-//        CheckedModelTwo("Тест на термодифиренциални детектори"),
-//        CheckedModelTwo("Тест на пламъчни детектори"),
-//        CheckedModelTwo("Тест на комбинирани детектори"),
-//        CheckedModelTwo("Тест на линейно-оптични детектори"),
-//        CheckedModelTwo("Тест на Взриво защитен димен детектор"),
-//        CheckedModelTwo("Тест на радиосигнала на безжични пожароизвестителни детектори")
     ),
 
     gasSections[15] to arrayListOf(
