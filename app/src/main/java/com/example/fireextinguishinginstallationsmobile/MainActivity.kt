@@ -520,7 +520,11 @@ fun PageHeader(
     }
     val models = mapOfModels[section] ?: emptyList()
 
-    val selectedOptionModel = models[index] as FieldModel
+    val selectedOptionModel = if(index < models.size) {
+        models[index] as FieldModel
+    } else {
+        FieldModel("Вид обслужване на ПГИ")
+    }
     var selected by remember {
         mutableStateOf(selectedOptionModel.data)
     }
@@ -3173,7 +3177,7 @@ fun loadMapData(
                                     checkedModelThree.data = jsonCheckedModelThree.data
                                     checkedModelThree.previousMeasurement =
                                         jsonCheckedModelThree.currentMeasurement
-                                   // checkedModelThree.currentMeasurement = jsonCheckedModelThree.currentMeasurement
+                   // checkedModelThree.currentMeasurement = jsonCheckedModelThree.currentMeasurement
                                     newList.add(checkedModelThree)
                                 }
 
@@ -3201,7 +3205,7 @@ fun loadMapData(
                                         jsonCheckedDataModelExtended.data
 
                                     extendedCheckedModel.lastPressure = jsonCheckedDataModelExtended.pressure
-                                   // extendedCheckedModel.pressure = jsonCheckedDataModelExtended.pressure
+                  // extendedCheckedModel.pressure = jsonCheckedDataModelExtended.pressure
                                     extendedCheckedModel.fabNum =
                                         jsonCheckedDataModelExtended.fabNum
                                     extendedCheckedModel.hidrostatMeasurementDate =
@@ -3240,7 +3244,7 @@ fun loadMapData(
                                     fieldModelThree.data = jsonFieldModelThree.data
 
                                     fieldModelThree.oldPressure = jsonFieldModelThree.pressure
-                                 //   fieldModelThree.pressure = jsonFieldModelThree.pressure
+             //   fieldModelThree.pressure = jsonFieldModelThree.pressure
                                     newList.add(fieldModelThree)
                                 }
 
@@ -3259,6 +3263,7 @@ fun loadMapData(
                                         jsonDropDownModel.subTitle
                                     )
                                     dropDownModel.data = jsonDropDownModel.data
+                                    dropDownModel.innerOptions = jsonDropDownModel.innerOptions
                                     newList.add(dropDownModel)
                                 }
 
@@ -3422,27 +3427,28 @@ fun completeProtocol(
     val barcodeModel = headerModels[1] as FieldModel
     val documentDateModel = headerModels[5] as FieldModel
     val fecNameModel = headerModels[3] as DropDownModel
-    val checkingTypeModel = if(installationType == "gas") (headerModels[19] as FieldModel) else (headerModels[14] as FieldModel)
+//    val checkingTypeModel = if(installationType == "gas") (headerModels[19] as FieldModel) else (headerModels[14] as FieldModel)
     val objectId = objectIdModel.data
     val barcodeNumber = barcodeModel.data
     val contractDate = documentDateModel.data
     val fecName = fecNameModel.data
-    val checkingType = when(checkingTypeModel.data) {
-        "Едномесечно" -> {
-            "MONTHLY"
-        }
-        "Тримесечно" -> {
-            "QUARTERLY"
-        }
-        "Шестмесечно" -> {
-            "SEMIANNUAL"
-        }
-        "Дванадесетмесечно"  -> {
-            "ANNUAL"
-        }
-
-        else -> {"MONTHLY"}
-    }
+    val checkingType =  "MONTHLY"
+//    when(checkingTypeModel.data) {
+//        "Едномесечно" -> {
+//            "MONTHLY"
+//        }
+//        "Тримесечно" -> {
+//            "QUARTERLY"
+//        }
+//        "Шестмесечно" -> {
+//            "SEMIANNUAL"
+//        }
+//        "Дванадесетмесечно"  -> {
+//            "ANNUAL"
+//        }
+//
+//        else -> {"MONTHLY"}
+//    }
     val gson = Gson()
     val jsonBody =
         MyJsonObject(
