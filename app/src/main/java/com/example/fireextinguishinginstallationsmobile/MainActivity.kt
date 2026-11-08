@@ -67,6 +67,7 @@ import com.example.fireextinguishinginstallationsmobile.data.aerozolSections
 import com.example.fireextinguishinginstallationsmobile.data.gasMap
 import com.example.fireextinguishinginstallationsmobile.data.mapOfModels
 import com.example.fireextinguishinginstallationsmobile.data.gasSections
+import com.example.fireextinguishinginstallationsmobile.data.titles
 import com.example.fireextinguishinginstallationsmobile.enums.InstallationType
 import com.example.fireextinguishinginstallationsmobile.interfaces.IModel
 import com.example.fireextinguishinginstallationsmobile.json.MyJsonObject
@@ -525,6 +526,8 @@ fun PageHeader(
     } else {
         FieldModel("Вид обслужване на ПГИ")
     }
+
+
     var selected by remember {
         mutableStateOf(selectedOptionModel.data)
     }
@@ -544,13 +547,20 @@ fun PageHeader(
                     .weight(1f)
             ) {
                 MyCard {
-                    RadioButtonSingleSelection(selected,
-                        modifier = Modifier.padding(16.dp), onOptionSelected = {
+                    RadioButtonSingleSelection(
+                        selected,
+                        modifier = Modifier.padding(16.dp),
+                        onOptionSelected = {
+                            selected = it
+                            val enValue = checkingTypeAsEnFormat(it)
 
-                        selected = it
-                        selectedOptionModel.data = it
+                            val current = mapOfModels[section]
+                                ?.firstOrNull { m -> m is FieldModel && m.subTitle == "Вид обслужване на ПГИ" } as? FieldModel
 
-                    })
+                            current?.data = enValue
+                            selectedOptionModel.data = enValue // по желание, за стария обект
+                        }
+                    )
                 }
                 MyCard {
                     Column(
@@ -3119,6 +3129,10 @@ fun loadMapData(
 
                     PreferencesManager().setObjectId(context, result.objectId)
                     // very important !!!
+
+                    // GET CHECKING TYPE BEFORE CLEARING MAP DATA
+                    val checkingType = getCheckingType(installationType)
+
                     mapOfModels.clear()
 
 
@@ -3127,7 +3141,23 @@ fun loadMapData(
                     mutableMap.put("Камера", ArrayList())
                     mutableMap.put("Кратко меню", ArrayList())
 
-                    mutableMap.forEach { key, value ->
+                    // IF THERE IS NO CHECKING TYPE VALUE IN JSON MUTABLE MAP  ADD IT (BECAUSE THIS VALUE IS MISSING IN THE BEGINNING)
+//                    val inputData = mutableMap["Входни данни"];
+//                    var hasCheckingType = false
+//                    inputData?.forEach {
+//                        if(it is JsonFieldModel && it.subTitle == "Вид обслужване на ПГИ") {
+//                            hasCheckingType = true
+//                            it.data = checkingType
+//                            return@forEach
+//                        }
+//                    }
+//                    if(!hasCheckingType) {
+//                        inputData?.add(JsonFieldModel("Вид обслужване на ПГИ",checkingType))
+//                    }
+                    // CHECKING TYPE VALUE ADDED IS DONE
+
+
+                    mutableMap.forEach { (key, value) ->
                         // if we have barcode no need to overwrite it !!!
                         if (key == "Камера") {
                       //      return@forEach
@@ -3220,9 +3250,22 @@ fun loadMapData(
                                     val fieldModel = FieldModel(
                                         jsonFiledModel.subTitle
                                     )
-                                    fieldModel.data = jsonFiledModel.data
+
+
+                                    when (fieldModel.subTitle) {
+                                        "Вид обслужване на ПГИ" -> {
+                                            fieldModel.data = checkingType
+                                        }
+                                        "Дата на монтаж на ПГИ" -> {
+                                            fieldModel.data = MyDate().GetReversedSystemDate()
+                                        }
+                                        else -> {
+                                            fieldModel.data = jsonFiledModel.data
+                                        }
+                                    }
                                     newList.add(fieldModel)
                                 }
+
 
                                 "field data two" -> {
                                     val jsonFieldModelTwo = model as JsonFieldModelTwo
@@ -3427,28 +3470,20 @@ fun completeProtocol(
     val barcodeModel = headerModels[1] as FieldModel
     val documentDateModel = headerModels[5] as FieldModel
     val fecNameModel = headerModels[3] as DropDownModel
-//    val checkingTypeModel = if(installationType == "gas") (headerModels[19] as FieldModel) else (headerModels[14] as FieldModel)
+
+    val checkingTypeModel = if(installationType == "gas") {
+        if(headerModels.size == 20) (headerModels[19] as FieldModel) else null
+    } else {
+        if(headerModels.size == 15) (headerModels[14] as FieldModel) else null
+    }
+    val checkingType = checkingTypeModel?.data ?: "MONTHLY"
+
     val objectId = objectIdModel.data
     val barcodeNumber = barcodeModel.data
     val contractDate = documentDateModel.data
     val fecName = fecNameModel.data
-    val checkingType =  "MONTHLY"
-//    when(checkingTypeModel.data) {
-//        "Едномесечно" -> {
-//            "MONTHLY"
-//        }
-//        "Тримесечно" -> {
-//            "QUARTERLY"
-//        }
-//        "Шестмесечно" -> {
-//            "SEMIANNUAL"
-//        }
-//        "Дванадесетмесечно"  -> {
-//            "ANNUAL"
-//        }
-//
-//        else -> {"MONTHLY"}
-//    }
+
+
     val gson = Gson()
     val jsonBody =
         MyJsonObject(
@@ -3498,9 +3533,42 @@ fun completeProtocol(
 
     })*/
 
+
+
 }
 
+fun getCheckingType(installationType: String) : String {
+    val headerModels: ArrayList<IModel> = mapOfModels[titles[1]]!!
+    val checkingTypeModel = if(installationType == "gas") {
+        if(headerModels.size == 20) (headerModels[19] as FieldModel) else null
+    } else {
+        if(headerModels.size == 15) (headerModels[14] as FieldModel) else null
+    }
+    return checkingTypeModel?.data ?: "MONTHLY"
+}
+fun checkingTypeAsEnFormat(checkingType : String) : String {
 
+        when (checkingType) {
+            "Едномесечно" -> {
+               return "MONTHLY"
+            }
+
+            "Тримесечно" -> {
+               return "QUARTERLY"
+            }
+
+            "Шестмесечно" -> {
+              return  "SEMIANNUAL"
+            }
+
+            "Дванадесетмесечно" -> {
+               return "ANNUAL"
+            }
+            else -> {
+              return  "MONTHLY"
+            }
+        }
+}
 //@Preview(showBackground = true)
 //@Composable
 //fun GreetingPreview() {
