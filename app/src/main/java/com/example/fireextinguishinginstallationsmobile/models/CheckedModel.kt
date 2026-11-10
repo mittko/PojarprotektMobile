@@ -17,4 +17,6 @@ data class CheckedModel(
     override var unchecked by mutableStateOf(false)
 
     var data by mutableStateOf("")
+    override fun equals(other: Any?): Boolean = this === other
+    override fun hashCode(): Int = System.identityHashCode(this)
 }

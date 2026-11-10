@@ -15,4 +15,6 @@ data class DropDownModel(
     var data by mutableStateOf("")
 
     var innerOptions by mutableStateOf<String?>("Адресируем")
+    override fun equals(other: Any?): Boolean = this === other
+    override fun hashCode(): Int = System.identityHashCode(this)
 }

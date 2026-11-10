@@ -49,6 +49,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -329,7 +330,7 @@ fun ShortMenuGaz(modifier: Modifier, pagerState: PagerState) {
     val titleFour = "Визуална проверка на съдовете за гасителен агент"
     var i = 1
 
-    val models = mapOfModels[titleOne] ?: emptyList()
+    val models =  mapOfModels[titleOne] ?: emptyList()
     val modelsTwo = mapOfModels[titleTwo] ?: emptyList()
     val modelsThree = mapOfModels[titleThree] ?: emptyList()
     val modelsFour = mapOfModels[titleFour] ?: emptyList()
@@ -350,6 +351,7 @@ fun ShortMenuGaz(modifier: Modifier, pagerState: PagerState) {
 
                         Column(modifier = Modifier.padding(16.dp)) {
                             QuestionHeader(model.subTitle)
+                            CountFieldThree(model,value = model.previousMeasurement, enabled = false)
                             CountFieldThree(model, value = model.currentMeasurement)
                         }
 
@@ -365,13 +367,15 @@ fun ShortMenuGaz(modifier: Modifier, pagerState: PagerState) {
                         if (dropDownModel.innerOptions == "Адресируем" && model.subTitle.contains("Кръг")) {
                             Column(modifier = Modifier.padding(16.dp)) {
                                 QuestionHeader(model.subTitle)
+                                CountFieldFour(model, value = model.oldPressure, enabled = false)
                                 CountFieldFour(model, value = model.pressure)
                             }
                         } else  if (dropDownModel.innerOptions == "Конвенционален" && model.subTitle.contains("Линия")) {
-                                Column(modifier = Modifier.padding(16.dp)) {
-                                    QuestionHeader(model.subTitle)
-                                    CountFieldFour(model, value = model.pressure)
-                                }
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                QuestionHeader(model.subTitle)
+                                CountFieldFour(model, value = model.oldPressure, enabled = false)
+                                CountFieldFour(model, value = model.pressure)
+                            }
                         }
                     }
                 }
@@ -388,6 +392,7 @@ fun ShortMenuGaz(modifier: Modifier, pagerState: PagerState) {
                             } else {
                                 QuestionHeader("Акумулаторна батерия №${i++}")
                             }
+                            CountFieldThree(model, value = model.previousMeasurement, enabled = false)
                             CountFieldThree(model, value = model.currentMeasurement)
 
                         }
@@ -400,6 +405,7 @@ fun ShortMenuGaz(modifier: Modifier, pagerState: PagerState) {
                 modelsFour.forEachIndexed { index, model ->
                     if(model is ExtendedCheckedModel) {
                         Column(modifier = Modifier.padding(16.dp)) {
+                            CountFieldFive(model,"",value = (model.lastPressure), enabled = false)
                             CountFieldFive(model,"",value = (model.pressure))
                         }
 
@@ -440,9 +446,9 @@ fun ShortMenuAerozol(modifier: Modifier, pagerState: PagerState) {
 
                         Column(modifier = Modifier.padding(16.dp)) {
                             QuestionHeader(model.subTitle)
+                            CountFieldThree(model, value = model.previousMeasurement, enabled = false)
                             CountFieldThree(model, value = model.currentMeasurement)
                         }
-
                     }
 
                 }
@@ -456,11 +462,13 @@ fun ShortMenuAerozol(modifier: Modifier, pagerState: PagerState) {
                         if (dropDownModel.innerOptions == "Адресируем" && model.subTitle.contains("Кръг")) {
                             Column(modifier = Modifier.padding(16.dp)) {
                                 QuestionHeader(model.subTitle)
+                                CountFieldFour(model, value = model.oldPressure, enabled = false)
                                 CountFieldFour(model, value = model.pressure)
                             }
                         } else  if (dropDownModel.innerOptions == "Конвенционален" && model.subTitle.contains("Линия")) {
                             Column(modifier = Modifier.padding(16.dp)) {
                                 QuestionHeader(model.subTitle)
+                                CountFieldFour(model, value = model.oldPressure, enabled = false)
                                 CountFieldFour(model, value = model.pressure)
                             }
                         }
@@ -478,11 +486,12 @@ fun ShortMenuAerozol(modifier: Modifier, pagerState: PagerState) {
 
                         Column(modifier = Modifier.padding(16.dp)) {
                             if(model.subTitle == "Зареждане на акумулаторни батерии") {
-                                 QuestionHeader(model.subTitle)
+                                QuestionHeader(model.subTitle)
                             } else {
                                 QuestionHeader("Акумулаторна батерия №${i++}")
                             }
-                                CountFieldThree(model, value = model.currentMeasurement)
+                            CountFieldThree(model, value = model.previousMeasurement, enabled = false)
+                            CountFieldThree(model, value = model.currentMeasurement)
 
                         }
 
@@ -491,12 +500,11 @@ fun ShortMenuAerozol(modifier: Modifier, pagerState: PagerState) {
 
             }
         }
-    // Навигацията - закована долу
-    BottomPaging(pagerState)
-    Spacer(modifier = Modifier.height(10.dp))
-  }
+        // Навигацията - закована долу
+        BottomPaging(pagerState)
+        Spacer(modifier = Modifier.height(10.dp))
+    }
 }
-
 // region Page Header
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -922,223 +930,226 @@ fun MainScreen(modifier: Modifier, type : InstallationType) {
 
     Column(modifier = Modifier.fillMaxSize()) {
 
-        // region Pager
-        HorizontalPager(
-            state = pagerState,
-            flingBehavior = customFlingBehavior,
-            userScrollEnabled = false,
-            // key = { pageIndex -> "page_key_$pageIndex" }
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
 
-        ) { page ->
+            HorizontalPager(
+                state = pagerState,
+                flingBehavior = customFlingBehavior,
+                userScrollEnabled = false,
+                // key = { pageIndex -> "page_key_$pageIndex" }
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+
+            ) { page ->
 
 
-            when(type) {
-                InstallationType.AEROZOL -> {
+                when(type) {
+                    InstallationType.AEROZOL -> {
 
-                    when (page) {
+                        when (page) {
 
-                        0 -> OpenCamera(modifier, pagerState)
-                        1 -> {
-                            val section = aerozolSections[page]
-                            PageHeader(modifier,  section,pagerState,14)
-                        }
-                        2 -> {
-                            ShortMenuAerozol(modifier,pagerState)
-                        }
+                            0 -> OpenCamera(modifier, pagerState)
+                            1 -> {
+                                val section = aerozolSections[page]
+                                PageHeader(modifier,  section,pagerState,14)
+                            }
+                            2 -> {
+                                ShortMenuAerozol(modifier,pagerState)
+                            }
 
-                        3 -> {
-                            val section = aerozolSections[page]
-                            PregledControlPanel(modifier, "№${page+1} $section", section, pagerState)
-                        }
-                        4 -> {
-                            val section = aerozolSections[page]
-                            FunkcionalenTestElTablo(modifier, title = "№${page+1} $section",section ,pagerState)
-                        }
+                            3 -> {
+                                val section = aerozolSections[page]
+                                PregledControlPanel(modifier, "№${page+1} $section", section, pagerState)
+                            }
+                            4 -> {
+                                val section = aerozolSections[page]
+                                FunkcionalenTestElTablo(modifier, title = "№${page+1} $section",section ,pagerState)
+                            }
 
-                        5 -> {
-                            val section = aerozolSections[page]
+                            5 -> {
+                                val section = aerozolSections[page]
 
-                            TestOsnovnoZahranvane(modifier, "№${page+1} $section", section,pagerState)
-                        }
+                                TestOsnovnoZahranvane(modifier, "№${page+1} $section", section,pagerState)
+                            }
 
-                        6 -> {
-                            val section = aerozolSections[page]
-                            TestOsnovnaPlatka(modifier, title = "№${page+1} $section",  section = section,pagerState)
-                        }
-                        7 -> {
-                            val section = aerozolSections[page]
-                            ProverkaPravilnaSvyrzanost(modifier, "№${page+1} $section", section  = section,pagerState)
-                        }
-                        8 -> {
-                            val section = aerozolSections[page]
-                            FunkcionalenTestnaZvukovSignalizator(modifier,"№${page+1} $section",section,pagerState)
-                        }
-                        9 -> {
-                            val section = aerozolSections[page]
-                            ZakluchitelniProverki(
-                                modifier,
-                                "№${page+1} $section",
-                                section,
-                                pagerState
-                            )
-                        }
-                        10  -> {
-                            val section = aerozolSections[page]
-                            PregledRezervnoZahranvane(modifier, "№${page+1} $section", section,pagerState)
-                        }
+                            6 -> {
+                                val section = aerozolSections[page]
+                                TestOsnovnaPlatka(modifier, title = "№${page+1} $section",  section = section,pagerState)
+                            }
+                            7 -> {
+                                val section = aerozolSections[page]
+                                ProverkaPravilnaSvyrzanost(modifier, "№${page+1} $section", section  = section,pagerState)
+                            }
+                            8 -> {
+                                val section = aerozolSections[page]
+                                FunkcionalenTestnaZvukovSignalizator(modifier,"№${page+1} $section",section,pagerState)
+                            }
+                            9 -> {
+                                val section = aerozolSections[page]
+                                ZakluchitelniProverki(
+                                    modifier,
+                                    "№${page+1} $section",
+                                    section,
+                                    pagerState
+                                )
+                            }
+                            10  -> {
+                                val section = aerozolSections[page]
+                                PregledRezervnoZahranvane(modifier, "№${page+1} $section", section,pagerState)
+                            }
 
-                        11 -> {
-                            val section = aerozolSections[page]
-                            ProverkaLupoveILinii(modifier, "№${page+1} $section", section,pagerState)
-                        }
+                            11 -> {
+                                val section = aerozolSections[page]
+                                ProverkaLupoveILinii(modifier, "№${page+1} $section", section,pagerState)
+                            }
 
-                        12 -> {
-                            val section = aerozolSections[page]
-                            ProverkaPojaroizvestitelenDetektor(modifier, "№${page+1} $section", section,pagerState)
-                        }
-                        13 -> {
-                            val section = aerozolSections[page]
-                            ProverkaSvobodnoProstranstvoOkoloPojaroizvestitelenDetektor(modifier, "№${page+1} $section",
-                                section,pagerState)
-                        }
-                        14 -> {
-                            val section = aerozolSections[page]
-                            TestMehanizamVsekiRychenButon(modifier, "№${page+1} $section", section,pagerState)
-                        }
-                        15 -> {
-                            val section = aerozolSections[page]
-                            ProverkaNaDostypDoVsichkiPojaroizvestitelniButoni(modifier, "№${page+1} $section",
-                                section,pagerState)
-                        }
-                        16 -> {
-                            val section = aerozolSections[page]
-                            ProverkaZaNalichieUkazatelniZnaci(modifier,"№${page+1} $section",section,pagerState)
-                        }
-                        17 -> {
-                            val section = aerozolSections[page]
-                            VizualnaProverkaNaSydoveteZaGasitelenAgentAerozol(modifier, "№${page+1} $section",
-                                section,pagerState)
-                        }
-                        18 -> {
-                            val section = aerozolSections[page]
-                            ProverkaSignalniIIzneseniUstrojstva(modifier, "№${page+1} $section",
-                                section,pagerState)
-                        }
-                          19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31 -> {
-                            val section = aerozolSections[page]
-                            ZakluchitelniProverki(
-                                modifier,
-                                "№${page+1} $section",
-                                section,
-                                pagerState
-                            )
-                        }
+                            12 -> {
+                                val section = aerozolSections[page]
+                                ProverkaPojaroizvestitelenDetektor(modifier, "№${page+1} $section", section,pagerState)
+                            }
+                            13 -> {
+                                val section = aerozolSections[page]
+                                ProverkaSvobodnoProstranstvoOkoloPojaroizvestitelenDetektor(modifier, "№${page+1} $section",
+                                    section,pagerState)
+                            }
+                            14 -> {
+                                val section = aerozolSections[page]
+                                TestMehanizamVsekiRychenButon(modifier, "№${page+1} $section", section,pagerState)
+                            }
+                            15 -> {
+                                val section = aerozolSections[page]
+                                ProverkaNaDostypDoVsichkiPojaroizvestitelniButoni(modifier, "№${page+1} $section",
+                                    section,pagerState)
+                            }
+                            16 -> {
+                                val section = aerozolSections[page]
+                                ProverkaZaNalichieUkazatelniZnaci(modifier,"№${page+1} $section",section,pagerState)
+                            }
+                            17 -> {
+                                val section = aerozolSections[page]
+                                VizualnaProverkaNaSydoveteZaGasitelenAgentAerozol(modifier, "№${page+1} $section",
+                                    section,pagerState)
+                            }
+                            18 -> {
+                                val section = aerozolSections[page]
+                                ProverkaSignalniIIzneseniUstrojstva(modifier, "№${page+1} $section",
+                                    section,pagerState)
+                            }
+                            19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31 -> {
+                                val section = aerozolSections[page]
+                                ZakluchitelniProverki(
+                                    modifier,
+                                    "№${page+1} $section",
+                                    section,
+                                    pagerState
+                                )
+                            }
 
-                        32 -> {
-                            val section = aerozolSections[page]
-                            LastPage(modifier, "№${page+1} $section",
-                            section,pagerState)
+                            32 -> {
+                                val section = aerozolSections[page]
+                                LastPage(modifier, "№${page+1} $section",
+                                    section,pagerState)
+                            }
+
+                        }
                     }
+                    InstallationType.GAS -> {
+                        when (page) {
 
+                            0 -> OpenCamera(modifier, pagerState)
+                            1 -> {
+                                val section = gasSections[page]
+                                PageHeader(modifier,  section,pagerState,19)
+                            }
+                            2 -> {
+                                ShortMenuGaz(modifier,pagerState)
+                            }
+                            3 -> {
+                                val section = gasSections[page]
+                                PregledControlPanel(modifier, "№${page+1} $section", section,pagerState)
+                            }
+                            4 -> {
+                                val section = gasSections[page]
+                                FunkcionalenTestElTablo(modifier, "№${page+1} $section",section, pagerState)
+                            }
+                            5 -> {
+                                val section = gasSections[page]
+                                TestOsnovnoZahranvane(modifier, "№${page+1} $section", section,pagerState)
+                            }
+                            6 -> {
+                                val section = gasSections[page]
+                                TestOsnovnaPlatka(modifier, "№${page+1} $section", section,pagerState)
+                            }
+                            7, 8, 9 -> {
+                                val section = gasSections[page]
+                                ProverkaPravilnaSvyrzanost(modifier, "№${page+1} $section", section,pagerState)
+                            }
+                            10, 11 -> {
+                                val section = gasSections[page]
+                                ProverkaRychenSpiratelenKran(modifier, "№${page+1} $section",section, pagerState)
+                            }
+                            12 -> {
+                                val section = gasSections[page]
+                                PregledRezervnoZahranvane(modifier, "№${page+1} $section", section,pagerState)
+                            }
+                            13 -> {
+                                val section = gasSections[page]
+                                ProverkaLupoveILinii(modifier, "№${page+1} $section", section,pagerState)
+                            }
+                            14 -> {
+                                val section = gasSections[page]
+                                ProverkaPojaroizvestitelenDetektor(modifier, "№${page+1} $section", section,pagerState)
+                            }
+                            15 -> {
+                                val section = gasSections[page]
+                                ProverkaSvobodnoProstranstvoOkoloPojaroizvestitelenDetektor(modifier, "№${page+1} $section", section,pagerState)
+                            }
+                            16, 17, 18 -> {
+                                val section = gasSections[page]
+                                TestMehanizamVsekiRychenButon(modifier, "№${page+1} $section", section,pagerState)
+                            }
+                            19 -> {
+                                val section = gasSections[page]
+                                VidSydZaGAsitelenAgent(modifier, "№${page+1} $section", section,pagerState)
+                            }
+                            20 -> {
+                                val section = gasSections[page]
+                                VizualnaProverkaNaSydoveteZaGasitelenAgentGas(modifier, "№${page+1} $section", section,pagerState)
+                            }
+                            21 -> {
+                                val section = gasSections[page]
+
+                                ProverkaSistemaZaOtkrivaneNaTechove(modifier, "№${page+1} $section", section,pagerState)
+                            }
+                            22 -> {
+                                val section = gasSections[page]
+
+                                ProverkaSignalniIIzneseniUstrojstva(modifier, "№${page+1} $section", section,pagerState)
+                            }
+                            23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36 -> {
+                                val section = gasSections[page]
+                                ZakluchitelniProverki(
+                                    modifier,
+                                    "№${page+1} $section",
+                                    section,
+                                    pagerState
+                                )
+                            }
+
+                            37 -> {
+                                val section = gasSections[page]
+                                LastPage(modifier, "№${page+1} $section", section,pagerState)
+                            }
+
+                        }
                     }
                 }
-                InstallationType.GAS -> {
-                    when (page) {
 
-                        0 -> OpenCamera(modifier, pagerState)
-                        1 -> {
-                            val section = gasSections[page]
-                            PageHeader(modifier,  section,pagerState,19)
-                        }
-                        2 -> {
-                            ShortMenuGaz(modifier,pagerState)
-                        }
-                        3 -> {
-                            val section = gasSections[page]
-                            PregledControlPanel(modifier, "№${page+1} $section", section,pagerState)
-                        }
-                        4 -> {
-                            val section = gasSections[page]
-                            FunkcionalenTestElTablo(modifier, "№${page+1} $section",section, pagerState)
-                        }
-                        5 -> {
-                            val section = gasSections[page]
-                            TestOsnovnoZahranvane(modifier, "№${page+1} $section", section,pagerState)
-                        }
-                        6 -> {
-                            val section = gasSections[page]
-                            TestOsnovnaPlatka(modifier, "№${page+1} $section", section,pagerState)
-                        }
-                        7, 8, 9 -> {
-                            val section = gasSections[page]
-                            ProverkaPravilnaSvyrzanost(modifier, "№${page+1} $section", section,pagerState)
-                        }
-                        10, 11 -> {
-                            val section = gasSections[page]
-                            ProverkaRychenSpiratelenKran(modifier, "№${page+1} $section",section, pagerState)
-                        }
-                        12 -> {
-                            val section = gasSections[page]
-                            PregledRezervnoZahranvane(modifier, "№${page+1} $section", section,pagerState)
-                        }
-                        13 -> {
-                            val section = gasSections[page]
-                            ProverkaLupoveILinii(modifier, "№${page+1} $section", section,pagerState)
-                        }
-                        14 -> {
-                            val section = gasSections[page]
-                            ProverkaPojaroizvestitelenDetektor(modifier, "№${page+1} $section", section,pagerState)
-                        }
-                        15 -> {
-                            val section = gasSections[page]
-                            ProverkaSvobodnoProstranstvoOkoloPojaroizvestitelenDetektor(modifier, "№${page+1} $section", section,pagerState)
-                        }
-                        16, 17, 18 -> {
-                            val section = gasSections[page]
-                            TestMehanizamVsekiRychenButon(modifier, "№${page+1} $section", section,pagerState)
-                        }
-                        19 -> {
-                            val section = gasSections[page]
-                            VidSydZaGAsitelenAgent(modifier, "№${page+1} $section", section,pagerState)
-                        }
-                        20 -> {
-                            val section = gasSections[page]
-                            VizualnaProverkaNaSydoveteZaGasitelenAgentGas(modifier, "№${page+1} $section", section,pagerState)
-                        }
-                        21 -> {
-                            val section = gasSections[page]
 
-                            ProverkaSistemaZaOtkrivaneNaTechove(modifier, "№${page+1} $section", section,pagerState)
-                        }
-                        22 -> {
-                            val section = gasSections[page]
-
-                            ProverkaSignalniIIzneseniUstrojstva(modifier, "№${page+1} $section", section,pagerState)
-                        }
-                        23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36 -> {
-                            val section = gasSections[page]
-                            ZakluchitelniProverki(
-                                modifier,
-                                "№${page+1} $section",
-                                section,
-                                pagerState
-                            )
-                        }
-
-                        37 -> {
-                            val section = gasSections[page]
-                            LastPage(modifier, "№${page+1} $section", section,pagerState)
-                        }
-
-                    }
-                }
             }
 
+        // region Pager
 
-        }
     }
     // endregion Pager
 }
@@ -3141,20 +3152,7 @@ fun loadMapData(
                     mutableMap.put("Камера", ArrayList())
                     mutableMap.put("Кратко меню", ArrayList())
 
-                    // IF THERE IS NO CHECKING TYPE VALUE IN JSON MUTABLE MAP  ADD IT (BECAUSE THIS VALUE IS MISSING IN THE BEGINNING)
-//                    val inputData = mutableMap["Входни данни"];
-//                    var hasCheckingType = false
-//                    inputData?.forEach {
-//                        if(it is JsonFieldModel && it.subTitle == "Вид обслужване на ПГИ") {
-//                            hasCheckingType = true
-//                            it.data = checkingType
-//                            return@forEach
-//                        }
-//                    }
-//                    if(!hasCheckingType) {
-//                        inputData?.add(JsonFieldModel("Вид обслужване на ПГИ",checkingType))
-//                    }
-                    // CHECKING TYPE VALUE ADDED IS DONE
+
 
 
                     mutableMap.forEach { (key, value) ->
@@ -3325,7 +3323,9 @@ fun loadMapData(
                         //mapOfModels[key]?.clear()
                         mapOfModels[key] = newList
 
+
                     }
+
                 }
                 result(OnResponseBody(response.code(),response.message()))
 
@@ -3538,14 +3538,20 @@ fun completeProtocol(
 }
 
 fun getCheckingType(installationType: String) : String {
-    val headerModels: ArrayList<IModel> = mapOfModels[titles[1]]!!
-    val checkingTypeModel = if(installationType == "gas") {
-        if(headerModels.size == 20) (headerModels[19] as FieldModel) else null
-    } else {
-        if(headerModels.size == 15) (headerModels[14] as FieldModel) else null
-    }
-    return checkingTypeModel?.data ?: "MONTHLY"
+//    val headerModels: ArrayList<IModel> = mapOfModels[titles[1]]!!
+//    val checkingTypeModel = if(installationType == "gas") {
+//        if(headerModels.size == 20) (headerModels[19] as FieldModel) else null
+//    } else {
+//        if(headerModels.size == 15) (headerModels[14] as FieldModel) else null
+//    }
+//    return checkingTypeModel?.data ?: "MONTHLY"
+    val headerModels = mapOfModels[titles[1]] ?: return "MONTHLY"
+    val model = headerModels.firstOrNull {
+        it is FieldModel && it.subTitle == "Вид обслужване на ПГИ"
+    } as? FieldModel
+    return model?.data ?: "MONTHLY"
 }
+
 fun checkingTypeAsEnFormat(checkingType : String) : String {
 
         when (checkingType) {

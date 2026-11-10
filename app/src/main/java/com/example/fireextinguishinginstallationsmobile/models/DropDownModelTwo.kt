@@ -13,10 +13,8 @@ data class DropDownModelTwo(
 
 
     var data by mutableStateOf("")
+    override fun equals(other: Any?): Boolean = this === other
+    override fun hashCode(): Int = System.identityHashCode(this)
 
- //   val innerOptions = InnerOptions(addressable = true, conventional = false)
 }
 
-//class InnerOptions(var addressable : Boolean, var conventional : Boolean) {
-//
-//}

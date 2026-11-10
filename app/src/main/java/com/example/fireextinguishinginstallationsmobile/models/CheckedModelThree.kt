@@ -21,4 +21,7 @@ data class CheckedModelThree(
     var previousMeasurement by mutableStateOf("")
 
     var currentMeasurement by mutableStateOf("")
+
+    override fun equals(other: Any?): Boolean = this === other
+    override fun hashCode(): Int = System.identityHashCode(this)
 }

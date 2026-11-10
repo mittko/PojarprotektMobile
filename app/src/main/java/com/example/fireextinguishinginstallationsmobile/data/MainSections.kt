@@ -1,6 +1,9 @@
 package com.example.fireextinguishinginstallationsmobile.data
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.setValue
 import com.example.fireextinguishinginstallationsmobile.interfaces.IModel
 import com.example.fireextinguishinginstallationsmobile.models.CheckedModel
 import com.example.fireextinguishinginstallationsmobile.models.CheckedModelThree

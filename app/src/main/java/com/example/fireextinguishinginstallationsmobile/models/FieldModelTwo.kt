@@ -11,5 +11,6 @@ data class FieldModelTwo(
 
     var data by mutableStateOf("")
     var dataTwo by mutableStateOf("")
-
+    override fun equals(other: Any?): Boolean = this === other
+    override fun hashCode(): Int = System.identityHashCode(this)
 }

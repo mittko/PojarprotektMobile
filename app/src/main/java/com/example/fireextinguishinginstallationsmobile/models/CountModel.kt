@@ -10,5 +10,6 @@ data class CountModel(
 ) : IModel {
 
     var data by mutableStateOf("")
-
+    override fun equals(other: Any?): Boolean = this === other
+    override fun hashCode(): Int = System.identityHashCode(this)
 }
