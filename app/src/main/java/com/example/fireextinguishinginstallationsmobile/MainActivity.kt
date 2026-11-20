@@ -2,7 +2,6 @@ package com.example.fireextinguishinginstallationsmobile
 
 
 import android.Manifest
-import android.R
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
@@ -49,7 +48,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -323,200 +321,9 @@ fun LoginPage(modifier: Modifier, onRefreshToken: (String?, String?) -> Unit) {
 }
 
 @Composable
-fun ShortMenuGaz(modifier: Modifier, pagerState: PagerState) {
-    val titleOne = "Преглед и тест на основно захранване"
-    val titleTwo = "Преглед и тест на основна платка"
-    val titleThree = "Преглед на резервно захранване"
-    val titleFour = "Визуална проверка на съдовете за гасителен агент"
-    var i = 1
-
-    val models =  mapOfModels[titleOne] ?: emptyList()
-    val modelsTwo = mapOfModels[titleTwo] ?: emptyList()
-    val modelsThree = mapOfModels[titleThree] ?: emptyList()
-    val modelsFour = mapOfModels[titleFour] ?: emptyList()
-
-    val listOfOptions = mapOfModels["Входни данни"] ?: emptyList()
-    val dropDownModel = listOfOptions[4] as DropDownModel
-
-
-    Column(modifier = modifier.fillMaxSize()) {
-        Title("Кратко меню")
-        MyColumn(modifier = Modifier.weight(1f)) {
-
-            MyCard {
-
-                Title(titleOne)
-                models.forEach { model ->
-                    if (model is CheckedModelThree) {
-
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            QuestionHeader(model.subTitle)
-                            CountFieldThree(model,value = model.previousMeasurement, enabled = false)
-                            CountFieldThree(model, value = model.currentMeasurement)
-                        }
-
-                    }
-
-                }
-            }
-
-            MyCard {
-                Title(titleTwo)
-                modelsTwo.forEach { model ->
-                    if (model is FieldModelThree) {
-                        if (dropDownModel.innerOptions == "Адресируем" && model.subTitle.contains("Кръг")) {
-                            Column(modifier = Modifier.padding(16.dp)) {
-                                QuestionHeader(model.subTitle)
-                                CountFieldFour(model, value = model.oldPressure, enabled = false)
-                                CountFieldFour(model, value = model.pressure)
-                            }
-                        } else  if (dropDownModel.innerOptions == "Конвенционален" && model.subTitle.contains("Линия")) {
-                            Column(modifier = Modifier.padding(16.dp)) {
-                                QuestionHeader(model.subTitle)
-                                CountFieldFour(model, value = model.oldPressure, enabled = false)
-                                CountFieldFour(model, value = model.pressure)
-                            }
-                        }
-                    }
-                }
-            }
-            MyCard {
-                Title(titleThree)
-                i = 1
-                modelsThree.forEachIndexed { index, model ->
-                    if (model is CheckedModelThree) {
-
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            if(model.subTitle == "Зареждане на акумулаторни батерии") {
-                                QuestionHeader(model.subTitle)
-                            } else {
-                                QuestionHeader("Акумулаторна батерия №${i++}")
-                            }
-                            CountFieldThree(model, value = model.previousMeasurement, enabled = false)
-                            CountFieldThree(model, value = model.currentMeasurement)
-
-                        }
-
-                    }
-                }
-            }
-            MyCard {
-                Title(titleFour)
-                modelsFour.forEachIndexed { index, model ->
-                    if(model is ExtendedCheckedModel) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            CountFieldFive(model,"",value = (model.lastPressure), enabled = false)
-                            CountFieldFive(model,"",value = (model.pressure))
-                        }
-
-                        return@MyCard
-                    }
-
-                }
-            }
-        }
-        // Навигацията - закована долу
-        BottomPaging(pagerState)
-        Spacer(modifier = Modifier.height(10.dp))
-    }
-}
-@Composable
-fun ShortMenuAerozol(modifier: Modifier, pagerState: PagerState) {
-    val titleOne = "Преглед и тест на основно захранване"
-    val titleTwo = "Преглед и тест на основна платка"
-    val titleThree = "Преглед на резервно захранване"
-    var i = 1
-
-    val models = mapOfModels[titleOne] ?: emptyList()
-    val modelsTwo = mapOfModels[titleTwo] ?: emptyList()
-    val modelsThree = mapOfModels[titleThree] ?: emptyList()
-
-    val listOfOptions = mapOfModels["Входни данни"] ?: emptyList()
-    val dropDownModel = listOfOptions[4] as DropDownModel
-
-    Column(modifier = modifier.fillMaxSize()) {
-        Title("Кратко меню")
-        MyColumn(modifier = Modifier.weight(1f)) {
-
-            MyCard {
-
-                Title(titleOne)
-                models.forEach { model ->
-                    if (model is CheckedModelThree) {
-
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            QuestionHeader(model.subTitle)
-                            CountFieldThree(model, value = model.previousMeasurement, enabled = false)
-                            CountFieldThree(model, value = model.currentMeasurement)
-                        }
-                    }
-
-                }
-            }
-
-            MyCard {
-                Title(titleTwo)
-                modelsTwo.forEach { model ->
-                    if (model is FieldModelThree) {
-
-                        if (dropDownModel.innerOptions == "Адресируем" && model.subTitle.contains("Кръг")) {
-                            Column(modifier = Modifier.padding(16.dp)) {
-                                QuestionHeader(model.subTitle)
-                                CountFieldFour(model, value = model.oldPressure, enabled = false)
-                                CountFieldFour(model, value = model.pressure)
-                            }
-                        } else  if (dropDownModel.innerOptions == "Конвенционален" && model.subTitle.contains("Линия")) {
-                            Column(modifier = Modifier.padding(16.dp)) {
-                                QuestionHeader(model.subTitle)
-                                CountFieldFour(model, value = model.oldPressure, enabled = false)
-                                CountFieldFour(model, value = model.pressure)
-                            }
-                        }
-
-
-
-                    }
-                }
-            }
-            MyCard {
-                Title(titleThree)
-                i = 1
-                modelsThree.forEachIndexed { index, model ->
-                    if (model is CheckedModelThree) {
-
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            if(model.subTitle == "Зареждане на акумулаторни батерии") {
-                                QuestionHeader(model.subTitle)
-                            } else {
-                                QuestionHeader("Акумулаторна батерия №${i++}")
-                            }
-                            CountFieldThree(model, value = model.previousMeasurement, enabled = false)
-                            CountFieldThree(model, value = model.currentMeasurement)
-
-                        }
-
-                    }
-                }
-
-            }
-        }
-        // Навигацията - закована долу
-        BottomPaging(pagerState)
-        Spacer(modifier = Modifier.height(10.dp))
-    }
-}
-// region Page Header
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun PageHeader(
-    modifier: Modifier,
-    section: String,
-    pagerState: PagerState,
-    index : Int) {
+fun ShortMenuGaz(modifier: Modifier, pagerState: PagerState,section:String, index:Int) {
 
     val context = LocalContext.current
-
-    val installationType = PreferencesManager().getInstallationType(context)
 
     var triggerRequest by remember {
         mutableIntStateOf(0)
@@ -527,7 +334,24 @@ fun PageHeader(
     var loadingData by remember {
         mutableStateOf(false)
     }
-    val models = mapOfModels[section] ?: emptyList()
+
+    val titleOne = "Преглед и тест на основно захранване"
+    val titleTwo = "Преглед и тест на основна платка"
+    val titleThree = "Преглед на резервно захранване"
+    val titleFive = "Визуална проверка на съдовете за гасителен агент"
+    var i = 1
+
+    val models =  mapOfModels[titleOne] ?: emptyList()
+    val modelsTwo = mapOfModels[titleTwo] ?: emptyList()
+    val modelsThree = mapOfModels[titleThree] ?: emptyList()
+
+    val modelsFive = mapOfModels[titleFive] ?: emptyList()
+
+    val listOfOptions = mapOfModels["Входни данни"] ?: emptyList()
+
+    val dropDownModelObekt = listOfOptions[3] as DropDownModel
+
+    val dropDownModel = listOfOptions[4] as DropDownModel
 
     val selectedOptionModel = if(index < models.size) {
         models[index] as FieldModel
@@ -535,10 +359,505 @@ fun PageHeader(
         FieldModel("Вид обслужване на ПГИ")
     }
 
+    var selected by remember {
+        mutableStateOf(selectedOptionModel.data)
+    }
+
+    Box(contentAlignment = Alignment.Center) {
+        Column(modifier = modifier.fillMaxSize()) {
+            Title("Кратко меню")
+            MyColumn(modifier = Modifier.weight(1f)) {
+                MyCard {
+                    MyCard {
+                        RadioButtonSingleSelection(
+                            selected,
+                            modifier = Modifier.padding(16.dp),
+                            onOptionSelected = {
+                                selected = it
+                                val enValue = checkingTypeAsEnFormat(it)
+
+                                val current = mapOfModels["Входни данни"]
+                                    ?.firstOrNull { m -> m is FieldModel && m.subTitle == "Вид обслужване на ПГИ" } as? FieldModel
+
+                                current?.data = enValue
+                                selectedOptionModel.data = enValue // по желание, за стария обект
+                                PreferencesManager().setCheckingType(context,enValue)
+                            }
+                        )
+                    }
+                    MyCard {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+
+
+                            TestField(
+                                listOfOptions[0], placeholder = "Номер на обект",
+                                value = (listOfOptions[0] as CountModel).data
+                            ) {
+                                (listOfOptions[0] as CountModel).data = it
+                            }
+
+                            Spacer(modifier = Modifier.height(20.dp))
+
+                            Button(onClick = {
+                                loadingData = true
+                                triggerRequest++
+                            }, modifier = Modifier.height(40.dp)) {
+                                Text(text = "Номер на Обект")
+                            }
+                            Spacer(modifier = Modifier.height(5.dp))
+                        }
+                    }
+
+                    MyCard {
+                        Column(
+                            modifier = Modifier.padding(16.dp)
+                        ) {
+                            QuestionHeader(dropDownModelObekt.subTitle)
+                            DropDown(dropDownModelObekt, options = remember {
+                                listOf(
+
+                                    PreviewOption("БЕС Багренци", 0),
+                                    PreviewOption("БЕС Балчик", 1),
+                                    PreviewOption("БЕС Белово", 2),
+                                    PreviewOption("БЕС Веринско 2", 3),
+                                    PreviewOption("БЕС Горна Василица", 4),
+                                    PreviewOption("БЕС Ивайловград", 5),
+                                    PreviewOption("БЕС Ихтиман 40 MW", 6),
+                                    PreviewOption("БЕС Каварна", 7),
+                                    PreviewOption("БЕС Камено 1", 8),
+                                    PreviewOption("БЕС Камено 2", 9),
+                                    PreviewOption("БЕС Карлово", 10),
+                                    PreviewOption("БЕС Любимец", 11),
+                                    PreviewOption("БЕС Любимец 1", 12),
+                                    PreviewOption("БЕС Любимец 2", 13),
+                                    PreviewOption("БЕС Момчилград", 14),
+                                    PreviewOption("БЕС Николичевци", 15),
+                                    PreviewOption("БЕС Нова Загора", 16),
+                                    PreviewOption("БЕС Пазарджик 1", 17),
+                                    PreviewOption("БЕС Пазарджик 2", 18),
+                                    PreviewOption("БЕС Перник", 19),
+                                    PreviewOption("БЕС Рудозем", 20),
+                                    PreviewOption("БЕС Силистра", 21),
+                                    PreviewOption("БЕС Сливен Бръшлен", 22),
+                                    PreviewOption("БЕС Сливен Самуилово", 23),
+                                    PreviewOption("БЕС Сливен Хаджидимитрово", 24),
+                                    PreviewOption("БЕС Стара Загора", 25),
+                                    PreviewOption("БЕС Старо Оряхово", 26),
+                                    PreviewOption("БЕС Хасково 1", 27),
+                                    PreviewOption("БЕС Хасково 2", 28),
+                                    PreviewOption("БЕС Хасково 3", 29)
+
+                                )
+                            }) {
+                                dropDownModelObekt.data = it
+                            }
+                        }
+                    }
+                    MyCard {
+                        Column(Modifier.padding(16.dp)) {
+                            QuestionHeader(listOfOptions[5].subTitle)
+                            DataField(
+                                listOfOptions[3],
+                                value = (listOfOptions[5] as FieldModel).data,
+                                lamb = {
+                                    (listOfOptions[5] as FieldModel).data = it
+                                })
+                        }
+                    }
+
+                }
+
+                MyCard {
+                    QuestionHeader("Налягане на гасителен агент")//(titleFour)
+                    modelsFive.forEachIndexed { i, model ->
+                        if (model is ExtendedCheckedModel) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                CountFieldFive(
+                                    model,
+                                    "",
+                                    value = (model.lastPressure),
+                                    enabled = false
+                                )
+                                CountFieldFive(model, "", value = (model.pressure))
+                            }
+
+                            return@MyCard
+                        }
+
+                    }
+                }
+                MyCard {
+
+                    Title(titleOne)
+                    models.forEach { model ->
+                        if (model is CheckedModelThree) {
+
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                QuestionHeader(model.subTitle)
+                                CountFieldThree(
+                                    model,
+                                    value = model.previousMeasurement,
+                                    enabled = false
+                                )
+                                CountFieldThree(model, value = model.currentMeasurement)
+                            }
+
+                        }
+
+                    }
+                }
+
+                MyCard {
+                    Title(titleTwo)
+                    modelsTwo.forEach { model ->
+                        if (model is FieldModelThree) {
+                            if (dropDownModel.innerOptions == "Адресируем" && model.subTitle.contains(
+                                    "Кръг"
+                                )
+                            ) {
+                                Column(modifier = Modifier.padding(16.dp)) {
+                                    QuestionHeader(model.subTitle)
+                                    CountFieldFour(
+                                        model,
+                                        value = model.oldPressure,
+                                        enabled = false
+                                    )
+                                    CountFieldFour(model, value = model.pressure)
+                                }
+                            } else if (dropDownModel.innerOptions == "Конвенционален" && model.subTitle.contains(
+                                    "Линия"
+                                )
+                            ) {
+                                Column(modifier = Modifier.padding(16.dp)) {
+                                    QuestionHeader(model.subTitle)
+                                    CountFieldFour(
+                                        model,
+                                        value = model.oldPressure,
+                                        enabled = false
+                                    )
+                                    CountFieldFour(model, value = model.pressure)
+                                }
+                            }
+                        }
+                    }
+                }
+                MyCard {
+                    Title(titleThree)
+                    i = 1
+                    modelsThree.forEachIndexed { index, model ->
+                        if (model is CheckedModelThree) {
+
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                if (model.subTitle == "Зареждане на акумулаторни батерии") {
+                                    QuestionHeader(model.subTitle)
+                                } else {
+                                    QuestionHeader("Акумулаторна батерия №${i++}")
+                                }
+                                CountFieldThree(
+                                    model,
+                                    value = model.previousMeasurement,
+                                    enabled = false
+                                )
+                                CountFieldThree(model, value = model.currentMeasurement)
+
+                            }
+
+                        }
+                    }
+                }
+
+            }
+
+
+            // Навигацията - закована долу
+            BottomPaging(pagerState)
+            Spacer(modifier = Modifier.height(10.dp))
+        }
+        if (loadingData) {
+            CircularProgressIndicator()
+        }
+    }
+
+    LaunchedEffect(triggerRequest) {
+
+        loadMapData(
+            context, triggerRequest,
+            (listOfOptions[0] as CountModel).data,
+            getURL() + "/get_sunotech_protokol_details_by_id",
+        ) { onResponse ->
+            errorEvent = onResponse
+            loadingData = false
+        }
+
+
+    }
+    errorEvent?.let {
+        if(it.responseCode != 200) {
+            MyDialog().RetroDialog(it.responseCode, it.responseMessage) {
+                errorEvent = null
+            }
+        }
+    }
+
+}
+@Composable
+fun ShortMenuAerozol(modifier: Modifier, pagerState: PagerState, index:Int) {
+
+    val context = LocalContext.current
+
+    var triggerRequest by remember {
+        mutableIntStateOf(0)
+    }
+    var errorEvent by remember {
+        mutableStateOf<OnResponseBody?>(null)
+    }
+    var loadingData by remember {
+        mutableStateOf(false)
+    }
+
+    val titleOne = "Преглед и тест на основно захранване"
+    val titleTwo = "Преглед и тест на основна платка"
+    val titleThree = "Преглед на резервно захранване"
+
+    var i = 1
+
+    val models = mapOfModels[titleOne] ?: emptyList()
+    val modelsTwo = mapOfModels[titleTwo] ?: emptyList()
+    val modelsThree = mapOfModels[titleThree] ?: emptyList()
+
+    val listOfOptions = mapOfModels["Входни данни"] ?: emptyList()
+
+    val dropDownModelObekt = listOfOptions[3] as DropDownModel
+
+    val dropDownModel = listOfOptions[4] as DropDownModel
+
+    val selectedOptionModel = if(index < models.size) {
+        models[index] as FieldModel
+    } else {
+        FieldModel("Вид обслужване на ПГИ")
+    }
 
     var selected by remember {
         mutableStateOf(selectedOptionModel.data)
     }
+
+    Box(contentAlignment = Alignment.Center) {
+    Column(modifier = modifier.fillMaxSize()) {
+        Title("Кратко меню")
+
+        MyColumn(modifier = Modifier.weight(1f)) {
+
+            MyCard {
+                RadioButtonSingleSelection(
+                    selected,
+                    modifier = Modifier.padding(16.dp),
+                    onOptionSelected = {
+                        selected = it
+                        val enValue = checkingTypeAsEnFormat(it)
+
+                        val current = mapOfModels["Входни данни"]
+                            ?.firstOrNull { m -> m is FieldModel && m.subTitle == "Вид обслужване на ПГИ" } as? FieldModel
+
+                        current?.data = enValue
+                        selectedOptionModel.data = enValue // по желание, за стария обект
+                        PreferencesManager().setCheckingType(context,enValue)
+                    }
+                )
+            }
+            MyCard {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+
+
+
+                    TestField(listOfOptions[0], placeholder = "Номер на обект",
+                        value = (listOfOptions[0] as CountModel).data) {
+                        (listOfOptions[0] as CountModel).data = it
+                    }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    Button(onClick = {
+                        loadingData = true
+                        triggerRequest++
+                    }, modifier = Modifier.height(40.dp)) {
+                        Text(text = "Номер на Обект")
+                    }
+                    Spacer(modifier = Modifier.height(5.dp))
+                }
+            }
+
+            MyCard {
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    QuestionHeader(dropDownModelObekt.subTitle)
+                    DropDown(dropDownModelObekt, options = remember {
+                        listOf(
+
+                            PreviewOption("БЕС Багренци", 0),
+                            PreviewOption("БЕС Балчик", 1),
+                            PreviewOption("БЕС Белово", 2),
+                            PreviewOption("БЕС Веринско 2", 3),
+                            PreviewOption("БЕС Горна Василица", 4),
+                            PreviewOption("БЕС Ивайловград", 5),
+                            PreviewOption("БЕС Ихтиман 40 MW", 6),
+                            PreviewOption("БЕС Каварна", 7),
+                            PreviewOption("БЕС Камено 1", 8),
+                            PreviewOption("БЕС Камено 2", 9),
+                            PreviewOption("БЕС Карлово", 10),
+                            PreviewOption("БЕС Любимец", 11),
+                            PreviewOption("БЕС Любимец 1", 12),
+                            PreviewOption("БЕС Любимец 2", 13),
+                            PreviewOption("БЕС Момчилград", 14),
+                            PreviewOption("БЕС Николичевци", 15),
+                            PreviewOption("БЕС Нова Загора", 16),
+                            PreviewOption("БЕС Пазарджик 1", 17),
+                            PreviewOption("БЕС Пазарджик 2", 18),
+                            PreviewOption("БЕС Перник", 19),
+                            PreviewOption("БЕС Рудозем", 20),
+                            PreviewOption("БЕС Силистра", 21),
+                            PreviewOption("БЕС Сливен Бръшлен", 22),
+                            PreviewOption("БЕС Сливен Самуилово", 23),
+                            PreviewOption("БЕС Сливен Хаджидимитрово", 24),
+                            PreviewOption("БЕС Стара Загора", 25),
+                            PreviewOption("БЕС Старо Оряхово", 26),
+                            PreviewOption("БЕС Хасково 1", 27),
+                            PreviewOption("БЕС Хасково 2", 28),
+                            PreviewOption("БЕС Хасково 3", 29)
+
+                        )
+                    }) {
+                        dropDownModelObekt.data = it
+                    }
+                }
+            }
+            MyCard {
+                Column(Modifier.padding(16.dp)) {
+                    QuestionHeader(listOfOptions[5].subTitle)
+                    DataField(
+                        listOfOptions[3],
+                        value = (listOfOptions[5] as FieldModel).data,
+                        lamb = {
+                            (listOfOptions[5] as FieldModel).data = it
+                        })
+                }
+            }
+
+            MyCard {
+
+                Title(titleOne)
+                models.forEach { model ->
+                    if (model is CheckedModelThree) {
+
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            QuestionHeader(model.subTitle)
+                            CountFieldThree(model, value = model.previousMeasurement, enabled = false)
+                            CountFieldThree(model, value = model.currentMeasurement)
+                        }
+                    }
+
+                }
+            }
+
+            MyCard {
+                Title(titleTwo)
+                modelsTwo.forEach { model ->
+                    if (model is FieldModelThree) {
+
+                        if (dropDownModel.innerOptions == "Адресируем" && model.subTitle.contains("Кръг")) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                QuestionHeader(model.subTitle)
+                                CountFieldFour(model, value = model.oldPressure, enabled = false)
+                                CountFieldFour(model, value = model.pressure)
+                            }
+                        } else  if (dropDownModel.innerOptions == "Конвенционален" && model.subTitle.contains("Линия")) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                QuestionHeader(model.subTitle)
+                                CountFieldFour(model, value = model.oldPressure, enabled = false)
+                                CountFieldFour(model, value = model.pressure)
+                            }
+                        }
+
+
+
+                    }
+                }
+            }
+            MyCard {
+                Title(titleThree)
+                i = 1
+                modelsThree.forEachIndexed { index, model ->
+                    if (model is CheckedModelThree) {
+
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            if(model.subTitle == "Зареждане на акумулаторни батерии") {
+                                QuestionHeader(model.subTitle)
+                            } else {
+                                QuestionHeader("Акумулаторна батерия №${i++}")
+                            }
+                            CountFieldThree(model, value = model.previousMeasurement, enabled = false)
+                            CountFieldThree(model, value = model.currentMeasurement)
+
+                        }
+
+                    }
+                }
+
+            }
+
+        }
+        // Навигацията - закована долу
+        BottomPaging(pagerState)
+        Spacer(modifier = Modifier.height(10.dp))
+
+
+      }
+        if(loadingData) {
+            CircularProgressIndicator()
+        }
+
+    }
+    LaunchedEffect(triggerRequest) {
+
+        loadMapData(
+            context, triggerRequest,
+            (listOfOptions[0] as CountModel).data,
+            getURL() + "/get_sunotech_protokol_details_by_id",
+        ) { onResponse ->
+            errorEvent = onResponse
+            loadingData = false
+        }
+
+
+    }
+    errorEvent?.let {
+        if(it.responseCode != 200) {
+            MyDialog().RetroDialog(it.responseCode, it.responseMessage) {
+                errorEvent = null
+            }
+        }
+    }
+}
+// region Page Header
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PageHeader(
+    modifier: Modifier,
+    section: String,
+    pagerState: PagerState) {
+
+    val context = LocalContext.current
+
+    val installationType = PreferencesManager().getInstallationType(context)
+
+
+    val models = mapOfModels[section] ?: emptyList()
 
     Box(contentAlignment = Alignment.Center) {
         Column(modifier = modifier.fillMaxSize()) {
@@ -554,45 +873,30 @@ fun PageHeader(
                 modifier = Modifier
                     .weight(1f)
             ) {
-                MyCard {
-                    RadioButtonSingleSelection(
-                        selected,
-                        modifier = Modifier.padding(16.dp),
-                        onOptionSelected = {
-                            selected = it
-                            val enValue = checkingTypeAsEnFormat(it)
 
-                            val current = mapOfModels[section]
-                                ?.firstOrNull { m -> m is FieldModel && m.subTitle == "Вид обслужване на ПГИ" } as? FieldModel
-
-                            current?.data = enValue
-                            selectedOptionModel.data = enValue // по желание, за стария обект
-                        }
-                    )
-                }
-                MyCard {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-
-
-
-                        TestField(models[0], placeholder = "Номер на обект",value = (models[0] as CountModel).data) {
-                            (models[0] as CountModel).data = it
-                        }
-
-                        Spacer(modifier = Modifier.height(20.dp))
-
-                        Button(onClick = {
-                            loadingData = true
-                            triggerRequest++
-                        }, modifier = Modifier.height(40.dp)) {
-                            Text(text = "Номер на Обект")
-                        }
-                        Spacer(modifier = Modifier.height(5.dp))
-                    }
-                }
+//                MyCard {
+//                    Column(
+//                        modifier = Modifier.padding(16.dp),
+//                        horizontalAlignment = Alignment.CenterHorizontally
+//                    ) {
+//
+//
+//
+//                        TestField(models[0], placeholder = "Номер на обект",value = (models[0] as CountModel).data) {
+//                            (models[0] as CountModel).data = it
+//                        }
+//
+//                        Spacer(modifier = Modifier.height(20.dp))
+//
+//                        Button(onClick = {
+//                            loadingData = true
+//                            triggerRequest++
+//                        }, modifier = Modifier.height(40.dp)) {
+//                            Text(text = "Номер на Обект")
+//                        }
+//                        Spacer(modifier = Modifier.height(5.dp))
+//                    }
+//                }
                 MyCard() {
                     Column(modifier = Modifier.padding(16.dp)) {
                         DataField(
@@ -768,32 +1072,32 @@ fun PageHeader(
             Spacer(modifier = Modifier.height(8.dp))
 
         }
-        if(loadingData) {
-            CircularProgressIndicator()
-        }
+//        if(loadingData) {
+//            CircularProgressIndicator()
+//        }
     }
 
 
-    LaunchedEffect(triggerRequest) {
-
-        loadMapData(
-            context, triggerRequest,
-            (models[0] as CountModel).data,
-            getURL() + "/get_sunotech_protokol_details_by_id",
-        ) { onResponse ->
-            errorEvent = onResponse
-            loadingData = false
-        }
-
-
-    }
-    errorEvent?.let {
-        if(it.responseCode != 200) {
-            MyDialog().RetroDialog(it.responseCode, it.responseMessage) {
-                errorEvent = null
-            }
-        }
-    }
+//    LaunchedEffect(triggerRequest) {
+//
+//        loadMapData(
+//            context, triggerRequest,
+//            (models[0] as CountModel).data,
+//            getURL() + "/get_sunotech_protokol_details_by_id",
+//        ) { onResponse ->
+//            errorEvent = onResponse
+//            loadingData = false
+//        }
+//
+//
+//    }
+//    errorEvent?.let {
+//        if(it.responseCode != 200) {
+//            MyDialog().RetroDialog(it.responseCode, it.responseMessage) {
+//                errorEvent = null
+//            }
+//        }
+//    }
 
 }
 
@@ -950,13 +1254,12 @@ fun MainScreen(modifier: Modifier, type : InstallationType) {
 
                             0 -> OpenCamera(modifier, pagerState)
                             1 -> {
-                                val section = aerozolSections[page]
-                                PageHeader(modifier,  section,pagerState,14)
+                                ShortMenuAerozol(modifier,pagerState,14)//index-14
                             }
                             2 -> {
-                                ShortMenuAerozol(modifier,pagerState)
+                                val section = aerozolSections[page]
+                                PageHeader(modifier,  section,pagerState)
                             }
-
                             3 -> {
                                 val section = aerozolSections[page]
                                 PregledControlPanel(modifier, "№${page+1} $section", section, pagerState)
@@ -1057,12 +1360,13 @@ fun MainScreen(modifier: Modifier, type : InstallationType) {
                         when (page) {
 
                             0 -> OpenCamera(modifier, pagerState)
+                            2 -> {
+                                val section = gasSections[page]
+                                PageHeader(modifier, section,pagerState)
+                            }
                             1 -> {
                                 val section = gasSections[page]
-                                PageHeader(modifier,  section,pagerState,19)
-                            }
-                            2 -> {
-                                ShortMenuGaz(modifier,pagerState)
+                                ShortMenuGaz(modifier,pagerState,section,19)
                             }
                             3 -> {
                                 val section = gasSections[page]
@@ -3142,7 +3446,7 @@ fun loadMapData(
                     // very important !!!
 
                     // GET CHECKING TYPE BEFORE CLEARING MAP DATA
-                    val checkingType = getCheckingType(installationType)
+                    val checkingType = PreferencesManager().getCheckingType(context)
 
                     mapOfModels.clear()
 
@@ -3465,7 +3769,7 @@ fun completeProtocol(
         }
         jsonMap.put(title, jsonList)
     }
-    val headerModels: ArrayList<IModel> = mapOfModels[titles[1]]!!
+    val headerModels: ArrayList<IModel> = mapOfModels["Входни данни"]!!
     val objectIdModel = headerModels[0] as CountModel
     val barcodeModel = headerModels[1] as FieldModel
     val documentDateModel = headerModels[5] as FieldModel
@@ -3538,18 +3842,18 @@ fun completeProtocol(
 }
 
 fun getCheckingType(installationType: String) : String {
-//    val headerModels: ArrayList<IModel> = mapOfModels[titles[1]]!!
-//    val checkingTypeModel = if(installationType == "gas") {
-//        if(headerModels.size == 20) (headerModels[19] as FieldModel) else null
-//    } else {
-//        if(headerModels.size == 15) (headerModels[14] as FieldModel) else null
-//    }
-//    return checkingTypeModel?.data ?: "MONTHLY"
-    val headerModels = mapOfModels[titles[1]] ?: return "MONTHLY"
-    val model = headerModels.firstOrNull {
-        it is FieldModel && it.subTitle == "Вид обслужване на ПГИ"
-    } as? FieldModel
-    return model?.data ?: "MONTHLY"
+    val headerModels: ArrayList<IModel> = mapOfModels[titles[1]]!!
+    val checkingTypeModel = if(installationType == "gas") {
+        if(headerModels.size == 20) (headerModels[19] as FieldModel) else null
+    } else {
+        if(headerModels.size == 15) (headerModels[14] as FieldModel) else null
+    }
+    return checkingTypeModel?.data ?: "MONTHLY"
+//    val headerModels = mapOfModels[titles[1]] ?: return "MONTHLY"
+//    val model = headerModels.firstOrNull {
+//        it is FieldModel && it.subTitle == "Вид обслужване на ПГИ"
+//    } as? FieldModel
+//    return model?.data ?: "MONTHLY"
 }
 
 fun checkingTypeAsEnFormat(checkingType : String) : String {

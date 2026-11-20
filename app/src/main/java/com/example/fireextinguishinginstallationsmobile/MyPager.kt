@@ -124,7 +124,7 @@ fun RadioButtonSingleSelection(option:String, modifier: Modifier = Modifier, onO
     // Note that Modifier.selectableGroup() is essential to ensure correct accessibility behavior
     Column(modifier.wrapContentHeight().selectableGroup()) {
 
-        Title("Вид обслужване на ПГИ")
+        QuestionHeader("Вид обслужване на ПГИ")
         radioOptions.forEach { text ->
             Row(
                 Modifier

@@ -39,6 +39,20 @@ class PreferencesManager {
         }
     }
 
+    fun getCheckingType(context: Context): String {
+        val sharedPreferences =
+            context.getSharedPreferences("CHECKING_TYPE", Context.MODE_PRIVATE)
+        return sharedPreferences.getString("checkingType", "MONTHLY") ?: "MONTHLY"
+    }
+    fun setCheckingType(context: Context, type: String) {
+        val sharedPreferences =
+            context.getSharedPreferences("CHECKING_TYPE", Context.MODE_PRIVATE)
+        sharedPreferences.edit {
+            putString("checkingType",type)
+            apply()
+        }
+    }
+
     fun getInstallationType(context: Context): String {
         val sharedPreferences =
             context.getSharedPreferences("INSTALLATION_DATA_TYPE", Context.MODE_PRIVATE)
