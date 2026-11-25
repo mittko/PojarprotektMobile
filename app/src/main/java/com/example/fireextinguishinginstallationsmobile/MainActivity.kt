@@ -353,8 +353,8 @@ fun ShortMenuGaz(modifier: Modifier, pagerState: PagerState,section:String, inde
 
     val dropDownModel = listOfOptions[4] as DropDownModel
 
-    val selectedOptionModel = if(index < models.size) {
-        models[index] as FieldModel
+    val selectedOptionModel = if(index < listOfOptions.size) {
+        listOfOptions[index] as FieldModel
     } else {
         FieldModel("Вид обслужване на ПГИ")
     }
@@ -373,15 +373,14 @@ fun ShortMenuGaz(modifier: Modifier, pagerState: PagerState,section:String, inde
                             selected,
                             modifier = Modifier.padding(16.dp),
                             onOptionSelected = {
-                                selected = it
-                                val enValue = checkingTypeAsEnFormat(it)
+                                selected = checkingTypeAsEnFormat(it)
 
                                 val current = mapOfModels["Входни данни"]
                                     ?.firstOrNull { m -> m is FieldModel && m.subTitle == "Вид обслужване на ПГИ" } as? FieldModel
 
-                                current?.data = enValue
-                                selectedOptionModel.data = enValue // по желание, за стария обект
-                                PreferencesManager().setCheckingType(context,enValue)
+                                current?.data = selected
+                                selectedOptionModel.data = selected // по желание, за стария обект
+                                PreferencesManager().setCheckingType(context,selected)
                             }
                         )
                     }
@@ -634,8 +633,8 @@ fun ShortMenuAerozol(modifier: Modifier, pagerState: PagerState, index:Int) {
 
     val dropDownModel = listOfOptions[4] as DropDownModel
 
-    val selectedOptionModel = if(index < models.size) {
-        models[index] as FieldModel
+    val selectedOptionModel = if(index < listOfOptions.size) {
+        listOfOptions[index] as FieldModel
     } else {
         FieldModel("Вид обслужване на ПГИ")
     }
@@ -655,15 +654,15 @@ fun ShortMenuAerozol(modifier: Modifier, pagerState: PagerState, index:Int) {
                     selected,
                     modifier = Modifier.padding(16.dp),
                     onOptionSelected = {
-                        selected = it
-                        val enValue = checkingTypeAsEnFormat(it)
+                        selected = checkingTypeAsEnFormat(it)
+                       // val enValue = checkingTypeAsEnFormat(it)
 
                         val current = mapOfModels["Входни данни"]
                             ?.firstOrNull { m -> m is FieldModel && m.subTitle == "Вид обслужване на ПГИ" } as? FieldModel
 
-                        current?.data = enValue
-                        selectedOptionModel.data = enValue // по желание, за стария обект
-                        PreferencesManager().setCheckingType(context,enValue)
+                        current?.data = selected
+                        selectedOptionModel.data = selected // по желание, за стария обект
+                        PreferencesManager().setCheckingType(context,selected)
                     }
                 )
             }
@@ -824,6 +823,8 @@ fun ShortMenuAerozol(modifier: Modifier, pagerState: PagerState, index:Int) {
 
     }
     LaunchedEffect(triggerRequest) {
+
+        if (triggerRequest == 0) return@LaunchedEffect
 
         loadMapData(
             context, triggerRequest,
@@ -3878,6 +3879,29 @@ fun checkingTypeAsEnFormat(checkingType : String) : String {
               return  "MONTHLY"
             }
         }
+}
+fun checkingTypeAsBgFormat(checkingType : String) : String {
+
+    when (checkingType) {
+        "MONTHLY" -> {
+            return "Едномесечно"
+        }
+
+        "QUARTERLY" -> {
+            return "Тримесечно"
+        }
+
+        "SEMIANNUAL" -> {
+            return  "Шестмесечно"
+        }
+
+        "ANNUAL" -> {
+            return "Дванадесетмесечно"
+        }
+        else -> {
+            return  "Едномесечно"
+        }
+    }
 }
 //@Preview(showBackground = true)
 //@Composable

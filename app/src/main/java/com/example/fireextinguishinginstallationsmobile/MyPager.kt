@@ -131,7 +131,7 @@ fun RadioButtonSingleSelection(option:String, modifier: Modifier = Modifier, onO
                     .fillMaxWidth()
                     .height(32.dp)
                     .selectable(
-                        selected = (text == option),
+                        selected = (text == checkingTypeAsBgFormat(option)),
                         onClick = { onOptionSelected(text) },
                         role = Role.RadioButton
                     )
@@ -139,7 +139,7 @@ fun RadioButtonSingleSelection(option:String, modifier: Modifier = Modifier, onO
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 RadioButton(
-                    selected = (text == option),
+                    selected = (text == checkingTypeAsBgFormat(option)),
                     onClick = null // null recommended for accessibility with screen readers
                 )
                 Text(
