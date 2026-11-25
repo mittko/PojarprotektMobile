@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
+import android.widget.Space
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -27,6 +28,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerDefaults
 import androidx.compose.foundation.pager.PagerState
@@ -470,17 +472,27 @@ fun ShortMenuGaz(modifier: Modifier, pagerState: PagerState,section:String, inde
                 }
 
                 MyCard {
+                    Column(modifier = Modifier.padding(16.dp)) {
                     QuestionHeader("Налягане на гасителен агент")//(titleFour)
                     modelsFive.forEachIndexed { i, model ->
                         if (model is ExtendedCheckedModel) {
-                            Column(modifier = Modifier.padding(16.dp)) {
-                                CountFieldFive(
-                                    model,
-                                    "",
-                                    value = (model.lastPressure),
-                                    enabled = false
-                                )
-                                CountFieldFive(model, "", value = (model.pressure))
+
+                                Row {
+                                    Column(modifier = Modifier.weight(0.5f)) {
+                                        CountFieldFive(
+                                            model,
+                                            "",
+                                            value = (model.lastPressure),
+                                            enabled = false
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(5.dp))
+                                    Column(modifier = Modifier.weight(0.5f)) {
+                                        CountFieldFive(model, "", value = (model.pressure))
+                                    }
+                                }
+
+
                             }
 
                             return@MyCard
@@ -496,12 +508,21 @@ fun ShortMenuGaz(modifier: Modifier, pagerState: PagerState,section:String, inde
 
                             Column(modifier = Modifier.padding(16.dp)) {
                                 QuestionHeader(model.subTitle)
-                                CountFieldThree(
-                                    model,
-                                    value = model.previousMeasurement,
-                                    enabled = false
-                                )
-                                CountFieldThree(model, value = model.currentMeasurement)
+                                Row {
+                                    Column(modifier = Modifier.weight(0.5f)) {
+                                        CountFieldThree(
+                                            model,
+                                            value = model.previousMeasurement,
+                                            enabled = false
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(5.dp))
+                                    Column(modifier = Modifier.weight(0.5f)) {
+                                        CountFieldThree(model, value = model.currentMeasurement)
+                                    }
+                                }
+
+
                             }
 
                         }
@@ -519,12 +540,21 @@ fun ShortMenuGaz(modifier: Modifier, pagerState: PagerState,section:String, inde
                             ) {
                                 Column(modifier = Modifier.padding(16.dp)) {
                                     QuestionHeader(model.subTitle)
-                                    CountFieldFour(
-                                        model,
-                                        value = model.oldPressure,
-                                        enabled = false
-                                    )
-                                    CountFieldFour(model, value = model.pressure)
+                                    Row {
+                                        Column(modifier = Modifier.weight(0.5f)) {
+                                            CountFieldFour(
+                                                model,
+                                                value = model.oldPressure,
+                                                enabled = false
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.width(5.dp))
+                                        Column(modifier = Modifier.weight(0.5f)) {
+                                            CountFieldFour(model, value = model.pressure)
+                                        }
+                                    }
+
+
                                 }
                             } else if (dropDownModel.innerOptions == "Конвенционален" && model.subTitle.contains(
                                     "Линия"
@@ -532,12 +562,21 @@ fun ShortMenuGaz(modifier: Modifier, pagerState: PagerState,section:String, inde
                             ) {
                                 Column(modifier = Modifier.padding(16.dp)) {
                                     QuestionHeader(model.subTitle)
-                                    CountFieldFour(
-                                        model,
-                                        value = model.oldPressure,
-                                        enabled = false
-                                    )
-                                    CountFieldFour(model, value = model.pressure)
+                                    Row {
+                                        Column(modifier = Modifier.weight(0.5f)) {
+                                            CountFieldFour(
+                                                model,
+                                                value = model.oldPressure,
+                                                enabled = false
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.width(5.dp))
+                                        Column(modifier = Modifier.weight(0.5f)) {
+                                            CountFieldFour(model, value = model.pressure)
+                                        }
+                                    }
+
+
                                 }
                             }
                         }
@@ -555,12 +594,21 @@ fun ShortMenuGaz(modifier: Modifier, pagerState: PagerState,section:String, inde
                                 } else {
                                     QuestionHeader("Акумулаторна батерия №${i++}")
                                 }
-                                CountFieldThree(
-                                    model,
-                                    value = model.previousMeasurement,
-                                    enabled = false
-                                )
-                                CountFieldThree(model, value = model.currentMeasurement)
+                                Row {
+                                    Column(modifier = Modifier.weight(0.5f)) {
+                                        CountFieldThree(
+                                            model,
+                                            value = model.previousMeasurement,
+                                            enabled = false
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(5.dp))
+                                    Column(modifier = Modifier.weight(0.5f)) {
+                                        CountFieldThree(model, value = model.currentMeasurement)
+                                    }
+                                }
+
+
 
                             }
 
@@ -756,8 +804,17 @@ fun ShortMenuAerozol(modifier: Modifier, pagerState: PagerState, index:Int) {
 
                         Column(modifier = Modifier.padding(16.dp)) {
                             QuestionHeader(model.subTitle)
-                            CountFieldThree(model, value = model.previousMeasurement, enabled = false)
-                            CountFieldThree(model, value = model.currentMeasurement)
+                            Row {
+                                Column(modifier = Modifier.weight(0.5f)) {
+                                    CountFieldThree(model, value = model.previousMeasurement, enabled = false)
+                                }
+                                Spacer(modifier = Modifier.width(5.dp))
+                                Column(modifier = Modifier.weight(0.5f)) {
+                                    CountFieldThree(model, value = model.currentMeasurement)
+                                }
+                            }
+
+
                         }
                     }
 
@@ -772,14 +829,31 @@ fun ShortMenuAerozol(modifier: Modifier, pagerState: PagerState, index:Int) {
                         if (dropDownModel.innerOptions == "Адресируем" && model.subTitle.contains("Кръг")) {
                             Column(modifier = Modifier.padding(16.dp)) {
                                 QuestionHeader(model.subTitle)
-                                CountFieldFour(model, value = model.oldPressure, enabled = false)
-                                CountFieldFour(model, value = model.pressure)
+                                Row {
+                                    Column(modifier = Modifier.weight(0.5f)) {
+                                        CountFieldFour(model, value = model.oldPressure, enabled = false)
+                                    }
+                                    Spacer(modifier = Modifier.width(5.dp))
+                                    Column(modifier = Modifier.weight(0.5f)) {
+                                        CountFieldFour(model, value = model.pressure)
+                                    }
+                                }
+
                             }
                         } else  if (dropDownModel.innerOptions == "Конвенционален" && model.subTitle.contains("Линия")) {
                             Column(modifier = Modifier.padding(16.dp)) {
                                 QuestionHeader(model.subTitle)
-                                CountFieldFour(model, value = model.oldPressure, enabled = false)
-                                CountFieldFour(model, value = model.pressure)
+                                Row {
+                                    Column(modifier = Modifier.weight(0.5f)) {
+                                        CountFieldFour(model, value = model.oldPressure, enabled = false)
+                                    }
+                                    Spacer(modifier = Modifier.width(5.dp))
+                                    Column(modifier = Modifier.weight(0.5f)) {
+                                        CountFieldFour(model, value = model.pressure)
+                                    }
+                                }
+
+
                             }
                         }
 
@@ -800,8 +874,17 @@ fun ShortMenuAerozol(modifier: Modifier, pagerState: PagerState, index:Int) {
                             } else {
                                 QuestionHeader("Акумулаторна батерия №${i++}")
                             }
-                            CountFieldThree(model, value = model.previousMeasurement, enabled = false)
-                            CountFieldThree(model, value = model.currentMeasurement)
+                            Row {
+                                Column(modifier = Modifier.weight(0.5f)) {
+                                    CountFieldThree(model, value = model.previousMeasurement, enabled = false)
+                                }
+                                Spacer(modifier = Modifier.width(5.dp))
+                                Column(modifier = Modifier.weight(0.5f)) {
+                                    CountFieldThree(model, value = model.currentMeasurement)
+                                }
+                            }
+
+
 
                         }
 
