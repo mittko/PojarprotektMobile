@@ -121,6 +121,7 @@ import com.example.fireextinguishinginstallationsmobile.models.barcodeText
 import com.example.fireextinguishinginstallationsmobile.utils.MyDate
 import com.example.fireextinguishinginstallationsmobile.utils.PreviewOption
 import kotlinx.coroutines.delay
+import java.math.BigDecimal
 import kotlin.collections.forEach
 
 
@@ -491,7 +492,7 @@ fun ShortMenuGaz(modifier: Modifier, pagerState: PagerState,section:String, inde
                                         CountFieldFive(model, "", value = (model.pressure))
                                     }
                                 }
-
+                            DiffWarning(model.lastPressure, model.pressure, BigDecimal.valueOf((3.0)))
 
                             }
 
@@ -521,7 +522,8 @@ fun ShortMenuGaz(modifier: Modifier, pagerState: PagerState,section:String, inde
                                         CountFieldThree(model, value = model.currentMeasurement)
                                     }
                                 }
-
+                                DiffWarning(model.previousMeasurement, model.currentMeasurement,
+                                    if(model.subTitle == "Основно захранване от електрическа мрежа") BigDecimal.valueOf(20.0) else BigDecimal.valueOf(3.0))
 
                             }
 
@@ -553,7 +555,7 @@ fun ShortMenuGaz(modifier: Modifier, pagerState: PagerState,section:String, inde
                                             CountFieldFour(model, value = model.pressure)
                                         }
                                     }
-
+                                    DiffWarning(model.oldPressure, model.pressure, BigDecimal.valueOf(3.0))
 
                                 }
                             } else if (dropDownModel.innerOptions == "Конвенционален" && model.subTitle.contains(
@@ -575,7 +577,7 @@ fun ShortMenuGaz(modifier: Modifier, pagerState: PagerState,section:String, inde
                                             CountFieldFour(model, value = model.pressure)
                                         }
                                     }
-
+                                    DiffWarning(model.oldPressure, model.pressure, BigDecimal.valueOf(3.0))
 
                                 }
                             }
@@ -607,7 +609,7 @@ fun ShortMenuGaz(modifier: Modifier, pagerState: PagerState,section:String, inde
                                         CountFieldThree(model, value = model.currentMeasurement)
                                     }
                                 }
-
+                                DiffWarning(model.previousMeasurement, model.currentMeasurement, BigDecimal.valueOf(2.0))
 
 
                             }
@@ -813,7 +815,8 @@ fun ShortMenuAerozol(modifier: Modifier, pagerState: PagerState, index:Int) {
                                     CountFieldThree(model, value = model.currentMeasurement)
                                 }
                             }
-
+                            DiffWarning(model.previousMeasurement, model.currentMeasurement,
+                                if(model.subTitle == "Основно захранване от електрическа мрежа")  BigDecimal.valueOf(20.0) else BigDecimal.valueOf(3.0))
 
                         }
                     }
@@ -838,7 +841,8 @@ fun ShortMenuAerozol(modifier: Modifier, pagerState: PagerState, index:Int) {
                                         CountFieldFour(model, value = model.pressure)
                                     }
                                 }
-
+                                DiffWarning(model.oldPressure, model.pressure,
+                                    BigDecimal.valueOf(3.0))
                             }
                         } else  if (dropDownModel.innerOptions == "Конвенционален" && model.subTitle.contains("Линия")) {
                             Column(modifier = Modifier.padding(16.dp)) {
@@ -852,7 +856,8 @@ fun ShortMenuAerozol(modifier: Modifier, pagerState: PagerState, index:Int) {
                                         CountFieldFour(model, value = model.pressure)
                                     }
                                 }
-
+                                DiffWarning(model.oldPressure, model.pressure,
+                                    BigDecimal.valueOf(3.0))
 
                             }
                         }
@@ -883,7 +888,8 @@ fun ShortMenuAerozol(modifier: Modifier, pagerState: PagerState, index:Int) {
                                     CountFieldThree(model, value = model.currentMeasurement)
                                 }
                             }
-
+                            DiffWarning(model.previousMeasurement, model.currentMeasurement,
+                                BigDecimal.valueOf(2.0))
 
 
                         }

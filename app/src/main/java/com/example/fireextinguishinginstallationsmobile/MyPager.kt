@@ -32,6 +32,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.MicOff
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -107,6 +108,9 @@ import com.google.gson.Gson
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
+import java.math.BigDecimal
+import java.math.RoundingMode
+import kotlin.math.abs
 import kotlin.text.Typography.section
 
 
@@ -1064,6 +1068,37 @@ fun InstallationTypeBadge(type: InstallationType) {
     }
 }
 
+private fun String.toBigDecimalSafe(): BigDecimal? =
+    replace(',', '.').trim().toBigDecimalOrNull()
+
+@Composable
+fun DiffWarning(
+    previous: String,
+    current: String,
+    threshold: BigDecimal,
+    modifier: Modifier = Modifier
+) {
+    val prev = previous.toBigDecimalSafe()
+    val curr = current.toBigDecimalSafe()
+
+    if (prev != null && curr != null) {
+        val diff = (curr - prev).abs()
+        if (diff >= threshold) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = modifier.padding(top = 4.dp)
+            ) {
+                Icon(Icons.Filled.Warning, contentDescription = null, tint = Color.Red)
+                Spacer(Modifier.width(4.dp))
+                Text(
+                    "Разлика ${diff.setScale(2, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()} - проверете стойността!",
+                    color = Color.Red,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+        }
+    }
+}
 
 fun learnKotlin(predicate : (PreviewOption) -> Boolean) : PreviewOption? {
     val listOfStrings = listOf<PreviewOption>(PreviewOption(text = "NC 1230 (FK-5-1-12)", 1),
